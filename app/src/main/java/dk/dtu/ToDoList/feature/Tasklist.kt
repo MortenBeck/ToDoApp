@@ -1,7 +1,9 @@
 package dk.dtu.ToDoList.feature
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -14,6 +16,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.layout.VerticalAlignmentLine
 import dk.dtu.ToDoList.data.Task
 import dk.dtu.ToDoList.data.TaskTag
 import dk.dtu.ToDoList.data.TaskPriority
@@ -44,12 +48,15 @@ fun TaskList(Tasks: List<Task>, modifier: Modifier = Modifier) {
 private fun TaskItem(task: Task, index: Int = 0) {
     val dateFormatter = SimpleDateFormat("dd-MM-yyyy", Locale.US)
 
-    Column(
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp, horizontal = 16.dp)
     ) {
         Text(
             text = task.name,
-            fontSize = 25.sp,
+            fontSize = 20.sp,
             fontWeight = FontWeight.SemiBold
         )
         Text(
