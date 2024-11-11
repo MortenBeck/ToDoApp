@@ -24,6 +24,16 @@ import dk.dtu.ToDoList.data.TaskPriority
 import dk.dtu.ToDoList.data.TasksRepository.simpleDateFormat
 import java.text.SimpleDateFormat
 import java.util.Locale
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Text
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+import dk.dtu.ToDoList.R
+
+
 
 @Composable
 fun TaskList(Tasks: List<Task>, modifier: Modifier = Modifier) {
@@ -54,6 +64,14 @@ private fun TaskItem(task: Task, index: Int = 0) {
             .fillMaxWidth()
             .padding(vertical = 8.dp, horizontal = 16.dp)
     ) {
+        Image(
+            painter = painterResource(id = R.drawable.priority), // replace with your icon's resource ID
+            contentDescription = "Priority Icon",
+            modifier = Modifier
+                .width(32.dp)
+                .height(32.dp)
+                .padding(end=4.dp)
+        )
         Text(
             text = task.name,
             fontSize = 20.sp,
