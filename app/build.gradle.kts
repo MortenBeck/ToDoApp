@@ -4,6 +4,8 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
+
+
 android {
     namespace = "dk.dtu.ToDoList"
     compileSdk = 35
@@ -41,6 +43,14 @@ android {
 
 dependencies {
 
+    implementation("androidx.compose.material3:material3:1.4.0")
+    implementation(platform("androidx.compose:compose-bom:${libs.versions.compose.get()}"))
+    implementation("com.google.android.material:material:${libs.versions.material.get()}")
+    implementation("androidx.compose.material3:material3:${libs.versions.compose.get()}")
+    implementation(libs.material)
+    implementation(libs.androidx.constraintlayout)  // Reference to ConstraintLayout
+    implementation(libs.androidx.appcompat)   // Reference to AppCompat
+    implementation(libs.androidx.recyclerview) // Reference to RecyclerView
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

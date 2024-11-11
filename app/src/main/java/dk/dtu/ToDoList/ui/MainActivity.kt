@@ -1,47 +1,53 @@
 package dk.dtu.ToDoList
 
+import dk.dtu.ToDoList.ui.AddTaskActivity
 import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import dk.dtu.ToDoList.ui.theme.ToDoListTheme
+import android.content.Intent
+import android.widget.Button
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import dk.dtu.ToDoList.ui.AddTaskDialogFragment
+import dk.dtu.ToDoList.ui.adapters.TaskAdapter
+import dk.dtu.ToDoList.ui.models.Task
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var taskAdapter: TaskAdapter
+    private lateinit var taskList: MutableList<Task>
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            ToDoListTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
-            }
+        setContentView(R.layout.activity_main)
+
+        // Initialize RecyclerView
+        recyclerView = findViewById(R.id.task_list)
+        recyclerView.layoutManager = LinearLayoutManager(this)
+
+        // Initialize task list (this could be from a database or temporary data)
+        taskList = mutableListOf()
+
+        // Add sample tasks (temporary)
+        taskList.add(Task("Buy groceries", "description here", false)) // example if description is String
+        taskList.add(Task("Finish homework", "description here", false)) // example if description is String
+        taskList.add(Task("Walk the dog", "description here", false)) // example if description is String
+
+
+        // Initialize adapter with task list and set it to the RecyclerView
+        taskAdapter = TaskAdapter(taskList)
+        recyclerView.adapter = taskAdapter
+
+        // Handle Add Task button with dialog fragment
+        val addTaskButton: Button = findViewById(R.id.add_task_button)
+        addTaskButton.setOnClickListener {
+            // Show the AddTaskDialogFragment as a pop-up dialog
+            val addTaskDialog = AddTaskDialogFragment()
+            addTaskDialog.show(supportFragmentManager, "AddTaskDialogFragment")
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    ToDoListTheme {
-        Greeting("Android")
     }
 }

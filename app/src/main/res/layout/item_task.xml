@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="8dp">
+
+    <!-- Priority Indicator -->
+    <View
+        android:id="@+id/view_priority"
+        android:layout_width="8dp"
+        android:layout_height="8dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginEnd="8dp"
+        android:backgroundTint="#FF0000" />
+
+    <!-- Task Title -->
+    <TextView
+        android:id="@+id/text_task_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Task Title"
+        android:textSize="16sp"
+        android:textColor="@android:color/black"
+        app:layout_constraintStart_toEndOf="@id/view_priority"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/icon_favorite" />
+
+    <!-- Task Date -->
+    <TextView
+        android:id="@+id/text_task_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="17-11"
+        android:textSize="12sp"
+        android:textColor="#666"
+        app:layout_constraintStart_toEndOf="@id/view_priority"
+        app:layout_constraintTop_toBottomOf="@id/text_task_title"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/icon_favorite"
+        android:layout_marginTop="4dp" />
+
+    <!-- Favorite Icon -->
+    <ImageView
+        android:id="@+id/icon_favorite"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/ic_favorite"
+        app:layout_constraintEnd_toStartOf="@id/icon_reminder"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginEnd="8dp" />
+
+    <!-- Reminder Icon -->
+    <ImageView
+        android:id="@+id/icon_reminder"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/ic_reminder"
+        app:layout_constraintEnd_toStartOf="@id/icon_delete"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginEnd="8dp" />
+
+    <!-- Delete Icon -->
+    <ImageView
+        android:id="@+id/icon_delete"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/ic_delete"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginEnd="8dp" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
