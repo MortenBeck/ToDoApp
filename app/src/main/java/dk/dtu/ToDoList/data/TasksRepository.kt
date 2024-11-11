@@ -7,7 +7,7 @@ import java.util.Locale
 
 object TasksRepository {
 
-    private val simpleDateFormat = SimpleDateFormat("dd-MM-yyyy", Locale.US)
+    val simpleDateFormat = SimpleDateFormat("dd-MM-yyyy", Locale.US)
 
     // In a real app, this would be coming from a data source like a database
     val tasks = flowOf(
