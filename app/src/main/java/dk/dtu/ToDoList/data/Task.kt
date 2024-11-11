@@ -14,5 +14,6 @@ data class Task(
     val name: String,
     val deadline: Date,
     val priority: TaskPriority,
+    val tag: TaskTag,
     val completed: Boolean = false
 )
