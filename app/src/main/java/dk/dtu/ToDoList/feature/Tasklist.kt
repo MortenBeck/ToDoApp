@@ -41,7 +41,7 @@ import androidx.compose.material3.Divider
 
 @Composable
 fun TaskListScreen(tasks: List<Task>) {
-    // Get today's date
+    // Getting todays date with calendar
     val today = java.util.Calendar.getInstance().apply {
         set(java.util.Calendar.HOUR_OF_DAY, 0)
         set(java.util.Calendar.MINUTE, 0)
@@ -49,7 +49,7 @@ fun TaskListScreen(tasks: List<Task>) {
         set(java.util.Calendar.MILLISECOND, 0)
     }.time
 
-    // Split tasks into "Today" and "Future" based on the deadline
+    // Making a difference between today and future deadlines!
     val todayTasks = tasks.filter { it.deadline <= today }
     val futureTasks = tasks.filter { it.deadline > today }
 
@@ -79,6 +79,7 @@ fun TaskListScreen(tasks: List<Task>) {
         }
     }
 }
+// Creating an area for the "Today" and "Future" headline
 @Composable
 fun SectionHeader(title: String) {
     Column {
@@ -94,7 +95,7 @@ fun SectionHeader(title: String) {
         Divider(color = Color.Gray, thickness = 1.dp)
     }
 }
-
+//Probably redundant but keeping just in case
 @Composable
 fun TaskList(tasks: List<Task>, modifier: Modifier = Modifier) {
     val scrollState = rememberLazyListState()
@@ -113,12 +114,12 @@ fun TaskList(tasks: List<Task>, modifier: Modifier = Modifier) {
         }
     }
 }
-
+// Code for a single task, with priority, completion etc.
 @Composable
 fun TaskItem(task: Task, index: Int = 0) {
     val dateFormatter = SimpleDateFormat("dd-MM", Locale.US)
 
-    // Determine color for priority based on task priority level
+    // Determine color for priority based on task priority level simialr should be done for tags later
     val priorityColor = when (task.priority) {
         TaskPriority.HIGH -> Color.Red
         TaskPriority.MEDIUM -> Color.Yellow
@@ -131,9 +132,9 @@ fun TaskItem(task: Task, index: Int = 0) {
             .padding(vertical = 8.dp, horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Priority Icon
+        // Priority
         Image(
-            painter = painterResource(id = R.drawable.priority), // replace with your priority icon
+            painter = painterResource(id = R.drawable.priority),
             contentDescription = "Priority Icon",
             colorFilter = ColorFilter.tint(priorityColor),
             modifier = Modifier
@@ -141,7 +142,7 @@ fun TaskItem(task: Task, index: Int = 0) {
                 .padding(end = 2.dp)
         )
 
-        // Circle for completion status
+        // Completion
         Box(
             modifier = Modifier
                 .size(24.dp)
@@ -159,7 +160,7 @@ fun TaskItem(task: Task, index: Int = 0) {
             }
         }
 
-        // Task details (name and deadline) in a column
+        // Rest of task
         Column(
             modifier = Modifier
                 .padding(start = 8.dp)
@@ -188,6 +189,7 @@ fun TaskItem(task: Task, index: Int = 0) {
                 )
             }
         }
+        // Tag, now only drawable.work
         Image(
             painter = painterResource(id = R.drawable.work),
             contentDescription = "Tag Icon",
@@ -195,6 +197,7 @@ fun TaskItem(task: Task, index: Int = 0) {
         )
         Spacer(modifier = Modifier.height(4.dp))
 
+        // Favorite
         Image(
             painter = painterResource(id = R.drawable.favorite),
             contentDescription = "Favorite Icon",
@@ -204,6 +207,7 @@ fun TaskItem(task: Task, index: Int = 0) {
 }
 
 
+//Preview for the tasklistscreen
 @Preview(showBackground = true)
 @Composable
 private fun TaskListScreenPreview() {
