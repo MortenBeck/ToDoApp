@@ -32,6 +32,12 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import dk.dtu.ToDoList.R
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.foundation.border
+import androidx.compose.foundation.background
 
 
 
@@ -55,44 +61,94 @@ fun TaskList(Tasks: List<Task>, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun TaskItem(task: Task, index: Int = 0) {
-    val dateFormatter = SimpleDateFormat("dd-MM-yyyy", Locale.US)
+fun TaskItem(task: Task, index: Int = 0) {
+    val dateFormatter = SimpleDateFormat("dd-MM", Locale.US)
+
+    // Determine color for priority based on task priority level
+    val priorityColor = when (task.priority) {
+        TaskPriority.HIGH -> Color.Red
+        TaskPriority.MEDIUM -> Color.Yellow
+        TaskPriority.LOW -> Color.Green
+    }
 
     Row(
-        verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp, horizontal = 16.dp)
+            .padding(vertical = 8.dp, horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
+        // Priority Icon
         Image(
-            painter = painterResource(id = R.drawable.priority), // replace with your icon's resource ID
+            painter = painterResource(id = R.drawable.priority), // replace with your priority icon
             contentDescription = "Priority Icon",
+            colorFilter = ColorFilter.tint(priorityColor),
             modifier = Modifier
-                .width(32.dp)
-                .height(32.dp)
-                .padding(end=4.dp)
+                .size(20.dp)
+                .padding(end = 8.dp)
         )
-        Text(
-            text = task.name,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.SemiBold
+
+        // Circle for completion status
+        Box(
+            modifier = Modifier
+                .size(24.dp)
+                .border(1.dp, Color.Black, CircleShape)
+                .background(if (task.completed) Color.LightGray else Color.Transparent, CircleShape)
+                .padding(2.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            if (task.completed) {
+                Text(
+                    text = "✓", // Unicode checkmark
+                    color = Color.Black,
+                    fontSize = 16.sp
+                )
+            }
+        }
+
+        // Task details (name and deadline) in a column
+        Column(
+            modifier = Modifier
+                .padding(start = 8.dp)
+                .weight(1f)
+        ) {
+            // Task name
+            Text(
+                text = task.name,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Image(
+                    painter = painterResource(id = R.drawable.calender), // replace with your calendar icon drawable ID
+                    contentDescription = "Calendar Icon",
+                    modifier = Modifier
+                        .size(16.dp)
+                        .padding(end = 4.dp)
+                )
+
+                // Deadline date
+                Text(
+                    text = dateFormatter.format(task.deadline),
+                    fontSize = 14.sp,
+                    color = Color.Gray
+                )
+            }
+        }
+        Image(
+            painter = painterResource(id = R.drawable.work),
+            contentDescription = "Tag Icon",
+            modifier = Modifier.size(16.dp),
         )
-        Text(
-            text = "Deadline: ${dateFormatter.format(task.deadline)}",
-            fontSize = 17.sp
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Image(
+            painter = painterResource(id = R.drawable.favorite),
+            contentDescription = "Favorite Icon",
         )
-        Text(
-            text = "Priority: ${task.priority}, Tag: ${task.tag}",
-            fontSize = 15.sp,
-            fontWeight = FontWeight.Light
-        )
-        Text(
-            text = if (task.completed) "Completed" else "Not Completed",
-            fontSize = 15.sp,
-            fontWeight = FontWeight.Light
-        )
+
     }
 }
+
 
 @Preview(showBackground = true)
 @Composable
@@ -111,7 +167,7 @@ private fun TaskListPreview() {
                 deadline = simpleDateFormat.parse("18-11-2024")!!,
                 priority = TaskPriority.MEDIUM,
                 tag = TaskTag.WORK,
-                completed = false
+                completed = true
             )
         )
     )
