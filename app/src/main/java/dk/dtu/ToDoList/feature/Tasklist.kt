@@ -26,7 +26,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Text
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
@@ -38,14 +37,69 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.foundation.border
 import androidx.compose.foundation.background
-
-
+import androidx.compose.material3.Divider
 
 @Composable
-fun TaskList(Tasks: List<Task>, modifier: Modifier = Modifier) {
+fun TaskListScreen(tasks: List<Task>) {
+    // Get today's date
+    val today = java.util.Calendar.getInstance().apply {
+        set(java.util.Calendar.HOUR_OF_DAY, 0)
+        set(java.util.Calendar.MINUTE, 0)
+        set(java.util.Calendar.SECOND, 0)
+        set(java.util.Calendar.MILLISECOND, 0)
+    }.time
+
+    // Split tasks into "Today" and "Future" based on the deadline
+    val todayTasks = tasks.filter { it.deadline <= today }
+    val futureTasks = tasks.filter { it.deadline > today }
+
+    LazyColumn (modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
+        // "Today" Section
+        if (todayTasks.isNotEmpty()) {
+            item {
+                SectionHeader(title = "Today")
+            }
+            itemsIndexed(todayTasks){index, task ->
+                TaskItem(task = task)
+            }
+            item{
+                Spacer(modifier = Modifier.height(16.dp)) // Space between sections
+            }
+        }
+
+        // "Future" Section
+        if (futureTasks.isNotEmpty()) {
+            item{
+            SectionHeader(title = "Future")
+                }
+            itemsIndexed(futureTasks){index, task ->
+                TaskItem(task = task)
+            }
+
+        }
+    }
+}
+@Composable
+fun SectionHeader(title: String) {
+    Column {
+        Text(
+            text = title,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            color = Color.Black
+        )
+        Divider(color = Color.Gray, thickness = 1.dp)
+    }
+}
+
+@Composable
+fun TaskList(tasks: List<Task>, modifier: Modifier = Modifier) {
     val scrollState = rememberLazyListState()
 
-    LaunchedEffect(Tasks) {
+    LaunchedEffect(tasks) {
         scrollState.scrollToItem(0)
     }
 
@@ -54,7 +108,7 @@ fun TaskList(Tasks: List<Task>, modifier: Modifier = Modifier) {
         modifier = modifier
             .fillMaxSize()
     ) {
-        itemsIndexed(Tasks) { index, task ->
+        itemsIndexed(tasks) { index, task ->
             TaskItem(task = task, index = index)
         }
     }
@@ -152,12 +206,12 @@ fun TaskItem(task: Task, index: Int = 0) {
 
 @Preview(showBackground = true)
 @Composable
-private fun TaskListPreview() {
-    TaskList(
-        Tasks = listOf(
+private fun TaskListScreenPreview() {
+    TaskListScreen(
+        tasks = listOf(
             Task(
                 name = "Homework - UX",
-                deadline = simpleDateFormat.parse("17-11-2024")!!,
+                deadline = simpleDateFormat.parse("11-11-2024")!!,
                 priority = TaskPriority.HIGH,
                 tag = TaskTag.SCHOOL,
                 completed = false
