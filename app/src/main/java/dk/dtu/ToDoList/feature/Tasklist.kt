@@ -83,8 +83,8 @@ fun TaskItem(task: Task, index: Int = 0) {
             contentDescription = "Priority Icon",
             colorFilter = ColorFilter.tint(priorityColor),
             modifier = Modifier
-                .size(20.dp)
-                .padding(end = 8.dp)
+                .size(24.dp)
+                .padding(end = 2.dp)
         )
 
         // Circle for completion status
