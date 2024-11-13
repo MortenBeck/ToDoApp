@@ -38,8 +38,43 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.foundation.border
 import androidx.compose.foundation.background
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
+import dk.dtu.ToDoList.ui.BottomNavBar
 
 
+
+@Composable
+fun BottomNavBar(
+    items: List<BottomNavItem>,
+    onItemClick: (BottomNavItem) -> Unit
+) {
+    BottomNavigation(
+        backgroundColor = Color.White,
+        contentColor = Color.Black
+    ) {
+        items.forEach { item ->
+            BottomNavigationItem(
+                selected = item.isSelected,
+                onClick = { onItemClick(item) },
+                icon = {
+                    Icon(
+                        painter = painterResource(id = item.icon),
+                        contentDescription = item.label
+                    )
+                },
+                label = { Text(text = item.label) }
+            )
+        }
+    }
+}
+
+
+data class BottomNavItem(
+    val label: String,
+    val icon: Int,
+    val isSelected: Boolean = false
+)
 
 @Composable
 fun TaskList(Tasks: List<Task>, modifier: Modifier = Modifier) {
