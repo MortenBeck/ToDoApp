@@ -17,7 +17,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.layout.VerticalAlignmentLine
 import dk.dtu.ToDoList.data.Task
 import dk.dtu.ToDoList.data.TaskTag
 import dk.dtu.ToDoList.data.TaskPriority
@@ -26,22 +25,14 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Text
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
 import dk.dtu.ToDoList.R
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.foundation.border
 import androidx.compose.foundation.background
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
-import dk.dtu.ToDoList.ui.BottomNavBar
-import androidx.compose.material.BottomNavigation
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 
