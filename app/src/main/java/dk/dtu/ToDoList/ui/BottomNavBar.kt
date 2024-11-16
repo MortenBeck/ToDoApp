@@ -10,6 +10,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 
+import androidx.compose.ui.tooling.preview.Preview
+
+
+import dk.dtu.ToDoList.R
+
 @Composable
 fun BottomNavBar(
     items: List<BottomNavItem>,
@@ -41,3 +46,14 @@ data class BottomNavItem(
     val isSelected: Boolean = false
 )
 
+
+@Preview(showBackground = true)
+@Composable
+fun BottomNavBarPreview() {
+    val items = listOf(
+        BottomNavItem("Home", R.drawable.ic_home_black_24dp, isSelected = true),
+        BottomNavItem("Favourites", R.drawable.favorites),
+        BottomNavItem("Planned", R.drawable.calender)
+    )
+    BottomNavBar(items = items, onItemClick = {})
+}
