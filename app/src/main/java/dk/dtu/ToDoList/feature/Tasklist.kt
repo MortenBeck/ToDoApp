@@ -41,7 +41,9 @@ import androidx.compose.foundation.background
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import dk.dtu.ToDoList.ui.BottomNavBar
-
+import androidx.compose.material.BottomNavigation
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 
 
 @Composable
@@ -49,12 +51,12 @@ fun BottomNavBar(
     items: List<BottomNavItem>,
     onItemClick: (BottomNavItem) -> Unit
 ) {
-    BottomNavigation(
-        backgroundColor = Color.White,
+    NavigationBar(
+        containerColor  = Color.White,
         contentColor = Color.Black
     ) {
         items.forEach { item ->
-            BottomNavigationItem(
+            NavigationBarItem(
                 selected = item.isSelected,
                 onClick = { onItemClick(item) },
                 icon = {
