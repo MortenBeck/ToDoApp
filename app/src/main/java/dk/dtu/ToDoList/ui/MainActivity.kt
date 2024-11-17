@@ -544,6 +544,9 @@ fun TasksForDate(date: LocalDate) {
 
 @Composable
 fun ProfileScreen() {
+    // State to control the visibility of the Task Statistics section
+    var showTaskStatistics by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -603,10 +606,72 @@ fun ProfileScreen() {
                 icon = R.drawable.favorite_grey,
                 title = "Favorites"
             )
+            // "Task Statistics" button toggles visibility of expanded stats
             ListItem(
                 icon = R.drawable.calender_grey,
-                title = "Task Statistics"
+                title = "Task Statistics",
+                onClick = { showTaskStatistics = !showTaskStatistics } // Toggle the visibility
             )
+        }
+
+        // Show Task Statistics if the button is clicked
+        if (showTaskStatistics) {
+            // Expanded Task Statistics Section
+            Text(
+                text = "Task Statistics",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(vertical = 16.dp)
+            )
+
+            // Priority Stats
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                StatsItem(label = "High Priority", value = "3")
+                StatsItem(label = "Medium Priority", value = "5")
+                StatsItem(label = "Low Priority", value = "4")
+            }
+
+            // Tag Stats
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                StatsItem(label = "Work", value = "5")
+                StatsItem(label = "Home", value = "3")
+                StatsItem(label = "School", value = "2")
+                StatsItem(label = "Pet", value = "2")
+            }
+
+            // Upcoming Tasks
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "Upcoming Tasks: 5",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+
+            // Task Progress (Completion Percentage)
+            val completionPercentage = (8 / 12f) * 100  // 8 completed out of 12 tasks
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "Progress: ${completionPercentage.toInt()}% Completed",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
         }
     }
 }
@@ -636,12 +701,13 @@ fun StatsItem(
 @Composable
 fun ListItem(
     icon: Int,
-    title: String
+    title: String,
+    onClick: () -> Unit = {}  // Add onClick parameter to handle button clicks
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { }
+            .clickable { onClick() }
             .padding(vertical = 12.dp, horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
