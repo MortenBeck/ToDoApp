@@ -196,6 +196,27 @@ private fun TaskListPreview() {
                 priority = TaskPriority.MEDIUM,
                 tag = TaskTag.WORK,
                 completed = true
+            ),
+            Task(
+                name = "Buy groceries",
+                deadline = simpleDateFormat.parse("20-11-2024")!!,
+                priority = TaskPriority.LOW,
+                tag = TaskTag.PRIVATE,
+                completed = false
+            ),
+            Task(
+                name = "Prepare presentation",
+                deadline = simpleDateFormat.parse("19-11-2024")!!,
+                priority = TaskPriority.HIGH,
+                tag = TaskTag.WORK,
+                completed = false
+            ),
+            Task(
+                name = "Morning run",
+                deadline = simpleDateFormat.parse("17-11-2024")!!,
+                priority = TaskPriority.LOW,
+                tag = TaskTag.SPORT,
+                completed = true
             )
         )
     )
