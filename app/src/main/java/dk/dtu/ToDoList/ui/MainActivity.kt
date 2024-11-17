@@ -38,6 +38,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import java.time.ZoneId
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.res.painterResource
+import androidx.compose.material3.Icon
+
+
 
 
 
@@ -537,13 +542,120 @@ fun TasksForDate(date: LocalDate) {
 }
 
 
-    @Composable
-    fun ProfileScreen() {
+@Composable
+fun ProfileScreen() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Profile Title
         Text(
-            text = "Profile Screen",
-            style = MaterialTheme.typography.headlineMedium,
+            text = "Profile",
+            style = MaterialTheme.typography.headlineLarge,
+            modifier = Modifier.padding(bottom = 24.dp)
+        )
+
+        // Profile Picture Placeholder
+        Box(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
+                .size(120.dp)
+                .background(
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    shape = CircleShape
+                )
+                .padding(bottom = 16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "VP",
+                style = MaterialTheme.typography.headlineLarge,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Profile Stats
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 16.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            StatsItem(label = "Total Tasks", value = "12")
+            StatsItem(label = "Completed", value = "8")
+            StatsItem(label = "Pending", value = "4")
+        }
+
+        // Settings Section
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 24.dp)
+        ) {
+            ListItem(
+                icon = R.drawable.profile_grey,
+                title = "Edit Profile"
+            )
+            ListItem(
+                icon = R.drawable.favorite_grey,
+                title = "Favorites"
+            )
+            ListItem(
+                icon = R.drawable.calender_grey,
+                title = "Task Statistics"
+            )
+        }
+    }
+}
+
+@Composable
+fun StatsItem(
+    label: String,
+    value: String
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.padding(horizontal = 8.dp)
+    ) {
+        Text(
+            text = value,
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.primary
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
+}
+
+@Composable
+fun ListItem(
+    icon: Int,
+    title: String
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { }
+            .padding(vertical = 12.dp, horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            painter = painterResource(id = icon),
+            contentDescription = null,
+            modifier = Modifier.size(24.dp),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Text(
+            text = title,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+    }
+}
