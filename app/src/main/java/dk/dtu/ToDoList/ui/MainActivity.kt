@@ -34,12 +34,12 @@ import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.time.temporal.WeekFields
 import java.util.*
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.painterResource
+import java.time.ZoneId
+
+
 
 
 
@@ -477,18 +477,40 @@ fun DayCell(
 
 @Composable
 fun TasksForDate(date: LocalDate) {
-    // Filter tasks for the selected date
-    val tasksForDate = remember(date) {
+    // Define tasks for each date (adjust this to your actual data source)
+    val allTasks = remember {
         listOf(
             Task(
-                name = "Meeting with team",
-                deadline = java.util.Date(),  // Convert LocalDate to Date as needed
+                name = "Homework - UX",
+                deadline = simpleDateFormat.parse("17-11-2024")!!,
                 priority = TaskPriority.HIGH,
-                tag = TaskTag.WORK,
+                tag = TaskTag.SCHOOL,
                 completed = false
-            )
+            ),
+            Task(
+                name = "Fix project at work",
+                deadline = simpleDateFormat.parse("18-11-2024")!!,
+                priority = TaskPriority.MEDIUM,
+                tag = TaskTag.WORK,
+                completed = true
+            ),
+            Task(
+                name = "Walk the dog",
+                deadline = simpleDateFormat.parse("17-11-2024")!!,
+                priority = TaskPriority.MEDIUM,
+                tag = TaskTag.PET,
+                completed = false
+            ),
             // Add more tasks as needed
         )
+    }
+
+    // Filter tasks for the selected date
+    val tasksForDate = remember(date) {
+        allTasks.filter { task ->
+            // Compare the task deadline with the selected date (only include tasks with matching dates)
+            task.deadline.toInstant().atZone(ZoneId.systemDefault()).toLocalDate() == date
+        }
     }
 
     Column {
@@ -498,12 +520,22 @@ fun TasksForDate(date: LocalDate) {
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
-        TaskList(
-            Tasks = tasksForDate,
-            modifier = Modifier.fillMaxWidth()
-        )
+        // Display tasks for the selected date
+        if (tasksForDate.isNotEmpty()) {
+            TaskList(
+                Tasks = tasksForDate,
+                modifier = Modifier.fillMaxWidth()
+            )
+        } else {
+            Text(
+                text = "No tasks for this day.",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(8.dp)
+            )
+        }
     }
 }
+
 
     @Composable
     fun ProfileScreen() {
