@@ -230,37 +230,51 @@ fun TaskListScreen() {
 
 @Composable
 fun FavouritesScreen() {
-    Text(
-        text = "Favourites Screen",
-        style = MaterialTheme.typography.headlineMedium,
+    // List of favorite tasks
+    val favouriteTasks = remember {
+        listOf(
+            Task(
+                name = "Walk the dog",
+                deadline = simpleDateFormat.parse("17-11-2024")!!,
+                priority = TaskPriority.MEDIUM,
+                tag = TaskTag.PET,
+                completed = false
+            ),
+            Task(
+                name = "Grocery Shopping",
+                deadline = simpleDateFormat.parse("18-11-2024")!!,
+                priority = TaskPriority.MEDIUM,
+                tag = TaskTag.HOME,
+                completed = false
+            ),
+            Task(
+                name = "Research christmas gifts",
+                deadline = simpleDateFormat.parse("12-12-2024")!!,
+                priority = TaskPriority.LOW,
+                tag = TaskTag.HOME,
+                completed = false
+            )
+        )
+    }
+
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
-    )
-
-    val favouriteTasks = remember (
-        Task(
-        name = "Walk the dog",
-        deadline = simpleDateFormat.parse("17-11-2024")!!,
-        priority = TaskPriority.MEDIUM,
-        tag = TaskTag.PET,
-        completed = false
-    ),
-        Task(
-            name = "Grocery Shopping",
-            deadline = simpleDateFormat.parse("18-11-2024")!!,
-            priority = TaskPriority.MEDIUM,
-            tag = TaskTag.HOME,
-            completed = false
-        ),
-        Task(
-            name = "Research christmas gifts",
-            deadline = simpleDateFormat.parse("12-12-2024")!!,
-            priority = TaskPriority.LOW,
-            tag = TaskTag.HOME,
-            completed = false
+    ) {
+        // Screen Title
+        Text(
+            text = "Favourites",
+            style = MaterialTheme.typography.headlineLarge,
+            modifier = Modifier.padding(bottom = 24.dp)
         )
-    )
+
+        // Favourites Task List
+        TaskList(
+            Tasks = favouriteTasks,
+            modifier = Modifier.weight(1f)
+        )
+    }
 }
 
 @Composable
