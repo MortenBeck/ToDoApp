@@ -6,7 +6,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -15,6 +14,15 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dk.dtu.ToDoList.R
+import androidx.compose.material3.Text
+import dk.dtu.ToDoList.data.Task
+import dk.dtu.ToDoList.data.TaskTag
+import dk.dtu.ToDoList.data.TaskPriority
+import dk.dtu.ToDoList.data.TasksRepository.simpleDateFormat
+import dk.dtu.ToDoList.feature.TaskList
+
+
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,21 +52,23 @@ fun ToDoApp() {
             )
         },
         content = { paddingValues ->
-            // Handle padding to avoid UI being hidden behind the bottom navigation
             NavHost(
                 navController = navController,
                 startDestination = "Tasks",
-                modifier = Modifier.fillMaxSize().padding(paddingValues)
+                modifier = Modifier
+                    .padding(paddingValues) // Correct: Applies padding to avoid overlap.
+                    .fillMaxSize()
             ) {
                 composable("Tasks") {
                     TaskListScreen()
                 }
                 composable("Profile") {
-                    ProfileScreen() // Replace with actual Profile screen composable
+                    ProfileScreen()
                 }
             }
         }
     )
+
 }
 
 @Composable
