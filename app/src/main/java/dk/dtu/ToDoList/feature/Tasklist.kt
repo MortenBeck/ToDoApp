@@ -147,12 +147,11 @@ fun TaskItem(task: Task, index: Int = 0) {
             )
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Image(
-                    painter = painterResource(id = R.drawable.calender), // replace with your calendar icon drawable ID
+                    painter = painterResource(id = R.drawable.calender_black),  // Use vector drawable ID here
                     contentDescription = "Calendar Icon",
-                    modifier = Modifier
-                        .size(16.dp)
-                        .padding(end = 4.dp)
+                    modifier = Modifier.size(24.dp)  // Adjust size as needed
                 )
+
 
                 // Deadline date
                 Text(
@@ -170,8 +169,9 @@ fun TaskItem(task: Task, index: Int = 0) {
         Spacer(modifier = Modifier.height(4.dp))
 
         Image(
-            painter = painterResource(id = R.drawable.favorite),
+            painter = painterResource(id = R.drawable.favorite_black), // Ensure it's a vector drawable
             contentDescription = "Favorite Icon",
+            modifier = Modifier.size(24.dp) // Modify the size if needed
         )
 
     }
