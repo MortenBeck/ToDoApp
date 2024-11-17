@@ -23,8 +23,6 @@ import dk.dtu.ToDoList.feature.TaskList
 import androidx.compose.ui.unit.dp
 
 
-
-
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -97,6 +95,7 @@ fun ToDoApp() {
 }
 
 
+
 @Composable
 fun TaskListScreen() {
     TaskList(
@@ -116,27 +115,20 @@ fun TaskListScreen() {
                 completed = true
             ),
             Task(
-                name = "Buy groceries",
-                deadline = simpleDateFormat.parse("20-11-2024")!!,
-                priority = TaskPriority.LOW,
-                tag = TaskTag.PRIVATE,
+                name = "Walk the dog",
+                deadline = simpleDateFormat.parse("17-11-2024")!!,
+                priority = TaskPriority.MEDIUM,
+                tag = TaskTag.PET,
                 completed = false
             ),
             Task(
-                name = "Prepare presentation",
-                deadline = simpleDateFormat.parse("19-11-2024")!!,
-                priority = TaskPriority.HIGH,
-                tag = TaskTag.WORK,
-                completed = false
-            ),
-            Task(
-                name = "Morning run",
+                name = "Cancel Netflix subscription",
                 deadline = simpleDateFormat.parse("17-11-2024")!!,
                 priority = TaskPriority.LOW,
-                tag = TaskTag.SPORT,
-                completed = true
-            )
+                tag = TaskTag.HOME,
+                completed = false
         )
+    )
     )
 }
 
