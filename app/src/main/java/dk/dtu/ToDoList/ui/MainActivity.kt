@@ -63,12 +63,24 @@ fun ToDoApp() {
 
 @Composable
 fun TaskListScreen() {
-    // Example Task List
-    LazyColumn {
-        items(20) { index ->
-            Text("Task #$index", style = MaterialTheme.typography.bodyLarge)
-        }
-    }
+    TaskList(
+        Tasks = listOf(
+            Task(
+                name = "Homework - UX",
+                deadline = simpleDateFormat.parse("17-11-2024")!!,
+                priority = TaskPriority.HIGH,
+                tag = TaskTag.SCHOOL,
+                completed = false
+            ),
+            Task(
+                name = "Fix project at work",
+                deadline = simpleDateFormat.parse("18-11-2024")!!,
+                priority = TaskPriority.MEDIUM,
+                tag = TaskTag.WORK,
+                completed = true
+            )
+        )
+    )
 }
 
 @Composable
