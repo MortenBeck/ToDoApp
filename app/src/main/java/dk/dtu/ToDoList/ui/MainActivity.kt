@@ -19,6 +19,28 @@ import dk.dtu.ToDoList.data.TasksRepository.simpleDateFormat
 import dk.dtu.ToDoList.feature.TaskList
 import dk.dtu.ToDoList.feature.BottomNavBar
 import dk.dtu.ToDoList.feature.BottomNavItem
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
+import java.time.LocalDate
+import java.time.YearMonth
+import java.time.format.DateTimeFormatter
+import java.time.temporal.WeekFields
+import java.util.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.painterResource
+
 
 
 
@@ -277,24 +299,219 @@ fun FavouritesScreen() {
     }
 }
 
+
+
 @Composable
 fun PlannedScreen() {
-    Text(
-        text = "Planned Screen",
-        style = MaterialTheme.typography.headlineMedium,
+    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
+    var currentMonth by remember { mutableStateOf(YearMonth.now()) }
+
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
-    )
+    ) {
+        // Title
+        Text(
+            text = "Planned",
+            style = MaterialTheme.typography.headlineLarge,
+            modifier = Modifier.padding(bottom = 24.dp)
+        )
+
+        // Calendar
+        Calendar(
+            selectedDate = selectedDate,
+            currentMonth = currentMonth,
+            onDateSelected = { selectedDate = it },
+            onMonthChanged = { currentMonth = it }
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Tasks for selected date
+        TasksForDate(selectedDate)
+    }
 }
 
 @Composable
-fun ProfileScreen() {
-    Text(
-        text = "Profile Screen",
-        style = MaterialTheme.typography.headlineMedium,
+fun Calendar(
+    selectedDate: LocalDate,
+    currentMonth: YearMonth,
+    onDateSelected: (LocalDate) -> Unit,
+    onMonthChanged: (YearMonth) -> Unit
+) {
+    Column(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxWidth()
+            .background(
+                color = MaterialTheme.colorScheme.surface,
+                shape = MaterialTheme.shapes.medium
+            )
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outline,
+                shape = MaterialTheme.shapes.medium
+            )
             .padding(16.dp)
-    )
+    ) {
+        // Month navigation
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = { onMonthChanged(currentMonth.minusMonths(1)) }) {
+                Text("←")
+            }
+
+            Text(
+                text = currentMonth.format(DateTimeFormatter.ofPattern("MMMM yyyy")),
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            IconButton(onClick = { onMonthChanged(currentMonth.plusMonths(1)) }) {
+                Text("→")
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Weekday headers
+        Row(modifier = Modifier.fillMaxWidth()) {
+            val daysOfWeek = WeekFields.of(Locale.getDefault()).firstDayOfWeek.let { firstDay ->
+                (0..6).map { firstDay.plus(it.toLong()) }
+            }
+
+            daysOfWeek.forEach { dayOfWeek ->
+                Text(
+                    text = dayOfWeek.getDisplayName(java.time.format.TextStyle.SHORT, Locale.getDefault()),
+                    modifier = Modifier.weight(1f),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.labelMedium
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Calendar grid
+        val days = mutableListOf<LocalDate>()
+        val firstOfMonth = currentMonth.atDay(1)
+        val lastOfMonth = currentMonth.atEndOfMonth()
+
+        // Add padding days from previous month
+        val firstDayOfWeek = WeekFields.of(Locale.getDefault()).firstDayOfWeek
+        var current = firstOfMonth
+        while (current.dayOfWeek != firstDayOfWeek) {
+            current = current.minusDays(1)
+            days.add(0, current)
+        }
+
+        // Add all days of current month
+        current = firstOfMonth
+        while (!current.isAfter(lastOfMonth)) {
+            days.add(current)
+            current = current.plusDays(1)
+        }
+
+        // Add padding days from next month
+        current = lastOfMonth.plusDays(1)
+        while (days.size < 42) { // 6 rows of 7 days
+            days.add(current)
+            current = current.plusDays(1)
+        }
+
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(7),
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            items(days) { date ->
+                DayCell(
+                    date = date,
+                    isSelected = date == selectedDate,
+                    isCurrentMonth = date.month == currentMonth.month,
+                    onDateSelected = onDateSelected
+                )
+            }
+        }
+    }
 }
+
+@Composable
+fun DayCell(
+    date: LocalDate,
+    isSelected: Boolean,
+    isCurrentMonth: Boolean,
+    onDateSelected: (LocalDate) -> Unit
+) {
+    val isToday = date == LocalDate.now()
+
+    Box(
+        modifier = Modifier
+            .aspectRatio(1f)
+            .clip(MaterialTheme.shapes.small)
+            .background(
+                when {
+                    isSelected -> MaterialTheme.colorScheme.primary
+                    isToday -> MaterialTheme.colorScheme.primaryContainer
+                    else -> Color.Transparent
+                }
+            )
+            .clickable { onDateSelected(date) }
+            .padding(4.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = date.dayOfMonth.toString(),
+            style = MaterialTheme.typography.bodyMedium,
+            color = when {
+                isSelected -> MaterialTheme.colorScheme.onPrimary
+                !isCurrentMonth -> MaterialTheme.colorScheme.outline
+                else -> MaterialTheme.colorScheme.onSurface
+            }
+        )
+    }
+}
+
+@Composable
+fun TasksForDate(date: LocalDate) {
+    // Filter tasks for the selected date
+    val tasksForDate = remember(date) {
+        listOf(
+            Task(
+                name = "Meeting with team",
+                deadline = java.util.Date(),  // Convert LocalDate to Date as needed
+                priority = TaskPriority.HIGH,
+                tag = TaskTag.WORK,
+                completed = false
+            )
+            // Add more tasks as needed
+        )
+    }
+
+    Column {
+        Text(
+            text = "Tasks for ${date.format(DateTimeFormatter.ofPattern("MMM d, yyyy"))}",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        TaskList(
+            Tasks = tasksForDate,
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+}
+
+    @Composable
+    fun ProfileScreen() {
+        Text(
+            text = "Profile Screen",
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        )
+    }
