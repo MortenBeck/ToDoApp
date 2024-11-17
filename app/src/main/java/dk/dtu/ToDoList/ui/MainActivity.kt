@@ -20,6 +20,7 @@ import dk.dtu.ToDoList.data.TaskTag
 import dk.dtu.ToDoList.data.TaskPriority
 import dk.dtu.ToDoList.data.TasksRepository.simpleDateFormat
 import dk.dtu.ToDoList.feature.TaskList
+import androidx.compose.ui.unit.dp
 
 
 
@@ -43,6 +44,8 @@ fun ToDoApp() {
             BottomNavBar(
                 items = listOf(
                     BottomNavItem("Tasks", R.drawable.ic_home_black_24dp, isSelected = currentScreen.value == "Tasks"),
+                    BottomNavItem("Favourites", R.drawable.favorite, isSelected = currentScreen.value == "Favourites"),
+                    BottomNavItem("Planned", R.drawable.favorites, isSelected = currentScreen.value == "Planned"),
                     BottomNavItem("Profile", R.drawable.favorite, isSelected = currentScreen.value == "Profile")
                 ),
                 onItemClick = { item ->
@@ -55,12 +58,16 @@ fun ToDoApp() {
             NavHost(
                 navController = navController,
                 startDestination = "Tasks",
-                modifier = Modifier
-                    .padding(paddingValues) // Correct: Applies padding to avoid overlap.
-                    .fillMaxSize()
+                modifier = Modifier.fillMaxSize().padding(paddingValues)
             ) {
                 composable("Tasks") {
                     TaskListScreen()
+                }
+                composable("Favourites") {
+                    FavouritesScreen()
+                }
+                composable("Planned") {
+                    PlannedScreen()
                 }
                 composable("Profile") {
                     ProfileScreen()
@@ -68,6 +75,7 @@ fun ToDoApp() {
             }
         }
     )
+
 
 }
 
@@ -115,7 +123,29 @@ fun TaskListScreen() {
 }
 
 @Composable
-fun ProfileScreen() {
-    // Placeholder for Profile screen
-    Text("Profile Screen", style = MaterialTheme.typography.bodyLarge)
+fun FavouritesScreen() {
+    Text(
+        text = "Favourites Screen",
+        style = MaterialTheme.typography.headlineMedium,
+        modifier = Modifier.fillMaxSize().padding(16.dp)
+    )
 }
+
+@Composable
+fun PlannedScreen() {
+    Text(
+        text = "Planned Screen",
+        style = MaterialTheme.typography.headlineMedium,
+        modifier = Modifier.fillMaxSize().padding(16.dp)
+    )
+}
+
+@Composable
+fun ProfileScreen() {
+    Text(
+        text = "Profile Screen",
+        style = MaterialTheme.typography.headlineMedium,
+        modifier = Modifier.fillMaxSize().padding(16.dp)
+    )
+}
+
