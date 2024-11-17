@@ -43,14 +43,41 @@ fun ToDoApp() {
         bottomBar = {
             BottomNavBar(
                 items = listOf(
-                    BottomNavItem("Tasks", R.drawable.ic_home_black_24dp, isSelected = currentScreen.value == "Tasks"),
-                    BottomNavItem("Favourites", R.drawable.favorite, isSelected = currentScreen.value == "Favourites"),
-                    BottomNavItem("Planned", R.drawable.favorites, isSelected = currentScreen.value == "Planned"),
-                    BottomNavItem("Profile", R.drawable.favorite, isSelected = currentScreen.value == "Profile")
+                    BottomNavItem(
+                        label = "Tasks",
+                        icon = R.drawable.home_grey,
+                        activeIcon = R.drawable.home_black,
+                        isSelected = currentScreen.value == "Tasks"
+                    ),
+                    BottomNavItem(
+                        label = "Favourites",
+                        icon = R.drawable.favorite_grey,
+                        activeIcon = R.drawable.favorite_black,
+                        isSelected = currentScreen.value == "Favourites"
+                    ),
+                    BottomNavItem(
+                        label = "Planned",
+                        icon = R.drawable.calender_grey,
+                        activeIcon = R.drawable.calender_black,
+                        isSelected = currentScreen.value == "Planned"
+                    ),
+                    BottomNavItem(
+                        label = "Profile",
+                        icon = R.drawable.profile_grey,
+                        activeIcon = R.drawable.profile_black,
+                        isSelected = currentScreen.value == "Profile"
+                    )
                 ),
                 onItemClick = { item ->
                     currentScreen.value = item.label
-                    navController.navigate(item.label)
+                    navController.navigate(item.label) {
+                        // Avoid multiple copies of the same destination on back stack
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
                 }
             )
         },
@@ -60,24 +87,15 @@ fun ToDoApp() {
                 startDestination = "Tasks",
                 modifier = Modifier.fillMaxSize().padding(paddingValues)
             ) {
-                composable("Tasks") {
-                    TaskListScreen()
-                }
-                composable("Favourites") {
-                    FavouritesScreen()
-                }
-                composable("Planned") {
-                    PlannedScreen()
-                }
-                composable("Profile") {
-                    ProfileScreen()
-                }
+                composable("Tasks") { TaskListScreen() }
+                composable("Favourites") { FavouritesScreen() }
+                composable("Planned") { PlannedScreen() }
+                composable("Profile") { ProfileScreen() }
             }
         }
     )
-
-
 }
+
 
 @Composable
 fun TaskListScreen() {
