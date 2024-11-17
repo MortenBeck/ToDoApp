@@ -33,8 +33,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.border
 import androidx.compose.foundation.background
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+
 
 
 @Composable
@@ -80,13 +82,15 @@ fun TaskList(Tasks: List<Task>, modifier: Modifier = Modifier) {
     LazyColumn(
         state = scrollState,
         modifier = modifier
-            .fillMaxSize()
+            .fillMaxWidth() // Changed from fillMaxSize
+            .heightIn(max = 300.dp) // Add a maximum height
     ) {
         itemsIndexed(Tasks) { index, task ->
             TaskItem(task = task, index = index)
         }
     }
 }
+
 
 @Composable
 fun TaskItem(task: Task, index: Int = 0) {
@@ -176,7 +180,6 @@ fun TaskItem(task: Task, index: Int = 0) {
 
     }
 }
-
 
 @Preview(showBackground = true)
 @Composable

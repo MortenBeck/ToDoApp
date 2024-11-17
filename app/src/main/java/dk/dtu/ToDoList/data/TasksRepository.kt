@@ -10,8 +10,7 @@ object TasksRepository {
     val simpleDateFormat = SimpleDateFormat("dd-MM-yyyy", Locale.US)
 
     // In a real app, this would be coming from a data source like a database
-    val tasks = flowOf(
-        listOf(
+    val todayTasks = listOf(
             Task(
                 name = "Homework - UX",
                 deadline = simpleDateFormat.parse("17-11-2024")!!,
@@ -39,7 +38,11 @@ object TasksRepository {
                 priority = TaskPriority.LOW,
                 tag = TaskTag.HOME,
                 completed = false
-            ),
+            ))
+
+
+
+    val futureTasks = listOf(
             Task(
                 name = "Call mechanic",
                 deadline = simpleDateFormat.parse("18-11-2024")!!,
@@ -96,6 +99,28 @@ object TasksRepository {
                 tag = TaskTag.HOME,
                 completed = false
             )
+        )
+    val favouriteTasks = listOf(
+        Task(
+            name = "Walk the dog",
+            deadline = simpleDateFormat.parse("17-11-2024")!!,
+            priority = TaskPriority.MEDIUM,
+            tag = TaskTag.PET,
+            completed = false
+        ),
+        Task(
+            name = "Grocery Shopping",
+            deadline = simpleDateFormat.parse("18-11-2024")!!,
+            priority = TaskPriority.MEDIUM,
+            tag = TaskTag.HOME,
+            completed = false
+        ),
+        Task(
+            name = "Research christmas gifts",
+            deadline = simpleDateFormat.parse("12-12-2024")!!,
+            priority = TaskPriority.LOW,
+            tag = TaskTag.HOME,
+            completed = false
         )
     )
 }
