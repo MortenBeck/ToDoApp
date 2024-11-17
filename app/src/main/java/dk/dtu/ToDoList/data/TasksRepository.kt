@@ -100,4 +100,27 @@ object TasksRepository {
                 completed = false
             )
         )
+    val favouriteTasks = listOf(
+        Task(
+            name = "Walk the dog",
+            deadline = simpleDateFormat.parse("17-11-2024")!!,
+            priority = TaskPriority.MEDIUM,
+            tag = TaskTag.PET,
+            completed = false
+        ),
+        Task(
+            name = "Grocery Shopping",
+            deadline = simpleDateFormat.parse("18-11-2024")!!,
+            priority = TaskPriority.MEDIUM,
+            tag = TaskTag.HOME,
+            completed = false
+        ),
+        Task(
+            name = "Research christmas gifts",
+            deadline = simpleDateFormat.parse("12-12-2024")!!,
+            priority = TaskPriority.LOW,
+            tag = TaskTag.HOME,
+            completed = false
+        )
+    )
 }
