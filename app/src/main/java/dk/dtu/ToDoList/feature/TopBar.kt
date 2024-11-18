@@ -23,7 +23,7 @@ fun TopBar(){
         horizontalArrangement = Arrangement.SpaceBetween
     ){
         Image(
-            painter = painterResource(id = R.drawable.temp_profile),
+            painter = painterResource(id = R.drawable.profile_black),
             contentDescription = "Profile Icon",
             modifier = Modifier.size(32.dp)
         )
