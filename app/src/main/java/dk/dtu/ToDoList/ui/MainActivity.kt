@@ -41,12 +41,7 @@ import java.time.ZoneId
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.material3.Icon
-
-
-
-
-
-
+import dk.dtu.ToDoList.feature.TopBar
 
 
 class MainActivity : ComponentActivity() {
@@ -214,12 +209,12 @@ fun TaskListScreen() {
             )
         )
     }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
+        TopBar()
         // App Title
         Text(
             text = "To-Do List",

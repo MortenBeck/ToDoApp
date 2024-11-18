@@ -23,13 +23,18 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material.MaterialTheme
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.sp
 
 
 @Composable
-fun TopBar(){
+fun TopBar(searchText: String, onSearchTextChange: (String) -> Unit) {
     var isSearchActive by remember { mutableStateOf(false) }
     var searchText by remember { mutableStateOf("") }
 
@@ -37,13 +42,17 @@ fun TopBar(){
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
+        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
-    ){
+    ) {
+        // Profile Icon
         Image(
             painter = painterResource(id = R.drawable.profile_black),
             contentDescription = "Profile Icon",
             modifier = Modifier.size(32.dp)
         )
+
+        // Search Bar
         AnimatedVisibility(
             visible = isSearchActive,
             enter = slideInHorizontally(initialOffsetX = { it }) + fadeIn(),
@@ -51,19 +60,29 @@ fun TopBar(){
         ) {
             BasicTextField(
                 value = searchText,
-                onValueChange = { searchText = it },
+                onValueChange = onSearchTextChange, // Pass the text change callback
                 modifier = Modifier
-                    .fillMaxWidth(0.7f) // Adjust size as needed
-                    .padding(end = 8.dp),
-                textStyle = TextStyle(color = Color.Black)
+                    .fillMaxWidth(0.8f) // Adjust width
+                    .height(40.dp) // Adjust height
+                    .background(
+                        color = Color.LightGray,
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
+                    )
+                    .padding(horizontal = 12.dp), // Inner padding
+                textStyle = TextStyle(color = Color.Black),
+                singleLine = true
             )
         }
-        IconButton(onClick = {isSearchActive = !isSearchActive}) {
+
+        // Search Icon Button
+        IconButton(
+            onClick = { isSearchActive = !isSearchActive },
+            modifier = Modifier.padding(start = if (isSearchActive) 8.dp else 0.dp)
+        ) {
             Image(
                 painter = painterResource(id = R.drawable.search),
                 contentDescription = "Search Icon",
                 modifier = Modifier.size(32.dp)
-
             )
         }
     }
@@ -72,5 +91,8 @@ fun TopBar(){
 @Preview(showBackground = true)
 @Composable
 private fun TopBarPreview(){
-    TopBar()
+    MaterialTheme {
+        TopBar(searchText = searchText, onSearchTextChange = { searchText = it })
+
+    }
 }
