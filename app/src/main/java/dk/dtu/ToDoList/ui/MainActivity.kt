@@ -114,6 +114,7 @@ fun ToDoApp() {
 @Composable
 fun TaskListScreen() {
     // Define today's tasks
+    var searchText by remember { mutableStateOf("") }
     val todayTasks = remember {
         listOf(
             Task(
@@ -214,7 +215,11 @@ fun TaskListScreen() {
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        TopBar()
+        TopBar(
+            searchText = searchText,
+            onSearchTextChange = { searchText = it },
+            onProfileClick = {}
+        )
         // App Title
         Text(
             text = "To-Do List",
