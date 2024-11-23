@@ -41,8 +41,10 @@ import java.time.ZoneId
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.material3.Icon
+import dk.dtu.ToDoList.data.TasksRepository.Tasks
 import dk.dtu.ToDoList.data.TasksRepository.todayTasks
 import dk.dtu.ToDoList.feature.FavouritesScreen
+import dk.dtu.ToDoList.feature.HomeScreen
 import dk.dtu.ToDoList.feature.PlannedScreen
 import dk.dtu.ToDoList.feature.ProfileScreen
 import dk.dtu.ToDoList.feature.TaskListScreen
@@ -108,7 +110,7 @@ fun ToDoApp() {
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            composable("Tasks") { TaskListScreen(todayTasks) }
+            composable("Tasks") { HomeScreen(Tasks) }
             composable("Favourites") { FavouritesScreen() }
             composable("Planned") { PlannedScreen() }
             composable("Profile") { ProfileScreen() }
