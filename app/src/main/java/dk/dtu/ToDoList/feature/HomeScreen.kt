@@ -9,7 +9,11 @@ import dk.dtu.ToDoList.data.Task
 @Composable
 fun HomeScreen(tasks: List<Task>){
     Column (modifier = Modifier.fillMaxSize()) {
-        TopBar()
+        TopBar(
+            searchText = searchText,
+            onSearchTextChange = { searchText = it },
+            onProfileClick = {}
+        )
         TaskListScreen(tasks)
     }
 }
