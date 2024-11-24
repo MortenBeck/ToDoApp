@@ -7,16 +7,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.DateRange // Substitute for CalendarToday
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import dk.dtu.ToDoList.data.Task
+import dk.dtu.ToDoList.data.TaskPriority
+import dk.dtu.ToDoList.data.TaskTag
+import java.util.Date
 
 @Composable
-fun HomeScreen(tasks: List<Task>) {
+fun HomeScreen(tasks: MutableList<Task>) {
     var searchText by remember { mutableStateOf("") }
     var showDialog by remember { mutableStateOf(false) }
     var taskName by remember { mutableStateOf("") }
@@ -33,6 +36,7 @@ fun HomeScreen(tasks: List<Task>) {
             TaskListScreen(tasks)
         }
 
+        // Add button
         IconButton(
             onClick = { showDialog = true },
             modifier = Modifier
@@ -49,11 +53,14 @@ fun HomeScreen(tasks: List<Task>) {
                     imageVector = Icons.Default.Add,
                     contentDescription = "Add Task",
                     tint = MaterialTheme.colors.onPrimary,
-                    modifier = Modifier.padding(12.dp).size(24.dp)
+                    modifier = Modifier
+                        .padding(12.dp)
+                        .size(24.dp)
                 )
             }
         }
 
+        // Add Task Dialog
         if (showDialog) {
             Dialog(onDismissRequest = { showDialog = false }) {
                 Surface(
@@ -72,13 +79,17 @@ fun HomeScreen(tasks: List<Task>) {
                             modifier = Modifier.padding(bottom = 16.dp)
                         )
 
+                        // Task Name
                         OutlinedTextField(
                             value = taskName,
                             onValueChange = { taskName = it },
                             label = { Text("Task Name") },
-                            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 16.dp)
                         )
 
+                        // Priority Level
                         Column(modifier = Modifier.padding(bottom = 16.dp)) {
                             Text(
                                 text = "Priority Level",
@@ -95,6 +106,7 @@ fun HomeScreen(tasks: List<Task>) {
                             }
                         }
 
+                        // Favorite and Calendar Row
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -102,6 +114,7 @@ fun HomeScreen(tasks: List<Task>) {
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
+                            // Favorite Icon Button
                             IconButton(onClick = { isFavorite = !isFavorite }) {
                                 Icon(
                                     imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
@@ -110,9 +123,12 @@ fun HomeScreen(tasks: List<Task>) {
                                 )
                             }
 
-                            Button(onClick = { /* TODO: Calendar functionality */ }) {
+                            // Add to Calendar Button
+                            Button(
+                                onClick = { /* TODO: Implement calendar functionality */ }
+                            ) {
                                 Icon(
-                                    imageVector = Icons.Default.DateRange, // Substitute icon
+                                    imageVector = Icons.Default.DateRange, // Using DateRange icon
                                     contentDescription = "Calendar",
                                     modifier = Modifier.size(20.dp)
                                 )
@@ -121,6 +137,7 @@ fun HomeScreen(tasks: List<Task>) {
                             }
                         }
 
+                        // Action Buttons
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.End
@@ -134,13 +151,28 @@ fun HomeScreen(tasks: List<Task>) {
                                 Text("Cancel")
                             }
                             Spacer(modifier = Modifier.width(8.dp))
-                            Button(onClick = {
-                                // TODO: Add task logic
-                                showDialog = false
-                                taskName = ""
-                                priorityLevel = "Low"
-                                isFavorite = false
-                            }) {
+                            Button(
+                                onClick = {
+                                    // Add Task Logic
+                                    if (taskName.isNotBlank()) {
+                                        tasks.add(
+                                            Task(
+                                                name = taskName,
+                                                priority = TaskPriority.valueOf(priorityLevel.uppercase()), // Convert "Low"/"Mid"/"High" to enum
+                                                isFavorite = isFavorite,
+                                                deadline = Date(), // Set the current date as the deadline
+                                                tag = TaskTag.WORK, // You can change this based on user input
+                                                completed = false // Task is initially not completed
+                                            )
+                                        )
+                                    }
+                                    // Reset dialog fields
+                                    showDialog = false
+                                    taskName = ""
+                                    priorityLevel = "Low"
+                                    isFavorite = false
+                                }
+                            ) {
                                 Text("Add Task")
                             }
                         }
@@ -176,3 +208,4 @@ private fun PriorityButton(
         )
     }
 }
+

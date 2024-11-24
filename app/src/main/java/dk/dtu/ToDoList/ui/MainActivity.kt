@@ -65,6 +65,9 @@ fun ToDoApp() {
     val navController = rememberNavController()
     val currentScreen = remember { mutableStateOf("Tasks") }
 
+    // Convert Tasks to MutableList
+    val mutableTasks = Tasks.toMutableList()  // Make sure it's a mutable list
+
     Scaffold(
         bottomBar = {
             BottomNavBar(
@@ -110,7 +113,7 @@ fun ToDoApp() {
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            composable("Tasks") { HomeScreen(Tasks) }
+            composable("Tasks") { HomeScreen(tasks = mutableTasks) }  // Pass mutable list here
             composable("Favourites") { FavouritesScreen() }
             composable("Planned") { PlannedScreen() }
             composable("Profile") { ProfileScreen() }
