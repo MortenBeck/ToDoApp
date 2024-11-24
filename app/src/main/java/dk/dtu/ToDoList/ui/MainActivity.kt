@@ -34,37 +34,25 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun ToDoApp() {
     val navController = rememberNavController()
-    val mutableTasks = remember { mutableStateListOf<Task>() } // Use a state list for recomposition
-    val combinedTasks = remember { mutableStateListOf<Task>() }
 
-    LaunchedEffect(Unit) {
-        combinedTasks.addAll(TasksRepository.Tasks)
-    }
+    // Create mutableTasks from TasksRepository.Tasks
+    val mutableTasks = remember { mutableStateListOf<Task>().apply { addAll(TasksRepository.Tasks) } }
 
     Scaffold(
         bottomBar = {
             BottomNavBar(
                 items = listOf(
-                    BottomNavItem(
-                        label = "Tasks",
-                        icon = R.drawable.home_grey,
-                        isSelected = true
-                    ),
-                    BottomNavItem(
-                        label = "Favourites",
-                        icon = R.drawable.favorite_grey
-                    ),
-                    BottomNavItem(
-                        label = "Planned",
-                        icon = R.drawable.calender_grey
-                    ),
-                    BottomNavItem(
-                        label = "Profile",
-                        icon = R.drawable.profile_grey
-                    )
+                    BottomNavItem("Tasks", R.drawable.home_grey),
+                    BottomNavItem("Favourites", R.drawable.favorite_grey),
+                    BottomNavItem("Planned", R.drawable.calender_grey),
+                    BottomNavItem("Profile", R.drawable.profile_grey),
                 ),
                 onItemClick = { item ->
-                    navController.navigate(item.label)
+                    navController.navigate(item.label) {
+                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
                 }
             )
         }
@@ -78,18 +66,27 @@ fun ToDoApp() {
         ) {
             composable("Tasks") {
                 HomeScreen(
-                    tasks = combinedTasks, // Pass combined list of tasks
-                    mutableTasks = mutableTasks,
+                    tasks = mutableTasks,
                     navController = navController
                 )
             }
-            composable("AddToCalendar/{taskName}") { backStackEntry ->
-                val taskName = backStackEntry.arguments?.getString("taskName") ?: "Untitled Task"
+            composable("Favourites") {
+                FavouritesScreen()
+            }
+            composable("Planned") {
+                PlannedScreen()
+            }
+            composable("Profile") {
+                ProfileScreen()
+            }
+            composable("addToCalendar?taskName={taskName}") { backStackEntry ->
+                val taskName = backStackEntry.arguments?.getString("taskName") ?: "New Task"
+
                 AddToCalendarPage(
                     navController = navController,
                     taskName = taskName,
                     onTaskAdded = { newTask ->
-                        combinedTasks.add(newTask) // Add task to the combined list
+                        mutableTasks.add(newTask) // Add the task to the mutable list
                     }
                 )
             }

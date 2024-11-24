@@ -13,21 +13,13 @@ import androidx.compose.material.icons.Icons
 import androidx.navigation.NavController
 
 @Composable
-fun HomeScreen(
-    tasks: List<Task>,
-    mutableTasks: MutableList<Task>,
-    navController: NavController
-) {
+fun HomeScreen(tasks: MutableList<Task>, navController: NavController) {
     var showDialog by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            TopBar(
-                searchText = "",
-                onSearchTextChange = {},
-                onProfileClick = {}
-            )
-            TaskListScreen(tasks) // Pass tasks directly
+        Column {
+            TopBar(searchText = "", onSearchTextChange = {}, onProfileClick = {})
+            TaskListScreen(tasks)
         }
 
         IconButton(
@@ -53,14 +45,15 @@ fun HomeScreen(
             }
         }
 
-        AddTaskDialog(
-            showDialog = showDialog,
-            navController = navController,
-            onDismiss = { showDialog = false },
-            onTaskAdded = { newTask ->
-                mutableTasks.add(newTask)
-                showDialog = false
-            }
-        )
-    }
+        if (showDialog) {
+            AddTaskDialog(
+                showDialog = showDialog,
+                navController = navController,
+                onDismiss = { showDialog = false },
+                onTaskAdded = { newTask ->
+                    tasks.add(newTask)
+                }
+            )
+        }
+}
 }

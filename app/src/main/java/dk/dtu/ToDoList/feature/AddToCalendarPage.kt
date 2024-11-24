@@ -31,7 +31,7 @@ import java.util.Date
 fun AddToCalendarPage(
     navController: NavController,
     taskName: String,
-    onTaskAdded: (Task) -> Unit
+    onTaskAdded: (Task) -> Unit // Ensures we can add the task from this page
 ) {
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
@@ -42,9 +42,9 @@ fun AddToCalendarPage(
             .padding(16.dp)
     ) {
         Text(
-            text = "Add to Calendar",
+            text = "Add to Calendar for $taskName",
             style = MaterialTheme.typography.headlineLarge,
-            modifier = Modifier.padding(bottom = 24.dp)
+            modifier = Modifier.padding(bottom = 16.dp)
         )
 
         Calendar(
@@ -62,9 +62,7 @@ fun AddToCalendarPage(
                     name = taskName,
                     priority = TaskPriority.LOW, // Default priority
                     isFavorite = false,
-                    deadline = Date.from(
-                        selectedDate.atStartOfDay(ZoneId.systemDefault()).toInstant()
-                    ),
+                    deadline = Date.from(selectedDate.atStartOfDay(ZoneId.systemDefault()).toInstant()),
                     tag = TaskTag.WORK,
                     completed = false
                 )
@@ -73,7 +71,8 @@ fun AddToCalendarPage(
             },
             modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
-            Text(text = "Add Task")
+            Text("Add Task")
         }
     }
 }
+
