@@ -96,13 +96,6 @@ fun TaskList(Tasks: List<Task>, modifier: Modifier = Modifier) {
 fun TaskItem(task: Task, index: Int = 0) {
     val dateFormatter = SimpleDateFormat("dd-MM", Locale.US)
 
-    // Determine color for priority based on task priority level
-    val priorityColor = when (task.priority) {
-        TaskPriority.HIGH -> Color.Red
-        TaskPriority.MEDIUM -> Color.Yellow
-        TaskPriority.LOW -> Color.Green
-    }
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -110,76 +103,59 @@ fun TaskItem(task: Task, index: Int = 0) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Priority Icon
+        val priorityColor = when (task.priority) {
+            TaskPriority.HIGH -> Color.Red
+            TaskPriority.MEDIUM -> Color.Yellow
+            TaskPriority.LOW -> Color.Green
+        }
         Image(
-            painter = painterResource(id = R.drawable.priority), // replace with your priority icon
+            painter = painterResource(id = R.drawable.priority),
             contentDescription = "Priority Icon",
             colorFilter = ColorFilter.tint(priorityColor),
             modifier = Modifier
                 .size(24.dp)
-                .padding(end = 2.dp)
+                .padding(end = 8.dp)
         )
 
-        // Circle for completion status
-        Box(
-            modifier = Modifier
-                .size(24.dp)
-                .border(1.dp, Color.Black, CircleShape)
-                .background(if (task.completed) Color.LightGray else Color.Transparent, CircleShape)
-                .padding(2.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            if (task.completed) {
-                Text(
-                    text = "✓", // Unicode checkmark
-                    color = Color.Black,
-                    fontSize = 16.sp
-                )
-            }
-        }
-
-        // Task details (name and deadline) in a column
+        // Task details in a column
         Column(
             modifier = Modifier
                 .padding(start = 8.dp)
                 .weight(1f)
         ) {
-            // Task name
+            // Display only the task title
             Text(
-                text = task.name,
+                text = task.name, // Ensure this is always the title
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
             )
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Image(
-                    painter = painterResource(id = R.drawable.calender_black),  // Use vector drawable ID here
-                    contentDescription = "Calendar Icon",
-                    modifier = Modifier.size(24.dp)  // Adjust size as needed
-                )
+            if (task.deadline.time != 0L) { // Check if a deadline exists
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Image(
+                        painter = painterResource(id = R.drawable.calender_black),
+                        contentDescription = "Calendar Icon",
+                        modifier = Modifier.size(24.dp)
+                    )
 
-
-                // Deadline date
-                Text(
-                    text = dateFormatter.format(task.deadline),
-                    fontSize = 14.sp,
-                    color = Color.Gray
-                )
+                    // Deadline date
+                    Text(
+                        text = dateFormatter.format(task.deadline),
+                        fontSize = 14.sp,
+                        color = Color.Gray
+                    )
+                }
             }
         }
-        Image(
-            painter = painterResource(id = R.drawable.work),
-            contentDescription = "Tag Icon",
-            modifier = Modifier.size(16.dp),
-        )
-        Spacer(modifier = Modifier.height(4.dp))
 
+        // Optional icons for task actions (e.g., favorite, tag)
         Image(
-            painter = painterResource(id = R.drawable.favorite_black), // Ensure it's a vector drawable
+            painter = painterResource(id = R.drawable.favorite_black),
             contentDescription = "Favorite Icon",
-            modifier = Modifier.size(24.dp) // Modify the size if needed
+            modifier = Modifier.size(24.dp)
         )
-
     }
 }
+
 
 @Preview(showBackground = true)
 @Composable

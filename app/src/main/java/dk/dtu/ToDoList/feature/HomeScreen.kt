@@ -9,13 +9,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dk.dtu.ToDoList.data.Task
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.Icons
+import androidx.navigation.NavController
 
 @Composable
-fun HomeScreen(tasks: MutableList<Task>) {
+fun HomeScreen(
+    tasks: List<Task>,
+    mutableTasks: MutableList<Task>,
+    navController: NavController
+) {
     var showDialog by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -25,10 +27,9 @@ fun HomeScreen(tasks: MutableList<Task>) {
                 onSearchTextChange = {},
                 onProfileClick = {}
             )
-            TaskListScreen(tasks)
+            TaskListScreen(tasks) // Pass tasks directly
         }
 
-        // Add Button
         IconButton(
             onClick = { showDialog = true },
             modifier = Modifier
@@ -52,11 +53,14 @@ fun HomeScreen(tasks: MutableList<Task>) {
             }
         }
 
-        // Add Task Dialog
         AddTaskDialog(
             showDialog = showDialog,
+            navController = navController,
             onDismiss = { showDialog = false },
-            onTaskAdded = { task -> tasks.add(task) }
+            onTaskAdded = { newTask ->
+                mutableTasks.add(newTask)
+                showDialog = false
+            }
         )
     }
 }

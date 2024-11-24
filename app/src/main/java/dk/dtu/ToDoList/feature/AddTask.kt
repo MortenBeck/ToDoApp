@@ -13,14 +13,18 @@ import dk.dtu.ToDoList.data.TaskTag
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
-import java.util.Calendar
 import androidx.compose.material.icons.filled.DateRange
-
-
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
+import java.util.Date
+import java.text.SimpleDateFormat
+import java.util.Locale
+import androidx.navigation.NavController
 
 @Composable
 fun AddTaskDialog(
     showDialog: Boolean,
+    navController: NavController,
     onDismiss: () -> Unit,
     onTaskAdded: (Task) -> Unit
 ) {
@@ -28,14 +32,9 @@ fun AddTaskDialog(
         var taskName by remember { mutableStateOf("") }
         var priorityLevel by remember { mutableStateOf("Low") }
         var isFavorite by remember { mutableStateOf(false) }
+        var selectedDate by remember { mutableStateOf<Date?>(null) }
 
-        // Get today's date with time stripped
-        val today = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }.time
+        val context = LocalContext.current // Use context for Toast messages
 
         Dialog(onDismissRequest = onDismiss) {
             Surface(
@@ -48,13 +47,12 @@ fun AddTaskDialog(
                         .padding(16.dp)
                         .fillMaxWidth()
                 ) {
+                    // Task Name Input
                     Text(
                         text = "Add New Task",
                         style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
-
-                    // Task Name
                     OutlinedTextField(
                         value = taskName,
                         onValueChange = { taskName = it },
@@ -64,7 +62,7 @@ fun AddTaskDialog(
                             .padding(bottom = 16.dp)
                     )
 
-                    // Priority Level
+                    // Priority Selection
                     Column(modifier = Modifier.padding(bottom = 16.dp)) {
                         Text(
                             text = "Priority Level",
@@ -81,7 +79,7 @@ fun AddTaskDialog(
                         }
                     }
 
-                    // Favorite and Add to Calendar Row
+                    // Date Selection and Favorite Button
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -98,9 +96,13 @@ fun AddTaskDialog(
                             )
                         }
 
-                        // Add to Calendar Button
+                        // Navigate to Add to Calendar Page
                         Button(
-                            onClick = { /* TODO: Implement calendar functionality */ },
+                            onClick = {
+                                if (taskName.isNotBlank()) {
+                                    navController.navigate("AddToCalendar/$taskName") // Pass the taskName to the next screen
+                                }
+                            },
                             modifier = Modifier.height(40.dp)
                         ) {
                             Icon(
@@ -111,6 +113,17 @@ fun AddTaskDialog(
                             Spacer(modifier = Modifier.width(8.dp))
                             Text("Add to Calendar")
                         }
+                    }
+
+                    // Display Selected Date
+                    selectedDate?.let {
+                        Text(
+                            text = "Selected Date: ${
+                                SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(it)
+                            }",
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
                     }
 
                     // Action Buttons
@@ -124,19 +137,21 @@ fun AddTaskDialog(
                         Spacer(modifier = Modifier.width(8.dp))
                         Button(
                             onClick = {
-                                if (taskName.isNotBlank()) {
+                                if (taskName.isNotBlank() && selectedDate != null) {
                                     onTaskAdded(
                                         Task(
                                             name = taskName,
                                             priority = TaskPriority.valueOf(priorityLevel.uppercase()),
                                             isFavorite = isFavorite,
-                                            deadline = today, // Set deadline to today
+                                            deadline = selectedDate!!,
                                             tag = TaskTag.WORK,
                                             completed = false
                                         )
                                     )
+                                    onDismiss()
+                                } else {
+                                    Toast.makeText(context, "Please pick a date", Toast.LENGTH_SHORT).show()
                                 }
-                                onDismiss()
                             }
                         ) {
                             Text("Add Task")
@@ -173,5 +188,3 @@ fun PriorityButton(
         )
     }
 }
-
-

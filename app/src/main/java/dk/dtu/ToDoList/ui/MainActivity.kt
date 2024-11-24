@@ -3,53 +3,24 @@ package dk.dtu.ToDoList.ui
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dk.dtu.ToDoList.R
 import dk.dtu.ToDoList.data.Task
-import dk.dtu.ToDoList.data.TaskTag
 import dk.dtu.ToDoList.data.TaskPriority
-import dk.dtu.ToDoList.data.TasksRepository.simpleDateFormat
-import dk.dtu.ToDoList.feature.TaskList
-import dk.dtu.ToDoList.feature.BottomNavBar
-import dk.dtu.ToDoList.feature.BottomNavItem
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextAlign
-import java.time.LocalDate
-import java.time.YearMonth
-import java.time.format.DateTimeFormatter
-import java.time.temporal.WeekFields
-import java.util.*
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import java.time.ZoneId
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.ui.res.painterResource
-import androidx.compose.material3.Icon
-import dk.dtu.ToDoList.data.TasksRepository.Tasks
-import dk.dtu.ToDoList.data.TasksRepository.todayTasks
-import dk.dtu.ToDoList.feature.FavouritesScreen
-import dk.dtu.ToDoList.feature.HomeScreen
-import dk.dtu.ToDoList.feature.PlannedScreen
-import dk.dtu.ToDoList.feature.ProfileScreen
-import dk.dtu.ToDoList.feature.TaskListScreen
-import dk.dtu.ToDoList.feature.TopBar
-
+import dk.dtu.ToDoList.data.TaskTag
+import dk.dtu.ToDoList.data.TasksRepository
+import dk.dtu.ToDoList.feature.*
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,10 +34,12 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun ToDoApp() {
     val navController = rememberNavController()
-    val currentScreen = remember { mutableStateOf("Tasks") }
+    val mutableTasks = remember { mutableStateListOf<Task>() } // Use a state list for recomposition
+    val combinedTasks = remember { mutableStateListOf<Task>() }
 
-    // Convert Tasks to MutableList
-    val mutableTasks = Tasks.toMutableList()  // Make sure it's a mutable list
+    LaunchedEffect(Unit) {
+        combinedTasks.addAll(TasksRepository.Tasks)
+    }
 
     Scaffold(
         bottomBar = {
@@ -75,33 +48,23 @@ fun ToDoApp() {
                     BottomNavItem(
                         label = "Tasks",
                         icon = R.drawable.home_grey,
-                        isSelected = currentScreen.value == "Tasks"
+                        isSelected = true
                     ),
                     BottomNavItem(
                         label = "Favourites",
-                        icon = R.drawable.favorite_grey,
-                        isSelected = currentScreen.value == "Favourites"
+                        icon = R.drawable.favorite_grey
                     ),
                     BottomNavItem(
                         label = "Planned",
-                        icon = R.drawable.calender_grey,
-                        isSelected = currentScreen.value == "Planned"
+                        icon = R.drawable.calender_grey
                     ),
                     BottomNavItem(
                         label = "Profile",
-                        icon = R.drawable.profile_grey,
-                        isSelected = currentScreen.value == "Profile"
+                        icon = R.drawable.profile_grey
                     )
                 ),
                 onItemClick = { item ->
-                    currentScreen.value = item.label
-                    navController.navigate(item.label) {
-                        popUpTo(navController.graph.startDestinationId) {
-                            saveState = true
-                        }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
+                    navController.navigate(item.label)
                 }
             )
         }
@@ -113,11 +76,23 @@ fun ToDoApp() {
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            composable("Tasks") { HomeScreen(tasks = mutableTasks) }  // Pass mutable list here
-            composable("Favourites") { FavouritesScreen() }
-            composable("Planned") { PlannedScreen() }
-            composable("Profile") { ProfileScreen() }
+            composable("Tasks") {
+                HomeScreen(
+                    tasks = combinedTasks, // Pass combined list of tasks
+                    mutableTasks = mutableTasks,
+                    navController = navController
+                )
+            }
+            composable("AddToCalendar/{taskName}") { backStackEntry ->
+                val taskName = backStackEntry.arguments?.getString("taskName") ?: "Untitled Task"
+                AddToCalendarPage(
+                    navController = navController,
+                    taskName = taskName,
+                    onTaskAdded = { newTask ->
+                        combinedTasks.add(newTask) // Add task to the combined list
+                    }
+                )
+            }
         }
     }
 }
-
