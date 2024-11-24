@@ -1,7 +1,6 @@
 package dk.dtu.ToDoList.feature
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -11,10 +10,12 @@ import androidx.compose.ui.window.Dialog
 import dk.dtu.ToDoList.data.Task
 import dk.dtu.ToDoList.data.TaskPriority
 import dk.dtu.ToDoList.data.TaskTag
-import java.util.Date
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import java.util.Calendar
+import androidx.compose.material.icons.filled.DateRange
+
 
 
 @Composable
@@ -27,6 +28,13 @@ fun AddTaskDialog(
         var taskName by remember { mutableStateOf("") }
         var priorityLevel by remember { mutableStateOf("Low") }
         var isFavorite by remember { mutableStateOf(false) }
+
+        val today = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.time
 
         Dialog(onDismissRequest = onDismiss) {
             Surface(
@@ -72,17 +80,35 @@ fun AddTaskDialog(
                         }
                     }
 
-                    // Favorite Button
+                    // Favorite and Add to Calendar Row
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Start
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
+                        // Favorite Icon Button
                         IconButton(onClick = { isFavorite = !isFavorite }) {
                             Icon(
-                                imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
                                 contentDescription = "Favorite",
                                 tint = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                             )
+                        }
+
+                        // Add to Calendar Button
+                        Button(
+                            onClick = { /* TODO: Implement calendar functionality */ },
+                            modifier = Modifier.height(40.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.DateRange, // Using DateRange icon
+                                contentDescription = "Calendar",
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Add to Calendar")
                         }
                     }
 
@@ -103,7 +129,7 @@ fun AddTaskDialog(
                                             name = taskName,
                                             priority = TaskPriority.valueOf(priorityLevel.uppercase()),
                                             isFavorite = isFavorite,
-                                            deadline = Date(),
+                                            deadline = today,
                                             tag = TaskTag.WORK,
                                             completed = false
                                         )
@@ -120,9 +146,8 @@ fun AddTaskDialog(
         }
     }
 }
-
 @Composable
-private fun PriorityButton(
+fun PriorityButton(
     text: String,
     selectedPriority: String,
     onClick: () -> Unit
@@ -146,3 +171,5 @@ private fun PriorityButton(
         )
     }
 }
+
+
