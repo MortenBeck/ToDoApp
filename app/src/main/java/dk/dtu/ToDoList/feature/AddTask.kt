@@ -29,6 +29,7 @@ fun AddTaskDialog(
         var priorityLevel by remember { mutableStateOf("Low") }
         var isFavorite by remember { mutableStateOf(false) }
 
+        // Get today's date with time stripped
         val today = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, 0)
             set(Calendar.MINUTE, 0)
@@ -88,7 +89,7 @@ fun AddTaskDialog(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Favorite Icon Button
+                        // Favorite Button
                         IconButton(onClick = { isFavorite = !isFavorite }) {
                             Icon(
                                 imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
@@ -103,7 +104,7 @@ fun AddTaskDialog(
                             modifier = Modifier.height(40.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.DateRange, // Using DateRange icon
+                                imageVector = Icons.Default.DateRange,
                                 contentDescription = "Calendar",
                                 modifier = Modifier.size(20.dp)
                             )
@@ -129,7 +130,7 @@ fun AddTaskDialog(
                                             name = taskName,
                                             priority = TaskPriority.valueOf(priorityLevel.uppercase()),
                                             isFavorite = isFavorite,
-                                            deadline = today,
+                                            deadline = today, // Set deadline to today
                                             tag = TaskTag.WORK,
                                             completed = false
                                         )
@@ -146,6 +147,7 @@ fun AddTaskDialog(
         }
     }
 }
+
 @Composable
 fun PriorityButton(
     text: String,

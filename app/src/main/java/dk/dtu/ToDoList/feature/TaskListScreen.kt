@@ -17,47 +17,60 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dk.dtu.ToDoList.data.Task
+import java.util.Calendar
 
 @Composable
 fun TaskListScreen(tasks: List<Task>) {
-    // Getting todays date with calendar
-    val today = java.util.Calendar.getInstance().apply {
-        set(java.util.Calendar.HOUR_OF_DAY, 0)
-        set(java.util.Calendar.MINUTE, 0)
-        set(java.util.Calendar.SECOND, 0)
-        set(java.util.Calendar.MILLISECOND, 0)
+    // Get today's start-of-day and tomorrow's start-of-day
+    val todayStart = Calendar.getInstance().apply {
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
     }.time
 
-    // Making a difference between today and future deadlines!
-    val todayTasks = tasks.filter { it.deadline <= today }
-    val futureTasks = tasks.filter { it.deadline > today }
+    val tomorrowStart = Calendar.getInstance().apply {
+        add(Calendar.DAY_OF_MONTH, 1)
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }.time
 
-    LazyColumn (modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
+    // Filter tasks based on deadline
+    val todayTasks = tasks.filter { it.deadline >= todayStart && it.deadline < tomorrowStart }
+    val futureTasks = tasks.filter { it.deadline >= tomorrowStart }
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp)
+    ) {
         // "Today" Section
         if (todayTasks.isNotEmpty()) {
             item {
                 SectionHeader(title = "Today")
             }
-            itemsIndexed(todayTasks){index, task ->
+            itemsIndexed(todayTasks) { _, task ->
                 TaskItem(task = task)
             }
-            item{
+            item {
                 Spacer(modifier = Modifier.height(16.dp)) // Space between sections
             }
         }
 
         // "Future" Section
         if (futureTasks.isNotEmpty()) {
-            item{
+            item {
                 SectionHeader(title = "Future")
             }
-            itemsIndexed(futureTasks){index, task ->
+            itemsIndexed(futureTasks) { _, task ->
                 TaskItem(task = task)
             }
-
         }
     }
 }
+
 // Creating an area for the "Today" and "Future" headline
 @Composable
 fun SectionHeader(title: String) {
