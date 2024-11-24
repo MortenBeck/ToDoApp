@@ -16,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import dk.dtu.ToDoList.data.Task
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
@@ -23,7 +24,7 @@ import java.time.format.DateTimeFormatter
 import dk.dtu.ToDoList.data.TasksRepository
 
 @Composable
-fun PlannedScreen() {
+fun PlannedScreen(tasks: List<Task>) {
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
 
@@ -49,27 +50,16 @@ fun PlannedScreen() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Tasks for Selected Date
-        TasksForDate(selectedDate = selectedDate)
+        // Filtered Tasks for Selected Date
+        TasksForDate(tasks = tasks, selectedDate = selectedDate)
     }
 }
 
 @Composable
-fun TasksForDate(selectedDate: LocalDate) {
-    // Log selected date for debugging
-    Log.d("PlannedScreen", "Selected Date: $selectedDate")
-
-    // Safely filter tasks for the selected date
-    val tasksForDate = remember(selectedDate) {
-        TasksRepository.Tasks.filter { task ->
-            try {
-                val taskDate = task.deadline?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalDate()
-                Log.d("PlannedScreen", "Task: ${task.name}, Deadline: $taskDate")
-                taskDate == selectedDate
-            } catch (e: Exception) {
-                Log.e("PlannedScreen", "Error parsing task deadline: ${task.name}", e)
-                false
-            }
+fun TasksForDate(tasks: List<Task>, selectedDate: LocalDate) {
+    val tasksForDate = remember(selectedDate, tasks) {
+        tasks.filter { task ->
+            task.deadline.toInstant().atZone(ZoneId.systemDefault()).toLocalDate() == selectedDate
         }
     }
 
@@ -80,7 +70,6 @@ fun TasksForDate(selectedDate: LocalDate) {
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
-        // Display filtered tasks or fallback message
         if (tasksForDate.isNotEmpty()) {
             TaskList(
                 Tasks = tasksForDate,
@@ -95,3 +84,4 @@ fun TasksForDate(selectedDate: LocalDate) {
         }
     }
 }
+
