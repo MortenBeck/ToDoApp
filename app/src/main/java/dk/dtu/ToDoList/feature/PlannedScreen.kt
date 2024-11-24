@@ -20,7 +20,6 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import dk.dtu.ToDoList.data.Task
 import dk.dtu.ToDoList.data.TasksRepository
 
 @Composable

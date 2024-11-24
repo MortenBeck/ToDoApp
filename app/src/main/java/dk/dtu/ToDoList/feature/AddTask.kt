@@ -13,12 +13,7 @@ import dk.dtu.ToDoList.data.TaskTag
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.DateRange
-import android.widget.Toast
-import androidx.compose.ui.platform.LocalContext
 import java.util.Date
-import java.text.SimpleDateFormat
-import java.util.Locale
 import androidx.navigation.NavController
 
 @Composable
