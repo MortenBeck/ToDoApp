@@ -11,17 +11,33 @@ import dk.dtu.ToDoList.data.Task
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.Icons
 import androidx.navigation.NavController
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.unit.dp
 
 @Composable
 fun HomeScreen(tasks: MutableList<Task>, navController: NavController) {
     var showDialog by remember { mutableStateOf(false) }
+    var taskToDelete by remember { mutableStateOf<Task?>(null) } // State to manage the delete confirmation dialog
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column {
+            // Top Bar for search/profile
             TopBar(searchText = "", onSearchTextChange = {}, onProfileClick = {})
-            TaskListScreen(tasks)
+
+            // Display the list of tasks
+            TaskListScreen(
+                tasks = tasks,
+                onDelete = { task ->
+                    taskToDelete = task // Trigger the delete confirmation dialog
+                }
+            )
         }
 
+        // Floating Add Task Button
         IconButton(
             onClick = { showDialog = true },
             modifier = Modifier
@@ -45,15 +61,31 @@ fun HomeScreen(tasks: MutableList<Task>, navController: NavController) {
             }
         }
 
+        // Add Task Dialog
         if (showDialog) {
             AddTaskDialog(
                 showDialog = showDialog,
                 navController = navController,
                 onDismiss = { showDialog = false },
                 onTaskAdded = { newTask ->
-                    tasks.add(newTask)
+                    tasks.add(newTask) // Add the new task to the list
+                    showDialog = false
                 }
             )
         }
-}
+    }
+
+    // Delete Confirmation Dialog
+    if (taskToDelete != null) {
+        DeleteConfirmation(
+            task = taskToDelete!!,
+            onConfirm = {
+                tasks.remove(taskToDelete) // Remove the task from the list
+                taskToDelete = null // Close the dialog
+            },
+            onDismiss = {
+                taskToDelete = null // Close the dialog without deleting
+            }
+        )
+    }
 }
