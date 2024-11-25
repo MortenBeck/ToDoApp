@@ -21,12 +21,17 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import dk.dtu.ToDoList.data.TasksRepository
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+
 
 @Composable
-fun PlannedScreen(tasks: List<Task>) {
+fun PlannedScreen(tasks: MutableList<Task>) { // MutableList to allow deletion
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var taskToDelete by remember { mutableStateOf<Task?>(null) }
 
     Column(
         modifier = Modifier
@@ -51,12 +56,39 @@ fun PlannedScreen(tasks: List<Task>) {
         Spacer(modifier = Modifier.height(16.dp))
 
         // Filtered Tasks for Selected Date
-        TasksForDate(tasks = tasks, selectedDate = selectedDate)
+        TasksForDate(
+            tasks = tasks,
+            selectedDate = selectedDate,
+            onDelete = { task ->
+                taskToDelete = task
+                showDeleteDialog = true
+            }
+        )
+    }
+
+    // Show delete confirmation dialog
+    if (showDeleteDialog && taskToDelete != null) {
+        DeleteConfirmation(
+            task = taskToDelete!!,
+            onConfirm = {
+                tasks.remove(taskToDelete) // Remove the task from the list
+                taskToDelete = null
+                showDeleteDialog = false
+            },
+            onDismiss = {
+                taskToDelete = null
+                showDeleteDialog = false
+            }
+        )
     }
 }
 
 @Composable
-fun TasksForDate(tasks: List<Task>, selectedDate: LocalDate) {
+fun TasksForDate(
+    tasks: List<Task>,
+    selectedDate: LocalDate,
+    onDelete: (Task) -> Unit // Add onDelete callback
+) {
     val tasksForDate = remember(selectedDate, tasks) {
         tasks.filter { task ->
             task.deadline.toInstant().atZone(ZoneId.systemDefault()).toLocalDate() == selectedDate
@@ -73,7 +105,8 @@ fun TasksForDate(tasks: List<Task>, selectedDate: LocalDate) {
         if (tasksForDate.isNotEmpty()) {
             TaskList(
                 Tasks = tasksForDate,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                onDelete = onDelete // Pass the delete callback
             )
         } else {
             Text(
@@ -84,4 +117,3 @@ fun TasksForDate(tasks: List<Task>, selectedDate: LocalDate) {
         }
     }
 }
-
