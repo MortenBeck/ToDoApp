@@ -23,6 +23,7 @@ import dk.dtu.ToDoList.data.TasksRepository.simpleDateFormat
 import java.text.SimpleDateFormat
 import java.util.Locale
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -99,7 +100,6 @@ fun TaskList(
                 onTaskClick = onTaskClick
             // Pass the delete callback to TaskItem
             )
-            )
         }
     }
 }
@@ -117,7 +117,8 @@ fun TaskItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp, horizontal = 16.dp),
+            .padding(vertical = 8.dp, horizontal = 16.dp)
+            .clickable {onTaskClick(task) },
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Priority Icon
@@ -178,7 +179,7 @@ fun TaskItem(
         )
     }
 
-
+}
 
 @Preview(showBackground = true)
 @Composable
@@ -221,6 +222,7 @@ private fun TaskListPreview() {
                 completed = true
             )
         ),
+        onDelete = {},
         onTaskClick = { task ->
             println("Task Clicked: ${task.name}")
         }

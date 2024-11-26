@@ -22,7 +22,7 @@ import androidx.compose.runtime.*
 @Composable
 fun FavouritesScreen() {
     val favouriteTasks = remember {
-        listOf(
+        mutableStateListOf(
             Task(
                 name = "Walk the dog",
                 deadline = simpleDateFormat.parse("17-11-2024")!!,
@@ -67,9 +67,9 @@ fun FavouritesScreen() {
             modifier = Modifier.weight(1f),
             onDelete = { task ->
                 taskToDelete = task
+            },
             onTaskClick = { task ->
                 println("Task clicked: ${task.name}")
-                }
             }
         )
     }

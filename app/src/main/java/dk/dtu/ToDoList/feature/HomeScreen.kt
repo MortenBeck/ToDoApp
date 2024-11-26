@@ -11,12 +11,6 @@ import dk.dtu.ToDoList.data.Task
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.Icons
 import androidx.navigation.NavController
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.unit.dp
 
 @Composable
 fun HomeScreen(tasks: MutableList<Task>, navController: NavController, onTaskClick: (Task) -> Unit) {
@@ -24,7 +18,7 @@ fun HomeScreen(tasks: MutableList<Task>, navController: NavController, onTaskCli
     var taskToDelete by remember { mutableStateOf<Task?>(null) } // State to manage the delete confirmation dialog
 
     Box(modifier = Modifier.fillMaxSize()) {
-        Column {
+        Column(modifier = Modifier.fillMaxSize()) {
             // Top Bar for search/profile
             TopBar(searchText = "", onSearchTextChange = {}, onProfileClick = {})
 
@@ -32,19 +26,21 @@ fun HomeScreen(tasks: MutableList<Task>, navController: NavController, onTaskCli
             TaskListScreen(
                 tasks = tasks,
                 onDelete = { task ->
-                    taskToDelete = task,
+                    taskToDelete = task
+                },
                 onTaskClick = { task ->
                     navController.navigate("taskDetail/${task.name}")
-                })
+                }
+            )
         }
 
         // Floating Add Task Button
         IconButton(
             onClick = { showDialog = true },
             modifier = Modifier
-                .align(Alignment.BottomEnd)
+                .align(Alignment.BottomEnd) // Align at the bottom end of the Box
                 .padding(bottom = 80.dp, end = 16.dp)
-                .size(48.dp)
+                .size(56.dp) // Standard FAB size
         ) {
             Surface(
                 shape = CircleShape,
@@ -74,19 +70,19 @@ fun HomeScreen(tasks: MutableList<Task>, navController: NavController, onTaskCli
                 }
             )
         }
-    }
 
-    // Delete Confirmation Dialog
-    if (taskToDelete != null) {
-        DeleteConfirmation(
-            task = taskToDelete!!,
-            onConfirm = {
-                tasks.remove(taskToDelete) // Remove the task from the list
-                taskToDelete = null // Close the dialog
-            },
-            onDismiss = {
-                taskToDelete = null // Close the dialog without deleting
-            }
-        )
+        // Delete Confirmation Dialog
+        if (taskToDelete != null) {
+            DeleteConfirmation(
+                task = taskToDelete!!,
+                onConfirm = {
+                    tasks.remove(taskToDelete) // Remove the task from the list
+                    taskToDelete = null // Close the dialog
+                },
+                onDismiss = {
+                    taskToDelete = null // Close the dialog without deleting
+                }
+            )
+        }
     }
 }
