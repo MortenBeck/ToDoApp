@@ -22,7 +22,7 @@ import androidx.compose.runtime.*
 @Composable
 fun FavouritesScreen() {
     val favouriteTasks = remember {
-        mutableStateListOf(
+        listOf(
             Task(
                 name = "Walk the dog",
                 deadline = simpleDateFormat.parse("17-11-2024")!!,
