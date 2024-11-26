@@ -63,7 +63,11 @@ fun ToDoApp() {
             composable("Tasks") {
                 HomeScreen(
                     tasks = mutableTasks,
-                    navController = navController
+                    navController = navController,
+                    onTaskClick = { task ->
+                        // Navigate to the task details screen
+                        navController.navigate("taskDetail/${task.name}")
+                    }
                 )
             }
             composable("Favourites") {
@@ -86,6 +90,23 @@ fun ToDoApp() {
                     }
                 )
             }
+
+            composable("taskDetail/{taskName}") { backStackEntry ->
+                val taskName = backStackEntry.arguments?.getString("taskName")
+                val task = mutableTasks.find { it.name == taskName } // Retrieve task by name
+
+                if (task != null) {
+                    TaskDetailScreen(
+                        task = task,
+                        onEdit = { /* Edit task logic */ },
+                        onDelete = { /* Delete task logic */ },
+                        onMarkCompleted = { /* Mark task completed logic */ },
+                        onToggleFavorite = { /* Toggle favorite logic */ },
+                        navController = navController
+                    )
+                }
+            }
+
         }
     }
 }

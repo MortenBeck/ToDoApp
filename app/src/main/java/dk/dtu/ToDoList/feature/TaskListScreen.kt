@@ -33,9 +33,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 
 
+import androidx.compose.foundation.clickable
+
 
 @Composable
-fun TaskListScreen(tasks: MutableList<Task>, onDelete: (Task) -> Unit) {
+fun TaskListScreen(tasks: List<Task>, onTaskClick: (Task) -> Unit, onDelete: (Task) -> Unit) {
     // Get today's start-of-day and tomorrow's start-of-day
     val todayStart = Calendar.getInstance().apply {
         set(Calendar.HOUR_OF_DAY, 0)
@@ -69,7 +71,8 @@ fun TaskListScreen(tasks: MutableList<Task>, onDelete: (Task) -> Unit) {
             itemsIndexed(todayTasks) { _, task ->
                 TaskItem(
                     task = task,
-                    onDelete = onDelete // Pass delete callback to TaskItem
+                    onDelete = onDelete,
+                    onTaskClick = onTaskClick// Pass delete callback to TaskItem
                 )
             }
             item {
@@ -85,7 +88,9 @@ fun TaskListScreen(tasks: MutableList<Task>, onDelete: (Task) -> Unit) {
             itemsIndexed(futureTasks) { _, task ->
                 TaskItem(
                     task = task,
-                    onDelete = onDelete // Pass delete callback to TaskItem
+                    onDelete = onDelete,
+                    onTaskClick = onTaskClick
+
                 )
             }
         }
@@ -109,5 +114,21 @@ fun SectionHeader(title: String) {
         HorizontalDivider(
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
             thickness = 1.dp)
+    }
+}
+
+@Composable
+fun TaskItem(
+    task: Task,
+    onTaskClick: (Task) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+            .clickable { onTaskClick(task) }
+    ) {
+        Text(text = task.name, fontSize = 18.sp, fontWeight = FontWeight.Medium)
+        Text(text = "Deadline: ${task.deadline}", fontSize = 14.sp, color = Color.Gray)
     }
 }

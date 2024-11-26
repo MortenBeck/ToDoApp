@@ -76,8 +76,10 @@ data class BottomNavItem(
 fun TaskList(
     Tasks: List<Task>,
     modifier: Modifier = Modifier,
-    onDelete: (Task) -> Unit // Pass a callback to handle deletion
-) {
+    onDelete: (Task) -> Unit,
+    onTaskClick: (Task) -> Unit)
+    // Pass a callback to handle deletion
+{
     val scrollState = rememberLazyListState()
 
     LaunchedEffect(Tasks) {
@@ -93,7 +95,10 @@ fun TaskList(
         itemsIndexed(Tasks) { _, task ->
             TaskItem(
                 task = task,
-                onDelete = onDelete // Pass the delete callback to TaskItem
+                onDelete = onDelete,
+                onTaskClick = onTaskClick
+            // Pass the delete callback to TaskItem
+            )
             )
         }
     }
@@ -103,7 +108,8 @@ fun TaskList(
 @Composable
 fun TaskItem(
     task: Task,
-    onDelete: (Task) -> Unit
+    onDelete: (Task) -> Unit,
+    onTaskClick: (Task) -> Unit
 ) {
     val showDeleteDialog = remember { mutableStateOf(false) }
     val dateFormatter = SimpleDateFormat("dd-MM", Locale.US)
@@ -161,8 +167,6 @@ fun TaskItem(
             Icon(Icons.Default.Delete, contentDescription = "Delete Task")
         }
     }
-
-    // Delete Confirmation Dialog
     if (showDeleteDialog.value) {
         DeleteConfirmation(
             task = task,
@@ -173,4 +177,52 @@ fun TaskItem(
             onDismiss = { showDeleteDialog.value = false }
         )
     }
+
+
+
+@Preview(showBackground = true)
+@Composable
+private fun TaskListPreview() {
+    TaskList(
+        Tasks = listOf(
+            Task(
+                name = "Homework - UX",
+                deadline = simpleDateFormat.parse("17-11-2024")!!,
+                priority = TaskPriority.HIGH,
+                tag = TaskTag.SCHOOL,
+                completed = false
+            ),
+            Task(
+                name = "Fix project at work",
+                deadline = simpleDateFormat.parse("18-11-2024")!!,
+                priority = TaskPriority.MEDIUM,
+                tag = TaskTag.WORK,
+                completed = true
+            ),
+            Task(
+                name = "Buy groceries",
+                deadline = simpleDateFormat.parse("20-11-2024")!!,
+                priority = TaskPriority.LOW,
+                tag = TaskTag.PRIVATE,
+                completed = false
+            ),
+            Task(
+                name = "Prepare presentation",
+                deadline = simpleDateFormat.parse("19-11-2024")!!,
+                priority = TaskPriority.HIGH,
+                tag = TaskTag.WORK,
+                completed = false
+            ),
+            Task(
+                name = "Morning run",
+                deadline = simpleDateFormat.parse("17-11-2024")!!,
+                priority = TaskPriority.LOW,
+                tag = TaskTag.SPORT,
+                completed = true
+            )
+        ),
+        onTaskClick = { task ->
+            println("Task Clicked: ${task.name}")
+        }
+    )
 }

@@ -19,7 +19,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun HomeScreen(tasks: MutableList<Task>, navController: NavController) {
+fun HomeScreen(tasks: MutableList<Task>, navController: NavController, onTaskClick: (Task) -> Unit) {
     var showDialog by remember { mutableStateOf(false) }
     var taskToDelete by remember { mutableStateOf<Task?>(null) } // State to manage the delete confirmation dialog
 
@@ -32,9 +32,10 @@ fun HomeScreen(tasks: MutableList<Task>, navController: NavController) {
             TaskListScreen(
                 tasks = tasks,
                 onDelete = { task ->
-                    taskToDelete = task // Trigger the delete confirmation dialog
-                }
-            )
+                    taskToDelete = task,
+                onTaskClick = { task ->
+                    navController.navigate("taskDetail/${task.name}")
+                })
         }
 
         // Floating Add Task Button

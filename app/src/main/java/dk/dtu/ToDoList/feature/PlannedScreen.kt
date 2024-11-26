@@ -106,7 +106,10 @@ fun TasksForDate(
             TaskList(
                 Tasks = tasksForDate,
                 modifier = Modifier.fillMaxWidth(),
-                onDelete = onDelete // Pass the delete callback
+                onDelete = onDelete,
+                onTaskClick = { task ->
+                    println("Task clicked: ${task.name}")
+                }
             )
         } else {
             Text(

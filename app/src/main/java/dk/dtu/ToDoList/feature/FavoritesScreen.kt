@@ -66,7 +66,10 @@ fun FavouritesScreen() {
             Tasks = favouriteTasks,
             modifier = Modifier.weight(1f),
             onDelete = { task ->
-                taskToDelete = task // Open confirmation dialog for this task
+                taskToDelete = task
+            onTaskClick = { task ->
+                println("Task clicked: ${task.name}")
+                }
             }
         )
     }
