@@ -67,7 +67,7 @@ data class BottomNavItem(
 )
 
 @Composable
-fun TaskList(Tasks: List<Task>, modifier: Modifier = Modifier) {
+fun TaskList(Tasks: List<Task>, modifier: Modifier = Modifier, onTaskClick: (Task) -> Unit) {
     val scrollState = rememberLazyListState()
 
     LaunchedEffect(Tasks) {
@@ -81,14 +81,14 @@ fun TaskList(Tasks: List<Task>, modifier: Modifier = Modifier) {
             .heightIn(max = 300.dp) // Add a maximum height
     ) {
         itemsIndexed(Tasks) { index, task ->
-            TaskItem(task = task, index = index)
+            TaskItem(task = task, index = index, onTaskClick = onTaskClick)
         }
     }
 }
 
 
 @Composable
-fun TaskItem(task: Task, index: Int = 0) {
+fun TaskItem(task: Task, index: Int = 0, onTaskClick: (Task) -> Unit) {
     val dateFormatter = SimpleDateFormat("dd-MM", Locale.US)
 
     Row(
@@ -192,6 +192,9 @@ private fun TaskListPreview() {
                 tag = TaskTag.SPORT,
                 completed = true
             )
-        )
+        ),
+        onTaskClick = { task ->
+            println("Task Clicked: ${task.name}")
+        }
     )
 }

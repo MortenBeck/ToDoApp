@@ -13,13 +13,17 @@ import androidx.compose.material.icons.Icons
 import androidx.navigation.NavController
 
 @Composable
-fun HomeScreen(tasks: MutableList<Task>, navController: NavController) {
+fun HomeScreen(tasks: MutableList<Task>, navController: NavController, onTaskClick: (Task) -> Unit) {
     var showDialog by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column {
             TopBar(searchText = "", onSearchTextChange = {}, onProfileClick = {})
-            TaskListScreen(tasks)
+            TaskListScreen(
+                tasks = tasks,
+                onTaskClick = { task ->
+                    navController.navigate("taskDetail/${task.name}")
+                })
         }
 
         IconButton(

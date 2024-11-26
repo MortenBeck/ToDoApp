@@ -18,9 +18,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dk.dtu.ToDoList.data.Task
 import java.util.Calendar
+import androidx.compose.foundation.clickable
+
 
 @Composable
-fun TaskListScreen(tasks: List<Task>) {
+fun TaskListScreen(tasks: List<Task>, onTaskClick: (Task) -> Unit) {
     // Get today's start-of-day and tomorrow's start-of-day
     val todayStart = Calendar.getInstance().apply {
         set(Calendar.HOUR_OF_DAY, 0)
@@ -52,7 +54,8 @@ fun TaskListScreen(tasks: List<Task>) {
                 SectionHeader(title = "Today")
             }
             itemsIndexed(todayTasks) { _, task ->
-                TaskItem(task = task)
+                TaskItem(task = task, onTaskClick = onTaskClick)
+
             }
             item {
                 Spacer(modifier = Modifier.height(16.dp)) // Space between sections
@@ -65,7 +68,7 @@ fun TaskListScreen(tasks: List<Task>) {
                 SectionHeader(title = "Future")
             }
             itemsIndexed(futureTasks) { _, task ->
-                TaskItem(task = task)
+                TaskItem(task = task, onTaskClick = onTaskClick)
             }
         }
     }
@@ -85,5 +88,21 @@ fun SectionHeader(title: String) {
             color = Color.Black
         )
         Divider(color = Color.Gray, thickness = 1.dp)
+    }
+}
+
+@Composable
+fun TaskItem(
+    task: Task,
+    onTaskClick: (Task) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+            .clickable { onTaskClick(task) }
+    ) {
+        Text(text = task.name, fontSize = 18.sp, fontWeight = FontWeight.Medium)
+        Text(text = "Deadline: ${task.deadline}", fontSize = 14.sp, color = Color.Gray)
     }
 }

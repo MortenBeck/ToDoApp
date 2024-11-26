@@ -84,7 +84,10 @@ fun TasksForDate(selectedDate: LocalDate) {
         if (tasksForDate.isNotEmpty()) {
             TaskList(
                 Tasks = tasksForDate,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                onTaskClick = { task ->
+                    println("Task clicked: ${task.name}")
+                }
             )
         } else {
             Text(

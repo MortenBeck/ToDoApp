@@ -58,7 +58,10 @@ fun FavouritesScreen() {
         // Favourites Task List
         TaskList(
             Tasks = favouriteTasks,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            onTaskClick = { task ->
+                println("Task clicked: ${task.name}")
+            }
         )
     }
 }
