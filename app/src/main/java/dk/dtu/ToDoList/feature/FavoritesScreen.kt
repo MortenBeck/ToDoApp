@@ -74,9 +74,9 @@ fun FavouritesScreen(tasks: MutableList<Task>,navController: NavController) {
         IconButton(
             onClick = { showDialog = true },
             modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(bottom = 80.dp, end = 16.dp)
-                .size(48.dp)
+                .padding(bottom = 16.dp, end = 16.dp) // Adjust padding for better placement
+                .size(64.dp)
+                .align(Alignment.BottomEnd) // Ensure alignment at bottom-right corner
         ) {
             Surface(
                 shape = CircleShape,
@@ -89,7 +89,7 @@ fun FavouritesScreen(tasks: MutableList<Task>,navController: NavController) {
                     tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier
                         .padding(12.dp)
-                        .size(24.dp)
+                        .size(32.dp)
                 )
             }
         }

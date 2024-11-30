@@ -1,12 +1,17 @@
 package dk.dtu.ToDoList.feature
 
 import android.util.Log
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,6 +30,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.navigation.NavController
+import androidx.compose.material3.*
+
 
 
 @Composable
@@ -72,6 +79,34 @@ fun PlannedScreen(tasks: MutableList<Task>, navController: NavController) { // M
                 }
             }
         )
+    }
+
+    // Floating Add Task Button - Positioned at Bottom-Right Corner
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        contentAlignment = Alignment.BottomEnd // Align to bottom-end
+    ) {
+        IconButton(
+            onClick = { showAddTaskDialog = true },
+            modifier = Modifier.size(64.dp) // Adjust size as needed
+        ) {
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.primary,
+                shadowElevation = 6.dp
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Add Task",
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier
+                        .padding(12.dp)
+                        .size(32.dp) // Icon size
+                )
+            }
+        }
     }
 
     // Show delete confirmation dialog
