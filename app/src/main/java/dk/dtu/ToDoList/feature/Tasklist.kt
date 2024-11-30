@@ -174,11 +174,7 @@ fun TaskItem(
                 tint = if (task.favorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
             )
         }
-        //Image(
-        //painter = painterResource(id = R.drawable.favorite_black), // Ensure it's a vector drawable
-           // contentDescription = "Favorite Icon",
-            //modifier = Modifier.size(24.dp) // Modify the size if needed
-        //)
+
         Spacer(modifier = Modifier.height(4.dp))
         // Delete Button
         IconButton(onClick = { showDeleteDialog.value = true }) {
