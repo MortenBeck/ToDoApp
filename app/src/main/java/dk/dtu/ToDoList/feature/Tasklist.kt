@@ -155,7 +155,19 @@ fun TaskItem(
                 }
             }
         }
+        Image(
+            painter = painterResource(id = R.drawable.work),
+            contentDescription = "Tag Icon",
+            modifier = Modifier.size(16.dp),
+        )
+        Spacer(modifier = Modifier.height(4.dp))
 
+        Image(
+            painter = painterResource(id = R.drawable.favorite_black), // Ensure it's a vector drawable
+            contentDescription = "Favorite Icon",
+            modifier = Modifier.size(24.dp) // Modify the size if needed
+        )
+        Spacer(modifier = Modifier.height(4.dp))
         // Delete Button
         IconButton(onClick = { showDeleteDialog.value = true }) {
             Icon(Icons.Default.Delete, contentDescription = "Delete Task")
