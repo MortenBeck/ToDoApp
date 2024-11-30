@@ -49,42 +49,46 @@ fun HomeScreen(tasks: MutableList<Task>, navController: NavController) {
             )
         }
 
-        // Floating Add Task Button
-        IconButton(
-            onClick = { showDialog = true },
+        // Floating Add Task Button - Positioned at Bottom-Right Corner
+        Box(
             modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(bottom = 80.dp, end = 16.dp)
-                .size(48.dp)
+                .fillMaxSize()
+                .padding(16.dp), // Padding from edges
+            contentAlignment = Alignment.BottomEnd // Align to bottom-end
         ) {
-            Surface(
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.primary,
-                shadowElevation = 6.dp
+            IconButton(
+                onClick = { showDialog = true },
+                modifier = Modifier.size(64.dp) // Adjust size as needed
             ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Add Task",
-                    tint = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier
-                        .padding(12.dp)
-                        .size(24.dp)
-                )
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.primary,
+                    shadowElevation = 6.dp
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Add Task",
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier
+                            .padding(12.dp)
+                            .size(32.dp) // Icon size
+                    )
+                }
             }
         }
+    }
 
-        // Add Task Dialog
-        if (showDialog) {
-            AddTaskDialog(
-                showDialog = showDialog,
-                navController = navController,
-                onDismiss = { showDialog = false },
-                onTaskAdded = { newTask ->
-                    tasks.add(newTask) // Add the new task to the list
-                    showDialog = false
-                }
-            )
-        }
+    // Add Task Dialog
+    if (showDialog) {
+        AddTaskDialog(
+            showDialog = showDialog,
+            navController = navController,
+            onDismiss = { showDialog = false },
+            onTaskAdded = { newTask ->
+                tasks.add(newTask) // Add the new task to the list
+                showDialog = false
+            }
+        )
     }
 
     // Delete Confirmation Dialog
