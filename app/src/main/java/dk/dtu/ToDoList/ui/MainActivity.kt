@@ -67,13 +67,19 @@ fun ToDoApp() {
                 )
             }
             composable("Favourites") {
-                FavouritesScreen(tasks = mutableTasks)
+                FavouritesScreen(
+                    tasks = mutableTasks,
+                    navController = navController)
             }
             composable("Planned") {
-                PlannedScreen(tasks = mutableTasks) // Use the shared mutable task list
+                PlannedScreen(
+                    tasks = mutableTasks,
+                    navController = navController) // Use the shared mutable task list
             }
             composable("Profile") {
-                ProfileScreen()
+                ProfileScreen(
+                    navController=navController
+                )
             }
             composable("addToCalendar?taskName={taskName}") { backStackEntry ->
                 val taskName = backStackEntry.arguments?.getString("taskName") ?: "New Task"

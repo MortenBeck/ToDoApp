@@ -24,13 +24,15 @@ import java.time.format.DateTimeFormatter
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.navigation.NavController
 
 
 @Composable
-fun PlannedScreen(tasks: MutableList<Task>) { // MutableList to allow deletion
+fun PlannedScreen(tasks: MutableList<Task>, navController: NavController) { // MutableList to allow deletion
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var showAddTaskDialog by remember{mutableStateOf(false)}
     var taskToDelete by remember { mutableStateOf<Task?>(null) }
 
     Column(
