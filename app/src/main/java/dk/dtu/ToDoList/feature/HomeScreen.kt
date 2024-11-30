@@ -23,14 +23,19 @@ fun HomeScreen(tasks: MutableList<Task>, navController: NavController) {
     var showDialog by remember { mutableStateOf(false) }
     var taskToDelete by remember { mutableStateOf<Task?>(null) } // State to manage the delete confirmation dialog
 
+    var searchText by remember { mutableStateOf("")}
+
+    val filteredTasks = tasks.filter {
+        it.name.contains(searchText, ignoreCase = true)}.toMutableList()
+
     Box(modifier = Modifier.fillMaxSize()) {
         Column {
             // Top Bar for search/profile
-            TopBar(searchText = "", onSearchTextChange = {}, onProfileClick = {})
+            TopBar(searchText = searchText, onSearchTextChange = {searchText=it}, onProfileClick = {})
 
             // Display the list of tasks
             TaskListScreen(
-                tasks = tasks,
+                tasks = filteredTasks,
                 onDelete = { task ->
                     taskToDelete = task // Trigger the delete confirmation dialog
                 }
