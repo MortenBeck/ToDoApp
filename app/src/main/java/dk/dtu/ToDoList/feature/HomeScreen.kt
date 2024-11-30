@@ -38,6 +38,13 @@ fun HomeScreen(tasks: MutableList<Task>, navController: NavController) {
                 tasks = filteredTasks,
                 onDelete = { task ->
                     taskToDelete = task // Trigger the delete confirmation dialog
+                },
+                onFavoriteToggle = { taskToToggle ->
+                    // Toggle the favorite status of the task
+                    val index = tasks.indexOfFirst { it == taskToToggle }
+                    if (index != -1) {
+                        tasks[index] = tasks[index].copy(favorite = !tasks[index].favorite)
+                    }
                 }
             )
         }

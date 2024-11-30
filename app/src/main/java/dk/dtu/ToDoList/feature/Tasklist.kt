@@ -26,6 +26,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import dk.dtu.ToDoList.R
@@ -76,7 +78,8 @@ data class BottomNavItem(
 fun TaskList(
     Tasks: List<Task>,
     modifier: Modifier = Modifier,
-    onDelete: (Task) -> Unit // Pass a callback to handle deletion
+    onDelete: (Task) -> Unit, // Pass a callback to handle deletion
+    onFavoriteToggle: (Task) -> Unit
 ) {
     val scrollState = rememberLazyListState()
 
@@ -93,7 +96,8 @@ fun TaskList(
         itemsIndexed(Tasks) { _, task ->
             TaskItem(
                 task = task,
-                onDelete = onDelete // Pass the delete callback to TaskItem
+                onDelete = onDelete, // Pass the delete callback to TaskItem
+                onFavoriteToggle = onFavoriteToggle
             )
         }
     }
@@ -103,7 +107,8 @@ fun TaskList(
 @Composable
 fun TaskItem(
     task: Task,
-    onDelete: (Task) -> Unit
+    onDelete: (Task) -> Unit,
+    onFavoriteToggle: (Task) -> Unit
 ) {
     val showDeleteDialog = remember { mutableStateOf(false) }
     val dateFormatter = SimpleDateFormat("dd-MM", Locale.US)
@@ -162,11 +167,18 @@ fun TaskItem(
         )
         Spacer(modifier = Modifier.height(4.dp))
 
-        Image(
-            painter = painterResource(id = R.drawable.favorite_black), // Ensure it's a vector drawable
-            contentDescription = "Favorite Icon",
-            modifier = Modifier.size(24.dp) // Modify the size if needed
-        )
+        IconButton(onClick = { onFavoriteToggle(task) }) {
+            Icon(
+                imageVector = if (task.favorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                contentDescription = if (task.favorite) "Unfavorite Task" else "Favorite Task",
+                tint = if (task.favorite) Color.Red else Color.Gray
+            )
+        }
+        //Image(
+        //painter = painterResource(id = R.drawable.favorite_black), // Ensure it's a vector drawable
+           // contentDescription = "Favorite Icon",
+            //modifier = Modifier.size(24.dp) // Modify the size if needed
+        //)
         Spacer(modifier = Modifier.height(4.dp))
         // Delete Button
         IconButton(onClick = { showDeleteDialog.value = true }) {

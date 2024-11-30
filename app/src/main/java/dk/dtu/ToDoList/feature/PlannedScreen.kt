@@ -62,6 +62,12 @@ fun PlannedScreen(tasks: MutableList<Task>) { // MutableList to allow deletion
             onDelete = { task ->
                 taskToDelete = task
                 showDeleteDialog = true
+            },
+            onFavoriteToggle = { taskToToggle ->
+                val index = tasks.indexOfFirst { it == taskToToggle }
+                if (index != -1) {
+                    tasks[index] = tasks[index].copy(favorite = !tasks[index].favorite)
+                }
             }
         )
     }
@@ -87,7 +93,8 @@ fun PlannedScreen(tasks: MutableList<Task>) { // MutableList to allow deletion
 fun TasksForDate(
     tasks: List<Task>,
     selectedDate: LocalDate,
-    onDelete: (Task) -> Unit // Add onDelete callback
+    onDelete: (Task) -> Unit, // Add onDelete callback
+    onFavoriteToggle: (Task) -> Unit
 ) {
     val tasksForDate = remember(selectedDate, tasks) {
         tasks.filter { task ->
@@ -106,7 +113,8 @@ fun TasksForDate(
             TaskList(
                 Tasks = tasksForDate,
                 modifier = Modifier.fillMaxWidth(),
-                onDelete = onDelete // Pass the delete callback
+                onDelete = onDelete, // Pass the delete callback
+                onFavoriteToggle = onFavoriteToggle
             )
         } else {
             Text(

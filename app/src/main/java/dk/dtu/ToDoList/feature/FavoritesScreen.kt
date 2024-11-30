@@ -46,6 +46,13 @@ fun FavouritesScreen(tasks: MutableList<Task>) {
             modifier = Modifier.weight(1f),
             onDelete = { task ->
                 taskToDelete = task // Open confirmation dialog for this task
+            },
+            onFavoriteToggle = { taskToToggle ->
+                val index = tasks.indexOfFirst { it == taskToToggle }
+                if (index != -1) {
+                    tasks[index] = tasks[index].copy(favorite = !tasks[index].favorite)
+                    favouriteTasks = tasks.filter { it.favorite } // Update the favorite list
+                }
             }
         )
     }
