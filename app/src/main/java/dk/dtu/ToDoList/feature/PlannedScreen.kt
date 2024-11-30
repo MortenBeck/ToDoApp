@@ -41,6 +41,7 @@ fun PlannedScreen(tasks: MutableList<Task>, navController: NavController) { // M
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showAddTaskDialog by remember{mutableStateOf(false)}
     var taskToDelete by remember { mutableStateOf<Task?>(null) }
+    var showDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -89,7 +90,7 @@ fun PlannedScreen(tasks: MutableList<Task>, navController: NavController) { // M
         contentAlignment = Alignment.BottomEnd // Align to bottom-end
     ) {
         IconButton(
-            onClick = { showAddTaskDialog = true },
+            onClick = { showDialog = true }, // Use the correct state variable
             modifier = Modifier.size(64.dp) // Adjust size as needed
         ) {
             Surface(
@@ -107,6 +108,19 @@ fun PlannedScreen(tasks: MutableList<Task>, navController: NavController) { // M
                 )
             }
         }
+    }
+
+// Add Task Dialog
+    if (showDialog) {
+        AddTaskDialog(
+            showDialog = showDialog,
+            navController = navController,
+            onDismiss = { showDialog = false }, // Close dialog on dismiss
+            onTaskAdded = { newTask ->
+                tasks.add(newTask) // Add the new task to the list
+                showDialog = false // Close the dialog after adding the task
+            }
+        )
     }
 
     // Show delete confirmation dialog

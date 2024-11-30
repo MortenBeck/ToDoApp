@@ -78,8 +78,8 @@ fun ToDoApp() {
             }
             composable("Profile") {
                 ProfileScreen(
-                    navController=navController
-                )
+                    tasks = mutableTasks,
+                    navController = navController)
             }
             composable("addToCalendar?taskName={taskName}") { backStackEntry ->
                 val taskName = backStackEntry.arguments?.getString("taskName") ?: "New Task"

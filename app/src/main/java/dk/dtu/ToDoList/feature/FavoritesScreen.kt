@@ -37,7 +37,6 @@ fun FavouritesScreen(tasks: MutableList<Task>,navController: NavController) {
     }
 
     var taskToDelete by remember { mutableStateOf<Task?>(null) }
-
     var showDialog by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize()) {

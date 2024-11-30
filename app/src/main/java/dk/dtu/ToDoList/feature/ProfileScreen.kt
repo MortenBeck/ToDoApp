@@ -14,8 +14,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,12 +32,15 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import dk.dtu.ToDoList.R
+import dk.dtu.ToDoList.data.Task
 
 
 @Composable
-fun ProfileScreen(navController: NavController) {
+fun ProfileScreen(tasks: MutableList<Task>, navController: NavController) {
     // State to control the visibility of the Task Statistics section
     var showTaskStatistics by remember { mutableStateOf(false) }
+    var showAddTaskDialog by remember{mutableStateOf(false)}
+    var showDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -161,6 +168,45 @@ fun ProfileScreen(navController: NavController) {
                 )
             }
         }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        contentAlignment = Alignment.BottomEnd // Align to bottom-end
+    ) {
+        IconButton(
+            onClick = { showDialog = true },
+            modifier = Modifier.size(64.dp) // Adjust size as needed
+        ) {
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.primary,
+                shadowElevation = 6.dp
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Add Task",
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier
+                        .padding(12.dp)
+                        .size(32.dp) // Icon size
+                )
+            }
+        }
+    }
+    // Add Task Dialog
+    if (showDialog) {
+        AddTaskDialog(
+            showDialog = showDialog,
+            navController = navController,
+            onDismiss = { showDialog = false },
+            onTaskAdded = { newTask ->
+                tasks.add(newTask) // Add the new task to the list
+                showDialog = false
+            }
+        )
     }
 }
 
