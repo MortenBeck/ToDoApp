@@ -171,7 +171,7 @@ fun TaskItem(
             Icon(
                 imageVector = if (task.favorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                 contentDescription = if (task.favorite) "Unfavorite Task" else "Favorite Task",
-                tint = if (task.favorite) Color.Red else Color.Gray
+                tint = if (task.favorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
             )
         }
         //Image(
