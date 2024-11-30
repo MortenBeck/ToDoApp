@@ -67,7 +67,7 @@ fun ToDoApp() {
                 )
             }
             composable("Favourites") {
-                FavouritesScreen()
+                FavouritesScreen(tasks = mutableTasks)
             }
             composable("Planned") {
                 PlannedScreen(tasks = mutableTasks) // Use the shared mutable task list

@@ -16,35 +16,14 @@ import dk.dtu.ToDoList.data.TaskPriority
 import dk.dtu.ToDoList.data.TaskTag
 import dk.dtu.ToDoList.data.TasksRepository.simpleDateFormat
 import androidx.compose.runtime.*
-
+import dk.dtu.ToDoList.data.TasksRepository.Tasks
 
 
 @Composable
-fun FavouritesScreen() {
-    val favouriteTasks = remember {
-        mutableStateListOf(
-            Task(
-                name = "Walk the dog",
-                deadline = simpleDateFormat.parse("17-11-2024")!!,
-                priority = TaskPriority.MEDIUM,
-                tag = TaskTag.PET,
-                completed = false
-            ),
-            Task(
-                name = "Grocery Shopping",
-                deadline = simpleDateFormat.parse("18-11-2024")!!,
-                priority = TaskPriority.MEDIUM,
-                tag = TaskTag.HOME,
-                completed = false
-            ),
-            Task(
-                name = "Research christmas gifts",
-                deadline = simpleDateFormat.parse("12-12-2024")!!,
-                priority = TaskPriority.LOW,
-                tag = TaskTag.HOME,
-                completed = false
-            )
-        )
+fun FavouritesScreen(tasks: MutableList<Task>) {
+    // State to hold the currently filtered favorite tasks
+    var favouriteTasks by remember {
+        mutableStateOf(tasks.filter { it.favorite })
     }
 
     var taskToDelete by remember { mutableStateOf<Task?>(null) }
@@ -76,7 +55,10 @@ fun FavouritesScreen() {
         DeleteConfirmation(
             task = taskToDelete!!,
             onConfirm = {
-                favouriteTasks.remove(taskToDelete)
+                // Remove task from the original list
+                tasks.remove(taskToDelete)
+                // Re-filter the favourite tasks
+                favouriteTasks = tasks.filter { it.favorite }
                 taskToDelete = null // Close the dialog
             },
             onDismiss = {

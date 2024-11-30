@@ -16,5 +16,5 @@ data class Task(
     val priority: TaskPriority,
     val tag: TaskTag,
     val completed: Boolean,
-    var isFavorite: Boolean = false  // Add this property
+    val favorite: Boolean = false
 )

@@ -114,7 +114,7 @@ fun AddTaskDialog(
                                     val newTask = Task(
                                         name = taskName,
                                         priority = TaskPriority.valueOf(priorityLevel.uppercase()),
-                                        isFavorite = isFavorite,
+                                        favorite = isFavorite,
                                         deadline = Date(), // Default to current date if no calendar selected
                                         tag = TaskTag.WORK,
                                         completed = false
