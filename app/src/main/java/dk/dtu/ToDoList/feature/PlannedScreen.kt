@@ -78,6 +78,12 @@ fun PlannedScreen(tasks: MutableList<Task>, navController: NavController) { // M
                 if (index != -1) {
                     tasks[index] = tasks[index].copy(favorite = !tasks[index].favorite)
                 }
+            },
+            onCompleteToggle = { taskToComplete ->
+                val index = tasks.indexOfFirst { it == taskToComplete }
+                if (index != -1) {
+                    tasks[index] = tasks[index].copy(completed = !tasks[index].completed)
+                }
             }
         )
     }
@@ -145,7 +151,8 @@ fun TasksForDate(
     tasks: List<Task>,
     selectedDate: LocalDate,
     onDelete: (Task) -> Unit, // Add onDelete callback
-    onFavoriteToggle: (Task) -> Unit
+    onFavoriteToggle: (Task) -> Unit,
+    onCompleteToggle: (Task) -> Unit
 ) {
     val tasksForDate = remember(selectedDate, tasks) {
         tasks.filter { task ->
@@ -164,8 +171,9 @@ fun TasksForDate(
             TaskList(
                 Tasks = tasksForDate,
                 modifier = Modifier.fillMaxWidth(),
-                onDelete = onDelete, // Pass the delete callback
-                onFavoriteToggle = onFavoriteToggle
+                onDelete = onDelete,
+                onFavoriteToggle = onFavoriteToggle,
+                onCompleteToggle = onCompleteToggle
             )
         } else {
             Text(

@@ -65,6 +65,12 @@ fun FavouritesScreen(tasks: MutableList<Task>,navController: NavController) {
                         tasks[index] = tasks[index].copy(favorite = !tasks[index].favorite)
                         favouriteTasks = tasks.filter { it.favorite } // Update the favorite list
                     }
+                },
+                onCompleteToggle = { taskToComplete ->
+                    val index = tasks.indexOfFirst { it == taskToComplete }
+                    if (index != -1) {
+                        tasks[index] = tasks[index].copy(completed = !tasks[index].completed)
+                    }
                 }
             )
         }

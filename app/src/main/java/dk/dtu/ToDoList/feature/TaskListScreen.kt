@@ -37,7 +37,9 @@ import androidx.compose.ui.Alignment
 @Composable
 fun TaskListScreen(tasks: MutableList<Task>,
                    onDelete: (Task) -> Unit,
-                   onFavoriteToggle: (Task) -> Unit) {
+                   onFavoriteToggle: (Task) -> Unit,
+                   onCompleteToggle: (Task) -> Unit)
+{
     // Get today's start-of-day and tomorrow's start-of-day
     val todayStart = Calendar.getInstance().apply {
         set(Calendar.HOUR_OF_DAY, 0)
@@ -72,7 +74,8 @@ fun TaskListScreen(tasks: MutableList<Task>,
                 TaskItem(
                     task = task,
                     onDelete = onDelete, // Pass delete callback to TaskItem
-                    onFavoriteToggle = onFavoriteToggle
+                    onFavoriteToggle = onFavoriteToggle,
+                    onCompleteToggle = onCompleteToggle
                 )
             }
             item {
@@ -89,7 +92,8 @@ fun TaskListScreen(tasks: MutableList<Task>,
                 TaskItem(
                     task = task,
                     onDelete = onDelete, // Pass delete callback to TaskItem
-                    onFavoriteToggle = onFavoriteToggle
+                    onFavoriteToggle = onFavoriteToggle,
+                    onCompleteToggle = onCompleteToggle
                 )
             }
         }
