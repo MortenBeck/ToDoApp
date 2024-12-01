@@ -25,9 +25,11 @@ import java.util.Locale
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import dk.dtu.ToDoList.R
@@ -79,7 +81,8 @@ fun TaskList(
     Tasks: List<Task>,
     modifier: Modifier = Modifier,
     onDelete: (Task) -> Unit, // Pass a callback to handle deletion
-    onFavoriteToggle: (Task) -> Unit
+    onFavoriteToggle: (Task) -> Unit,
+    onCompleteToggle: (Task) -> Unit
 ) {
     val scrollState = rememberLazyListState()
 
@@ -96,8 +99,9 @@ fun TaskList(
         itemsIndexed(Tasks) { _, task ->
             TaskItem(
                 task = task,
-                onDelete = onDelete, // Pass the delete callback to TaskItem
-                onFavoriteToggle = onFavoriteToggle
+                onDelete = onDelete,
+                onFavoriteToggle = onFavoriteToggle,
+                onCompleteToggle = onCompleteToggle
             )
         }
     }
@@ -108,7 +112,8 @@ fun TaskList(
 fun TaskItem(
     task: Task,
     onDelete: (Task) -> Unit,
-    onFavoriteToggle: (Task) -> Unit
+    onFavoriteToggle: (Task) -> Unit,
+    onCompleteToggle: (Task) -> Unit
 ) {
     val showDeleteDialog = remember { mutableStateOf(false) }
     val dateFormatter = SimpleDateFormat("dd-MM", Locale.US)
@@ -133,6 +138,18 @@ fun TaskItem(
                 .size(24.dp)
                 .padding(end = 8.dp)
         )
+        // Completion Button
+        IconButton(
+            onClick = { onCompleteToggle(task) },
+            modifier = Modifier.padding(end = 8.dp)
+        ) {
+            Icon(
+                imageVector = if (task.completed) Icons.Default.CheckCircle else Icons.Default.RadioButtonUnchecked,
+                contentDescription = if (task.completed) "Mark as Incomplete" else "Mark as Complete",
+                tint = if (task.completed) Color.Green else Color.Gray
+            )
+
+        }
 
         // Task details in a column
         Column(
