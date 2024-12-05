@@ -40,7 +40,7 @@ fun ToDoApp() {
                 items = listOf(
                     BottomNavItem("Tasks", R.drawable.home_grey),
                     BottomNavItem("Favourites", R.drawable.favorite_grey),
-                    BottomNavItem("Planned", R.drawable.calender_grey),
+                    BottomNavItem("Calendar", R.drawable.calender_grey),
                     BottomNavItem("Profile", R.drawable.profile_grey),
                 ),
                 onItemClick = { item ->
@@ -71,7 +71,7 @@ fun ToDoApp() {
                     tasks = mutableTasks,
                     navController = navController)
             }
-            composable("Planned") {
+            composable("Calendar") {
                 PlannedScreen(
                     tasks = mutableTasks,
                     navController = navController) // Use the shared mutable task list

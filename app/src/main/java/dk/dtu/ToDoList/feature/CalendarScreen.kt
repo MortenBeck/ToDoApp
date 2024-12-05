@@ -1,6 +1,5 @@
 package dk.dtu.ToDoList.feature
 
-import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -26,8 +25,6 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.navigation.NavController
 import androidx.compose.material3.*
@@ -50,7 +47,7 @@ fun PlannedScreen(tasks: MutableList<Task>, navController: NavController) { // M
     ) {
         // Title
         Text(
-            text = "Planned",
+            text = "Calendar",
             style = MaterialTheme.typography.headlineLarge,
             modifier = Modifier.padding(bottom = 24.dp)
         )
