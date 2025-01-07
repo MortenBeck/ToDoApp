@@ -69,6 +69,7 @@ fun TaskListScreen(
     val isExpiredExpanded = remember { mutableStateOf(true) }
     val isTodayExpanded = remember { mutableStateOf(true) }
     val isFutureExpanded = remember { mutableStateOf(true) }
+    val isCompletedExpanded = remember { mutableStateOf(false) }
 
     LazyColumn(
         modifier = Modifier
@@ -137,6 +138,27 @@ fun TaskListScreen(
             }
             if (isFutureExpanded.value) {
                 itemsIndexed(futureTasks) { _, task ->
+                    TaskItem(
+                        task = task,
+                        onDelete = onDelete,
+                        onFavoriteToggle = onFavoriteToggle,
+                        onCompleteToggle = onCompleteToggle
+                    )
+                }
+            }
+        }
+        // "Completed" Section
+        if (completedTasks.isNotEmpty()) {
+            item {
+                SectionHeader(
+                    title = "Past Completions",
+                    count = completedTasks.size,
+                    isExpanded = isCompletedExpanded.value,
+                    onToggle = { isCompletedExpanded.value = !isCompletedExpanded.value }
+                )
+            }
+            if (isCompletedExpanded.value) {
+                itemsIndexed(completedTasks) { _, task ->
                     TaskItem(
                         task = task,
                         onDelete = onDelete,
