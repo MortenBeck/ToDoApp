@@ -74,14 +74,14 @@ object TasksRepository {
         ),
         Task(
             name = "Homework - Math",
-            deadline = simpleDateFormat.parse("09-12-2024")!!,
+            deadline = simpleDateFormat.parse("07-01-2025")!!,
             priority = TaskPriority.HIGH,
             tag = TaskTag.SCHOOL,
             completed = false
         ),
         Task(
             name = "Find passport",
-            deadline = simpleDateFormat.parse("10-12-2024")!!,
+            deadline = simpleDateFormat.parse("10-01-2025")!!,
             priority = TaskPriority.MEDIUM,
             tag = TaskTag.HOME,
             completed = false
