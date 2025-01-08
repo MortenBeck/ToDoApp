@@ -1,5 +1,7 @@
 package dk.dtu.ToDoList.feature
 
+import android.os.VibrationEffect
+import android.os.Vibrator
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -40,8 +42,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.*
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-
-
+import androidx.compose.ui.platform.LocalContext
 
 
 @Composable
@@ -107,7 +108,6 @@ fun TaskList(
     }
 }
 
-
 @Composable
 fun TaskItem(
     task: Task,
@@ -117,6 +117,8 @@ fun TaskItem(
 ) {
     val showDeleteDialog = remember { mutableStateOf(false) }
     val dateFormatter = SimpleDateFormat("dd-MM", Locale.US)
+    val context = LocalContext.current // Get context
+    val vibrator = context.getSystemService(Vibrator::class.java) // Initialize Vibrator
 
     Row(
         modifier = Modifier
@@ -140,7 +142,16 @@ fun TaskItem(
         )
         // Completion Button
         IconButton(
-            onClick = { onCompleteToggle(task) },
+            onClick = {
+                // Trigger vibration on task completion
+                vibrator?.vibrate(
+                    VibrationEffect.createOneShot(
+                        200, // Duration in milliseconds
+                        VibrationEffect.DEFAULT_AMPLITUDE
+                    )
+                )
+                onCompleteToggle(task)
+            },
             modifier = Modifier.padding(end = 8.dp)
         ) {
             Icon(
@@ -148,7 +159,6 @@ fun TaskItem(
                 contentDescription = if (task.completed) "Mark as Incomplete" else "Mark as Complete",
                 tint = if (task.completed) Color.Green else Color.Gray
             )
-
         }
 
         // Task details in a column
@@ -158,11 +168,11 @@ fun TaskItem(
                 .weight(1f)
         ) {
             Text(
-                text = task.name, // Title of the task
+                text = task.name,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
             )
-            if (task.deadline.time != 0L) { // Check if a deadline exists
+            if (task.deadline.time != 0L) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Image(
                         painter = painterResource(id = R.drawable.calender_black),
@@ -204,10 +214,11 @@ fun TaskItem(
         DeleteConfirmation(
             task = task,
             onConfirm = {
-                onDelete(task) // Call the deletion handler
+                onDelete(task)
                 showDeleteDialog.value = false
             },
             onDismiss = { showDeleteDialog.value = false }
         )
     }
 }
+
