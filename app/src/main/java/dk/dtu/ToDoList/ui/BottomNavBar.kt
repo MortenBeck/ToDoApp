@@ -56,7 +56,7 @@ fun BottomNavBarPreview() {
     val items = listOf(
         BottomNavItem("Home", R.drawable.home_black, R.drawable.home_black, isSelected = true),
         BottomNavItem("Favourites", R.drawable.favorite_black, R.drawable.favorite_black),
-        BottomNavItem("Planned", R.drawable.calender_black, R.drawable.calender_black)
+        BottomNavItem("Calendar", R.drawable.calender_black, R.drawable.calender_black)
     )
     BottomNavBar(items = items, onItemClick = {})
 }

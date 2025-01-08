@@ -32,7 +32,7 @@ import dk.dtu.ToDoList.data.TasksRepository.Tasks
 
 
 @Composable
-fun PlannedScreen(tasks: MutableList<Task>, navController: NavController) { // MutableList to allow deletion
+fun CalendarScreen(tasks: MutableList<Task>, navController: NavController) { // MutableList to allow deletion
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
     var showDeleteDialog by remember { mutableStateOf(false) }

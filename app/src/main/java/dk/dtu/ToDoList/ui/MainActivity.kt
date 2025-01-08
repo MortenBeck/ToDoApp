@@ -72,7 +72,7 @@ fun ToDoApp() {
                     navController = navController)
             }
             composable("Calendar") {
-                PlannedScreen(
+                CalendarScreen(
                     tasks = mutableTasks,
                     navController = navController) // Use the shared mutable task list
             }
