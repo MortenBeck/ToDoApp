@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -17,6 +18,8 @@ import dk.dtu.ToDoList.R
 import dk.dtu.ToDoList.data.Task
 import dk.dtu.ToDoList.data.TasksRepository
 import dk.dtu.ToDoList.feature.*
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,8 +34,26 @@ class MainActivity : ComponentActivity() {
 fun ToDoApp() {
     val navController = rememberNavController()
 
-    // Create mutableTasks from TasksRepository.Tasks
-    val mutableTasks = remember { mutableStateListOf<Task>().apply { addAll(TasksRepository.Tasks) } }
+
+    // Get current user ID (using FirebaseAuth)
+    val userId = FirebaseAuth.getInstance().currentUser?.uid ?: "defaultUser" // Placeholder for testing
+
+    // Create mutableTasks to store tasks fetched from Firestore
+    val mutableTasks = remember { mutableStateListOf<Task>() }
+
+    // Fetch tasks for the current user
+    LaunchedEffect(userId) {
+        TasksRepository.getTasks(userId,
+            onSuccess = { tasks ->
+                mutableTasks.clear()
+                mutableTasks.addAll(tasks)
+            },
+            onFailure = { exception ->
+                // Handle failure (e.g., show a message to the user)
+                println("Error fetching tasks: ${exception.message}")
+            }
+        )
+    }
 
     Scaffold(
         bottomBar = {
@@ -89,6 +110,17 @@ fun ToDoApp() {
                     taskName = taskName,
                     onTaskAdded = { newTask ->
                         mutableTasks.add(newTask) // Add the task to the mutable list
+                        // Optionally, you could save this task to Firestore as well
+                        TasksRepository.addTask(newTask,
+                            onSuccess = { taskId ->
+                                // Handle success (e.g., show a confirmation)
+                                println("Task added with ID: $taskId")
+                            },
+                            onFailure = { exception ->
+                                // Handle failure (e.g., show an error message)
+                                println("Error adding task: ${exception.message}")
+                            }
+                        )
                     }
                 )
             }

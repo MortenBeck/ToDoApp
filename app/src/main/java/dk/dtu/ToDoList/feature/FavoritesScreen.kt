@@ -22,11 +22,11 @@ import androidx.compose.ui.unit.dp
 import dk.dtu.ToDoList.data.Task
 import dk.dtu.ToDoList.data.TaskPriority
 import dk.dtu.ToDoList.data.TaskTag
-import dk.dtu.ToDoList.data.TasksRepository.simpleDateFormat
+
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.navigation.NavController
-import dk.dtu.ToDoList.data.TasksRepository.Tasks
+
 
 
 @Composable

@@ -19,7 +19,6 @@ import androidx.compose.ui.Alignment
 import dk.dtu.ToDoList.data.Task
 import dk.dtu.ToDoList.data.TaskTag
 import dk.dtu.ToDoList.data.TaskPriority
-import dk.dtu.ToDoList.data.TasksRepository.simpleDateFormat
 import java.text.SimpleDateFormat
 import java.util.Locale
 import androidx.compose.foundation.Image
