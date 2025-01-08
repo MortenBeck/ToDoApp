@@ -7,16 +7,20 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import dk.dtu.ToDoList.data.Task
 import java.time.LocalDate
 import java.time.YearMonth
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.temporal.WeekFields
 import java.util.*
@@ -26,8 +30,17 @@ fun Calendar(
     selectedDate: LocalDate,
     currentMonth: YearMonth,
     onDateSelected: (LocalDate) -> Unit,
-    onMonthChanged: (YearMonth) -> Unit
+    onMonthChanged: (YearMonth) -> Unit,
+    tasks: List<Task> // Pass tasks to the Calendar
 ) {
+    val taskDates = remember(tasks) {
+        tasks.map { task ->
+            task.deadline.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate()
+        }.toSet() // Use a Set for quick lookup
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -117,6 +130,7 @@ fun Calendar(
                     date = date,
                     isSelected = date == selectedDate,
                     isCurrentMonth = date.month == currentMonth.month,
+                    hasTask = taskDates.contains(date), // Check if tasks exist for the day
                     onDateSelected = onDateSelected
                 )
             }
@@ -124,11 +138,13 @@ fun Calendar(
     }
 }
 
+
 @Composable
 fun DayCell(
     date: LocalDate,
     isSelected: Boolean,
     isCurrentMonth: Boolean,
+    hasTask: Boolean, // New parameter to indicate if the day has tasks
     onDateSelected: (LocalDate) -> Unit
 ) {
     val isToday = date == LocalDate.now()
@@ -148,14 +164,25 @@ fun DayCell(
             .padding(4.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = date.dayOfMonth.toString(),
-            style = MaterialTheme.typography.bodyMedium,
-            color = when {
-                isSelected -> MaterialTheme.colorScheme.onPrimary
-                !isCurrentMonth -> MaterialTheme.colorScheme.outline
-                else -> MaterialTheme.colorScheme.onSurface
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = date.dayOfMonth.toString(),
+                style = MaterialTheme.typography.bodyMedium,
+                color = when {
+                    isSelected -> MaterialTheme.colorScheme.onPrimary
+                    !isCurrentMonth -> MaterialTheme.colorScheme.outline
+                    else -> MaterialTheme.colorScheme.onSurface
+                }
+            )
+            if (hasTask) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Box(
+                    modifier = Modifier
+                        .size(6.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.secondary)
+                )
             }
-        )
+        }
     }
 }

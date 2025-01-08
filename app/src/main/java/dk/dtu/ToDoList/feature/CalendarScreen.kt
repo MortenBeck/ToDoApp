@@ -28,7 +28,7 @@ import java.time.format.DateTimeFormatter
 import androidx.compose.ui.Alignment
 import androidx.navigation.NavController
 import androidx.compose.material3.*
-
+import dk.dtu.ToDoList.data.TasksRepository.Tasks
 
 
 @Composable
@@ -57,7 +57,8 @@ fun PlannedScreen(tasks: MutableList<Task>, navController: NavController) { // M
             selectedDate = selectedDate,
             currentMonth = currentMonth,
             onDateSelected = { selectedDate = it },
-            onMonthChanged = { currentMonth = it }
+            onMonthChanged = { currentMonth = it },
+            tasks = tasks
         )
 
         Spacer(modifier = Modifier.height(16.dp))

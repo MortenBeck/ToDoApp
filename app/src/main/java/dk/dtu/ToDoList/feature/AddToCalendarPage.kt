@@ -20,6 +20,7 @@ import androidx.navigation.NavController
 import dk.dtu.ToDoList.data.Task
 import dk.dtu.ToDoList.data.TaskPriority
 import dk.dtu.ToDoList.data.TaskTag
+import dk.dtu.ToDoList.data.TasksRepository.Tasks
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
@@ -49,7 +50,8 @@ fun AddToCalendarPage(
             selectedDate = selectedDate,
             currentMonth = currentMonth,
             onDateSelected = { selectedDate = it },
-            onMonthChanged = { currentMonth = it }
+            onMonthChanged = { currentMonth = it },
+            tasks = emptyList()
         )
 
         Spacer(modifier = Modifier.height(16.dp))
