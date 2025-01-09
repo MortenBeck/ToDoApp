@@ -71,100 +71,128 @@ fun TaskListScreen(
     val isFutureExpanded = remember { mutableStateOf(true) }
     val isCompletedExpanded = remember { mutableStateOf(false) }
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp)
-    ) {
-        // "Expired Tasks" Section
-        if (expiredTasks.isNotEmpty()) {
-            item {
-                SectionHeader(
-                    title = "Expired",
-                    count = expiredTasks.size,
-                    isExpanded = isExpiredExpanded.value,
-                    onToggle = { isExpiredExpanded.value = !isExpiredExpanded.value }
-                )
-            }
-            if (isExpiredExpanded.value) {
-                itemsIndexed(expiredTasks) { _, task ->
-                    TaskItem(
-                        task = task,
-                        onDelete = onDelete,
-                        onFavoriteToggle = onFavoriteToggle,
-                        onCompleteToggle = onCompleteToggle
-                    )
-                }
-                item {
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-            }
-        }
+    val isEmpty =
+        expiredTasks.isEmpty() && todayTasks.isEmpty() && futureTasks.isEmpty() && completedTasks.isEmpty()
 
-        // "Today" Section
-        if (todayTasks.isNotEmpty()) {
-            item {
-                SectionHeader(
-                    title = "Today",
-                    count = todayTasks.size,
-                    isExpanded = isTodayExpanded.value,
-                    onToggle = { isTodayExpanded.value = !isTodayExpanded.value }
+    if (isEmpty) {
+        // Show fallback message
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = "It seems you haven't added any tasks yet!",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                Text(
+                    text = "Click the \"+\"-button in the bottom-right to get started!",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
                 )
             }
-            if (isTodayExpanded.value) {
-                itemsIndexed(todayTasks) { _, task ->
-                    TaskItem(
-                        task = task,
-                        onDelete = onDelete,
-                        onFavoriteToggle = onFavoriteToggle,
-                        onCompleteToggle = onCompleteToggle
-                    )
-                }
-                item {
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-            }
         }
+    } else {
 
-        // "Future" Section
-        if (futureTasks.isNotEmpty()) {
-            item {
-                SectionHeader(
-                    title = "Future",
-                    count = futureTasks.size,
-                    isExpanded = isFutureExpanded.value,
-                    onToggle = { isFutureExpanded.value = !isFutureExpanded.value }
-                )
-            }
-            if (isFutureExpanded.value) {
-                itemsIndexed(futureTasks) { _, task ->
-                    TaskItem(
-                        task = task,
-                        onDelete = onDelete,
-                        onFavoriteToggle = onFavoriteToggle,
-                        onCompleteToggle = onCompleteToggle
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp)
+        ) {
+            // "Expired Tasks" Section
+            if (expiredTasks.isNotEmpty()) {
+                item {
+                    SectionHeader(
+                        title = "Expired",
+                        count = expiredTasks.size,
+                        isExpanded = isExpiredExpanded.value,
+                        onToggle = { isExpiredExpanded.value = !isExpiredExpanded.value }
                     )
                 }
+                if (isExpiredExpanded.value) {
+                    itemsIndexed(expiredTasks) { _, task ->
+                        TaskItem(
+                            task = task,
+                            onDelete = onDelete,
+                            onFavoriteToggle = onFavoriteToggle,
+                            onCompleteToggle = onCompleteToggle
+                        )
+                    }
+                    item {
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+                }
             }
-        }
-        // "Completed" Section
-        if (completedTasks.isNotEmpty()) {
-            item {
-                SectionHeader(
-                    title = "Past Completions",
-                    count = completedTasks.size,
-                    isExpanded = isCompletedExpanded.value,
-                    onToggle = { isCompletedExpanded.value = !isCompletedExpanded.value }
-                )
-            }
-            if (isCompletedExpanded.value) {
-                itemsIndexed(completedTasks) { _, task ->
-                    TaskItem(
-                        task = task,
-                        onDelete = onDelete,
-                        onFavoriteToggle = onFavoriteToggle,
-                        onCompleteToggle = onCompleteToggle
+
+            // "Today" Section
+            if (todayTasks.isNotEmpty()) {
+                item {
+                    SectionHeader(
+                        title = "Today",
+                        count = todayTasks.size,
+                        isExpanded = isTodayExpanded.value,
+                        onToggle = { isTodayExpanded.value = !isTodayExpanded.value }
                     )
+                }
+                if (isTodayExpanded.value) {
+                    itemsIndexed(todayTasks) { _, task ->
+                        TaskItem(
+                            task = task,
+                            onDelete = onDelete,
+                            onFavoriteToggle = onFavoriteToggle,
+                            onCompleteToggle = onCompleteToggle
+                        )
+                    }
+                    item {
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+                }
+            }
+
+            // "Future" Section
+            if (futureTasks.isNotEmpty()) {
+                item {
+                    SectionHeader(
+                        title = "Future",
+                        count = futureTasks.size,
+                        isExpanded = isFutureExpanded.value,
+                        onToggle = { isFutureExpanded.value = !isFutureExpanded.value }
+                    )
+                }
+                if (isFutureExpanded.value) {
+                    itemsIndexed(futureTasks) { _, task ->
+                        TaskItem(
+                            task = task,
+                            onDelete = onDelete,
+                            onFavoriteToggle = onFavoriteToggle,
+                            onCompleteToggle = onCompleteToggle
+                        )
+                    }
+                }
+            }
+            // "Completed" Section
+            if (completedTasks.isNotEmpty()) {
+                item {
+                    SectionHeader(
+                        title = "Past Completions",
+                        count = completedTasks.size,
+                        isExpanded = isCompletedExpanded.value,
+                        onToggle = { isCompletedExpanded.value = !isCompletedExpanded.value }
+                    )
+                }
+                if (isCompletedExpanded.value) {
+                    itemsIndexed(completedTasks) { _, task ->
+                        TaskItem(
+                            task = task,
+                            onDelete = onDelete,
+                            onFavoriteToggle = onFavoriteToggle,
+                            onCompleteToggle = onCompleteToggle
+                        )
+                    }
                 }
             }
         }
