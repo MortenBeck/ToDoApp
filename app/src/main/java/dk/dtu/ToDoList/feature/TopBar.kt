@@ -30,12 +30,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 
 
 @Composable
 fun TopBar(searchText: String,
            onSearchTextChange: (String) -> Unit,
-           onProfileClick: () -> Unit) {
+           navController: NavController
+) {
     var isSearchActive by remember { mutableStateOf(false) }
 
     Row(
@@ -46,7 +48,14 @@ fun TopBar(searchText: String,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         // Profile Icon
-        IconButton(onClick = onProfileClick) {
+        IconButton(
+            onClick = {
+                navController.navigate("Profile") {
+                    popUpTo("Tasks") { saveState = true } // Clear back stack to Home screen
+                    launchSingleTop = true // Avoid duplicate Profile screen
+                }
+            }
+        ) {
             Image(
                 painter = painterResource(id = R.drawable.profile_black),
                 contentDescription = "Profile Icon",
@@ -92,14 +101,4 @@ fun TopBar(searchText: String,
             )
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun TopBarPreview(){
-    var searchText by remember { mutableStateOf("") }
-
-    TopBar(searchText = searchText,
-        onSearchTextChange = {searchText = it},
-        onProfileClick = {})
 }

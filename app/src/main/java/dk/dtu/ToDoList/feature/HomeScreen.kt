@@ -31,7 +31,7 @@ fun HomeScreen(tasks: MutableList<Task>, navController: NavController) {
     Box(modifier = Modifier.fillMaxSize()) {
         Column {
             // Top Bar for search/profile
-            TopBar(searchText = searchText, onSearchTextChange = {searchText=it}, onProfileClick = {})
+            TopBar(searchText = searchText, onSearchTextChange = {searchText=it}, navController = navController)
 
             // Display the list of tasks
             TaskListScreen(
