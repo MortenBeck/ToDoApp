@@ -21,51 +21,71 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun HomeScreen(tasks: MutableList<Task>, navController: NavController) {
     var showDialog by remember { mutableStateOf(false) }
-    var taskToDelete by remember { mutableStateOf<Task?>(null) } // State to manage the delete confirmation dialog
+    var taskToDelete by remember { mutableStateOf<Task?>(null) }
+    var searchText by remember { mutableStateOf("") }
 
-    var searchText by remember { mutableStateOf("")}
+    // Create a mutable state for filtered tasks
+    var filteredTasks by remember { mutableStateOf(tasks.toList()) }
 
-    val filteredTasks = tasks.filter {
-        it.name.contains(searchText, ignoreCase = true)}.toMutableList()
+    // Apply search filter
+    val searchFilteredTasks = filteredTasks.filter {
+        it.name.contains(searchText, ignoreCase = true)
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column {
             // Top Bar for search/profile
-            TopBar(searchText = searchText, onSearchTextChange = {searchText=it}, navController = navController)
+            TopBar(
+                searchText = searchText,
+                onSearchTextChange = { searchText = it },
+                navController = navController
+            )
+
+            // Filter Section
+            FilterSection(
+                tasks = tasks,
+                onFilterChange = { newFilteredTasks ->
+                    filteredTasks = newFilteredTasks
+                }
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Display the list of tasks
             TaskListScreen(
-                tasks = filteredTasks,
+                tasks = searchFilteredTasks.toMutableList(),
                 onDelete = { task ->
-                    taskToDelete = task // Trigger the delete confirmation dialog
+                    taskToDelete = task
                 },
                 onFavoriteToggle = { taskToToggle ->
-                    // Toggle the favorite status of the task
                     val index = tasks.indexOfFirst { it == taskToToggle }
                     if (index != -1) {
                         tasks[index] = tasks[index].copy(favorite = !tasks[index].favorite)
+                        // Update filtered tasks to reflect changes
+                        filteredTasks = tasks.toList()
                     }
                 },
                 onCompleteToggle = { taskToComplete ->
                     val index = tasks.indexOfFirst { it == taskToComplete }
                     if (index != -1) {
                         tasks[index] = tasks[index].copy(completed = !tasks[index].completed)
+                        // Update filtered tasks to reflect changes
+                        filteredTasks = tasks.toList()
                     }
                 }
-
             )
         }
 
-        // Floating Add Task Button - Positioned at Bottom-Right Corner
+        // Floating Add Task Button
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp), // Padding from edges
-            contentAlignment = Alignment.BottomEnd // Align to bottom-end
+                .padding(16.dp),
+            contentAlignment = Alignment.BottomEnd
         ) {
             IconButton(
                 onClick = { showDialog = true },
-                modifier = Modifier.size(64.dp) // Adjust size as needed
+                modifier = Modifier.size(64.dp)
             ) {
                 Surface(
                     shape = CircleShape,
@@ -78,36 +98,37 @@ fun HomeScreen(tasks: MutableList<Task>, navController: NavController) {
                         tint = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier
                             .padding(12.dp)
-                            .size(32.dp) // Icon size
+                            .size(32.dp)
                     )
                 }
             }
         }
     }
 
-    // Add Task Dialog
+    // Dialogs
     if (showDialog) {
         AddTaskDialog(
             showDialog = showDialog,
             navController = navController,
             onDismiss = { showDialog = false },
             onTaskAdded = { newTask ->
-                tasks.add(newTask) // Add the new task to the list
+                tasks.add(newTask)
+                filteredTasks = tasks.toList() // Update filtered tasks
                 showDialog = false
             }
         )
     }
 
-    // Delete Confirmation Dialog
     if (taskToDelete != null) {
         DeleteConfirmation(
             task = taskToDelete!!,
             onConfirm = {
-                tasks.remove(taskToDelete) // Remove the task from the list
-                taskToDelete = null // Close the dialog
+                tasks.remove(taskToDelete)
+                filteredTasks = tasks.toList() // Update filtered tasks
+                taskToDelete = null
             },
             onDismiss = {
-                taskToDelete = null // Close the dialog without deleting
+                taskToDelete = null
             }
         )
     }
