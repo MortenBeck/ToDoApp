@@ -187,10 +187,21 @@ fun TaskItem(
                 }
             }
         }
+        val tagIcon = when (task.tag) {
+            TaskTag.WORK -> R.drawable.work
+            TaskTag.SCHOOL -> R.drawable.school
+            TaskTag.PET -> R.drawable.pet
+            TaskTag.HOME -> R.drawable.home_black
+            TaskTag.TRANSPORT -> R.drawable.transport
+            TaskTag.PRIVATE -> R.drawable.lock
+            else -> R.drawable.folder// Fallback icon if needed
+        }
         Image(
-            painter = painterResource(id = R.drawable.work),
-            contentDescription = "Tag Icon",
-            modifier = Modifier.size(16.dp),
+            painter = painterResource(id = tagIcon),
+            contentDescription = "${task.tag} Icon",
+            modifier = Modifier
+                .size(16.dp)
+                .padding(end = 4.dp)
         )
         Spacer(modifier = Modifier.height(4.dp))
 
