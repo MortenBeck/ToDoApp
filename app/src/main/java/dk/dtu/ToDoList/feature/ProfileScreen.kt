@@ -30,6 +30,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -39,14 +41,62 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import dk.dtu.ToDoList.R
 import dk.dtu.ToDoList.data.Task
+import kotlinx.coroutines.launch
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.http.GET
+import retrofit2.http.Query
 
+
+interface WeatherApiService {
+    @GET("weather")
+    suspend fun getWeather(
+        @Query("q") city: String,
+        @Query("appid") apiKey: String,
+        @Query("units") units: String = "metric"
+    ): WeatherResponse
+}
+
+data class WeatherResponse(
+    val weather: List<Weather>,
+    val main: Main,
+    val name: String
+)
+
+data class Weather(val description: String)
+data class Main(val temp: Float)
 
 @Composable
 fun ProfileScreen(tasks: MutableList<Task>, navController: NavController) {
     var showDialog by remember { mutableStateOf(false) }
+    var weatherDescription by remember { mutableStateOf("Fetching weather...") }
+    val scope = rememberCoroutineScope()
+
     val completedTasks = tasks.count { it.completed }
     val totalTasks = tasks.size
     val completionPercentage = if (totalTasks > 0) (completedTasks / totalTasks.toFloat()) * 100 else 0f
+
+    // Initialize Weather API
+    val weatherApi = Retrofit.Builder()
+        .baseUrl("https://api.openweathermap.org/data/2.5/")
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+        .create(WeatherApiService::class.java)
+
+    // Fetch Weather Data
+    LaunchedEffect(Unit) {
+        scope.launch {
+            try {
+                val weather = weatherApi.getWeather(
+                    city = "Copenhagen",
+                    apiKey = "f062e109162abcf31ec182583cae89e0"
+                )
+                weatherDescription = "Today is ${weather.weather[0].description}, ${weather.main.temp}°C."
+            } catch (e: Exception) {
+                weatherDescription = "Could not fetch weather."
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -72,7 +122,7 @@ fun ProfileScreen(tasks: MutableList<Task>, navController: NavController) {
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Keep track of your tasks and achieve more.",
+                    text = "Keep track of your tasks and achieve more.\n$weatherDescription",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onPrimary,
                     textAlign = TextAlign.Center
