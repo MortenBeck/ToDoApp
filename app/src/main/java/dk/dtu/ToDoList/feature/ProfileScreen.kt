@@ -14,8 +14,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -28,7 +32,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import dk.dtu.ToDoList.R
@@ -37,10 +43,10 @@ import dk.dtu.ToDoList.data.Task
 
 @Composable
 fun ProfileScreen(tasks: MutableList<Task>, navController: NavController) {
-    // State to control the visibility of the Task Statistics section
-    var showTaskStatistics by remember { mutableStateOf(false) }
-    var showAddTaskDialog by remember{mutableStateOf(false)}
     var showDialog by remember { mutableStateOf(false) }
+    val completedTasks = tasks.count { it.completed }
+    val totalTasks = tasks.size
+    val completionPercentage = if (totalTasks > 0) (completedTasks / totalTasks.toFloat()) * 100 else 0f
 
     Column(
         modifier = Modifier
@@ -48,22 +54,42 @@ fun ProfileScreen(tasks: MutableList<Task>, navController: NavController) {
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Profile Title
-        Text(
-            text = "Profile",
-            style = MaterialTheme.typography.headlineLarge,
-            modifier = Modifier.padding(bottom = 24.dp)
-        )
+        // Profile Banner
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.primary)
+                .padding(16.dp)
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "Welcome Back, Vincent!",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Keep track of your tasks and achieve more.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
 
-        // Profile Picture Placeholder
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Profile Info Section
         Box(
             modifier = Modifier
                 .size(120.dp)
                 .background(
                     color = MaterialTheme.colorScheme.primaryContainer,
                     shape = CircleShape
-                )
-                .padding(bottom = 16.dp),
+                ),
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -73,139 +99,135 @@ fun ProfileScreen(tasks: MutableList<Task>, navController: NavController) {
             )
         }
 
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = "Vincent Peter",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Text(
+            text = "vincent.peter@email.com",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Profile Stats
+        // Task Statistics
+        Text(
+            text = "Your Task Stats",
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        LinearProgressIndicator(
+            progress = completionPercentage / 100,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(8.dp),
+            color = MaterialTheme.colorScheme.primary
+        )
+        Text(
+            text = "${completionPercentage.toInt()}% Tasks Completed",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 8.dp)
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 16.dp),
+                .padding(vertical = 8.dp),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            StatsItem(label = "Total Tasks", value = "12")
-            StatsItem(label = "Completed", value = "8")
-            StatsItem(label = "Pending", value = "4")
+            StatsItem(label = "Total", value = totalTasks.toString())
+            StatsItem(label = "Completed", value = completedTasks.toString())
+            StatsItem(label = "Pending", value = (totalTasks - completedTasks).toString())
         }
 
-        // Settings Section
-        Column(
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Settings & Logout Buttons
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            ActionButton(
+                icon = Icons.Default.Settings,
+                label = "Settings",
+                onClick = { /* Navigate to settings */ }
+            )
+            ActionButton(
+                icon = Icons.AutoMirrored.Filled.Logout,
+                label = "Logout",
+                onClick = { /* Handle logout */ }
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 24.dp)
+                .fillMaxSize()
+                .padding(16.dp),
+            contentAlignment = Alignment.BottomEnd
         ) {
-            ListItem(
-                icon = R.drawable.profile_grey,
-                title = "Edit Profile"
-            )
-            ListItem(
-                icon = R.drawable.favorite_grey,
-                title = "Favorites"
-            )
-            // "Task Statistics" button toggles visibility of expanded stats
-            ListItem(
-                icon = R.drawable.calender_grey,
-                title = "Task Statistics",
-                onClick = { showTaskStatistics = !showTaskStatistics } // Toggle the visibility
-            )
+            IconButton(
+                onClick = { showDialog = true },
+                modifier = Modifier.size(64.dp)
+            ) {
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.primary,
+                    shadowElevation = 6.dp
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Add Task",
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier
+                            .padding(12.dp)
+                            .size(32.dp)
+                    )
+                }
+            }
         }
 
-        // Show Task Statistics if the button is clicked
-        if (showTaskStatistics) {
-            // Expanded Task Statistics Section
-            Text(
-                text = "Task Statistics",
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(vertical = 16.dp)
+        // Add Task Dialog
+        if (showDialog) {
+            AddTaskDialog(
+                showDialog = showDialog,
+                navController = navController,
+                onDismiss = { showDialog = false },
+                onTaskAdded = { newTask ->
+                    tasks.add(newTask)
+                    showDialog = false
+                }
             )
-
-            // Priority Stats
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                StatsItem(label = "High Priority", value = "3")
-                StatsItem(label = "Medium Priority", value = "5")
-                StatsItem(label = "Low Priority", value = "4")
-            }
-
-            // Tag Stats
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                StatsItem(label = "Work", value = "5")
-                StatsItem(label = "Home", value = "3")
-                StatsItem(label = "School", value = "2")
-                StatsItem(label = "Pet", value = "2")
-            }
-
-            // Upcoming Tasks
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = "Upcoming Tasks: 5",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
-
-            // Task Progress (Completion Percentage)
-            val completionPercentage = (8 / 12f) * 100  // 8 completed out of 12 tasks
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = "Progress: ${completionPercentage.toInt()}% Completed",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
         }
     }
+}
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        contentAlignment = Alignment.BottomEnd // Align to bottom-end
+@Composable
+fun ActionButton(icon: ImageVector, label: String, onClick: () -> Unit) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.clickable { onClick() }
     ) {
-        IconButton(
-            onClick = { showDialog = true },
-            modifier = Modifier.size(64.dp) // Adjust size as needed
-        ) {
-            Surface(
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.primary,
-                shadowElevation = 6.dp
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Add Task",
-                    tint = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier
-                        .padding(12.dp)
-                        .size(32.dp) // Icon size
-                )
-            }
-        }
-    }
-    // Add Task Dialog
-    if (showDialog) {
-        AddTaskDialog(
-            showDialog = showDialog,
-            navController = navController,
-            onDismiss = { showDialog = false },
-            onTaskAdded = { newTask ->
-                tasks.add(newTask) // Add the new task to the list
-                showDialog = false
-            }
+        Icon(
+            imageVector = icon,
+            contentDescription = label,
+            modifier = Modifier.size(40.dp),
+            tint = MaterialTheme.colorScheme.primary
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
@@ -228,34 +250,6 @@ fun StatsItem(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-    }
-}
-
-@Composable
-fun ListItem(
-    icon: Int,
-    title: String,
-    onClick: () -> Unit = {}  // Add onClick parameter to handle button clicks
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(vertical = 12.dp, horizontal = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            painter = painterResource(id = icon),
-            contentDescription = null,
-            modifier = Modifier.size(24.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(modifier = Modifier.width(16.dp))
-        Text(
-            text = title,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface
         )
     }
 }
