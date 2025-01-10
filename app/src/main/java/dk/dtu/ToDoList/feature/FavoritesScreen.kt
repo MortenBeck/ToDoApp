@@ -32,9 +32,10 @@ import dk.dtu.ToDoList.data.TasksRepository.Tasks
 @Composable
 fun FavouritesScreen(tasks: MutableList<Task>,navController: NavController) {
     // State to hold the currently filtered favorite tasks
-    var favouriteTasks by remember {
-        mutableStateOf(tasks.filter { it.favorite })
+    val favouriteTasks by remember {
+        derivedStateOf { tasks.filter { it.favorite } }
     }
+
 
     var taskToDelete by remember { mutableStateOf<Task?>(null) }
     var showDialog by remember { mutableStateOf(false) }
@@ -63,7 +64,6 @@ fun FavouritesScreen(tasks: MutableList<Task>,navController: NavController) {
                     val index = tasks.indexOfFirst { it == taskToToggle }
                     if (index != -1) {
                         tasks[index] = tasks[index].copy(favorite = !tasks[index].favorite)
-                        favouriteTasks = tasks.filter { it.favorite } // Update the favorite list
                     }
                 },
                 onCompleteToggle = { taskToComplete ->
@@ -120,8 +120,6 @@ fun FavouritesScreen(tasks: MutableList<Task>,navController: NavController) {
             onConfirm = {
                 // Remove task from the original list
                 tasks.remove(taskToDelete)
-                // Re-filter the favourite tasks
-                favouriteTasks = tasks.filter { it.favorite }
                 taskToDelete = null // Close the dialog
             },
             onDismiss = {
