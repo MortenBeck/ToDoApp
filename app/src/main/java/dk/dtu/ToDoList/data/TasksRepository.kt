@@ -87,6 +87,25 @@ object TasksRepository {
             }
     }
 
+    // Fetch expired tasks (tasks with a deadline in the past and not deleted)
+    fun getExpiredTasks(userId: String, onSuccess: (List<Task>) -> Unit, onFailure: (Exception) -> Unit) {
+        val currentTime = System.currentTimeMillis() // Current timestamp
+        db.collection("tasks")
+            .whereEqualTo("userId", userId) // Filter tasks by user ID
+            .whereEqualTo("isDeleted", false) // Exclude deleted tasks
+            .whereLessThan("deadline", currentTime) // Find tasks with past deadlines
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val expiredTasks = querySnapshot.documents.mapNotNull { document ->
+                    documentToTask(document) // Convert documents to Task objects
+                }
+                onSuccess(expiredTasks) // Return the expired tasks via the success callback
+            }
+            .addOnFailureListener { exception ->
+                onFailure(exception) // Handle any errors
+            }
+    }
+
     // Fetch favorite tasks
     fun getFavoriteTasks(userId: String, onSuccess: (List<Task>) -> Unit, onFailure: (Exception) -> Unit) {
         db.collection("tasks")
