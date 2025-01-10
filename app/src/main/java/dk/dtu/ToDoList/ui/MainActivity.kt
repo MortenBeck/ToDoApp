@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -38,11 +39,12 @@ fun ToDoApp() {
         bottomBar = {
             BottomNavBar(
                 items = listOf(
-                    BottomNavItem("Tasks", R.drawable.home_grey),
-                    BottomNavItem("Favourites", R.drawable.favorite_grey),
-                    BottomNavItem("Calendar", R.drawable.calender_grey),
-                    BottomNavItem("Profile", R.drawable.profile_grey),
+                    BottomNavItem("Tasks", R.drawable.home_grey,R.drawable.home_black),
+                    BottomNavItem("Favourites", R.drawable.favorite_grey,R.drawable.favorite_black),
+                    BottomNavItem("Calendar", R.drawable.calender_grey,R.drawable.calender_black),
+                    BottomNavItem("Profile", R.drawable.profile_grey, R.drawable.profile_black),
                 ),
+                currentScreen = navController.currentBackStackEntryFlow.collectAsState(initial = navController.currentBackStackEntry).value?.destination?.route ?: "Tasks", // Get current screen
                 onItemClick = { item ->
                     navController.navigate(item.label) {
                         popUpTo(navController.graph.startDestinationId) { saveState = true }
@@ -69,17 +71,20 @@ fun ToDoApp() {
             composable("Favourites") {
                 FavouritesScreen(
                     tasks = mutableTasks,
-                    navController = navController)
+                    navController = navController
+                )
             }
             composable("Calendar") {
                 CalendarScreen(
                     tasks = mutableTasks,
-                    navController = navController) // Use the shared mutable task list
+                    navController = navController
+                ) // Use the shared mutable task list
             }
             composable("Profile") {
                 ProfileScreen(
                     tasks = mutableTasks,
-                    navController = navController)
+                    navController = navController
+                )
             }
             composable("addToCalendar?taskName={taskName}") { backStackEntry ->
                 val taskName = backStackEntry.arguments?.getString("taskName") ?: "New Task"
@@ -95,3 +100,4 @@ fun ToDoApp() {
         }
     }
 }
+

@@ -48,37 +48,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
 
 
-@Composable
-fun BottomNavBar(
-    items: List<BottomNavItem>,
-    onItemClick: (BottomNavItem) -> Unit
-) {
-    NavigationBar(
-        containerColor  = Color.White,
-        contentColor = Color.Black
-    ) {
-        items.forEach { item ->
-            NavigationBarItem(
-                selected = item.isSelected,
-                onClick = { onItemClick(item) },
-                icon = {
-                    Icon(
-                        painter = painterResource(id = item.icon),
-                        contentDescription = item.label
-                    )
-                },
-                label = { Text(text = item.label) }
-            )
-        }
-    }
-}
-
-
-data class BottomNavItem(
-    val label: String,
-    val icon: Int,
-    val isSelected: Boolean = false
-)
 
 @Composable
 fun TaskList(
