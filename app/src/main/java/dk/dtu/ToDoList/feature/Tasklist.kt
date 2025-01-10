@@ -25,6 +25,7 @@ import dk.dtu.ToDoList.data.TasksRepository.simpleDateFormat
 import java.text.SimpleDateFormat
 import java.util.Locale
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
@@ -43,6 +44,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextDecoration
 
 
 @Composable
@@ -118,12 +121,16 @@ fun TaskItem(
     val showDeleteDialog = remember { mutableStateOf(false) }
     val dateFormatter = SimpleDateFormat("dd-MM", Locale.US)
     val context = LocalContext.current // Get context
-    val vibrator = context.getSystemService(Vibrator::class.java) // Initialize Vibrator
+    val vibrator = context.getSystemService(Vibrator::class.java)
+
+    val taskColor = if(task.completed) Color.Gray else Color.Black
+    val taskDecor = if(task.completed) TextDecoration.LineThrough else TextDecoration.None
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp, horizontal = 16.dp),
+            .padding(vertical = 8.dp, horizontal = 16.dp)
+            .background(if(task.completed) Color.LightGray.copy(alpha = 0.2f) else Color.Transparent),
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Priority Icon
@@ -170,7 +177,9 @@ fun TaskItem(
             Text(
                 text = task.name,
                 fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = taskColor,
+                style = TextStyle(textDecoration = taskDecor)
             )
             if (task.deadline.time != 0L) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
