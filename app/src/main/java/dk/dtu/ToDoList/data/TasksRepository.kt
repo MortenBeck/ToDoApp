@@ -31,6 +31,7 @@ object TasksRepository {
     fun getTasks(userId: String, onSuccess: (List<Task>) -> Unit, onFailure: (Exception) -> Unit) {
         db.collection("tasks")
             .whereEqualTo("userId", userId) // filter by user ID (assuming each task is tied to a user)
+            .whereEqualTo("isDeleted", false)
             .get()
             .addOnSuccessListener { querySnapshot ->
                 val tasks = querySnapshot.documents.mapNotNull { document -> documentToTask(document) }
@@ -46,19 +47,6 @@ object TasksRepository {
         db.collection("tasks")
             .document(taskId)
             .set(updatedTask)
-            .addOnSuccessListener {
-                onSuccess()
-            }
-            .addOnFailureListener { exception ->
-                onFailure(exception)
-            }
-    }
-
-    // Delete a task from Firestore
-    fun deleteTask(taskId: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
-        db.collection("tasks")
-            .document(taskId)
-            .delete()
             .addOnSuccessListener {
                 onSuccess()
             }
@@ -113,4 +101,31 @@ object TasksRepository {
                 onFailure(exception)
             }
     }
+
+    // Soft-Delete tasks, Users wont see the task but FireBase keeps them archived for restoration purposes
+    fun softDeleteTask(taskId: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+        db.collection("tasks")
+            .document(taskId)
+            .update("isDeleted", true)
+            .addOnSuccessListener {onSuccess()}
+            .addOnFailureListener{ exception -> onFailure(exception)}
+    }
+
+    // Method to get deleted and completed tasks for archive purposes
+    fun getDeletedTasks(userId: String, onSuccess: (List<Task>) -> Unit, onFailure: (Exception) -> Unit) {
+        db.collection("tasks")
+            .whereEqualTo("userId", userId)
+            .whereIn("isDeleted", listOf(true, false))
+            .whereEqualTo("completed", true) // Fetch only deleted tasks
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val tasks = querySnapshot.documents.mapNotNull { document -> documentToTask(document) }
+                onSuccess(tasks)
+            }
+            .addOnFailureListener { exception ->
+                onFailure(exception)
+            }
+    }
+
+
 }

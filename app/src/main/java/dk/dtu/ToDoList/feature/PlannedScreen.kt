@@ -31,7 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.navigation.NavController
 import androidx.compose.material3.*
-
+import dk.dtu.ToDoList.data.TasksRepository
 
 
 @Composable
@@ -134,7 +134,8 @@ fun PlannedScreen(tasks: MutableList<Task>, navController: NavController) { // M
         DeleteConfirmation(
             task = taskToDelete!!,
             onConfirm = {
-                tasks.remove(taskToDelete) // Remove the task from the list
+                markTaskAsDeleted(taskToDelete) // Remove the task from the list
+                tasks.remove(taskToDelete)
                 taskToDelete = null
                 showDeleteDialog = false
             },
@@ -144,6 +145,19 @@ fun PlannedScreen(tasks: MutableList<Task>, navController: NavController) { // M
             }
         )
     }
+}
+
+fun markTaskAsDeleted(task: Task) {
+    TasksRepository.updateTask(
+        taskId = task.id,
+        updatedTask = task.copy(isDeleted = true),
+        onSuccess = {
+            Log.d("PlannedScreen", "Task markedas deleted successfully")
+        },
+        onFailure =  { exception ->
+            Log.e("PlannedScreen", "Failed to mark task as deleted: ${exception.message}")
+        }
+    )
 }
 
 @Composable

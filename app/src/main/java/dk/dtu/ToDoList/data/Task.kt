@@ -22,7 +22,8 @@ data class Task(
     val tag: TaskTag = TaskTag.WORK,  // Default tag is WORK
     val completed: Boolean = false,
     val favorite: Boolean = false,
-    val userId: String = ""  // User ID for linking tasks to specific users
+    val userId: String = "",  // User ID for linking tasks to specific users
+    val isDeleted: Boolean = false
 )
 
 // Data class for handling future implementation for parent and children tasks
