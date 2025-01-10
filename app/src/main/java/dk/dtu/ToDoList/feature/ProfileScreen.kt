@@ -41,59 +41,37 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import dk.dtu.ToDoList.R
 import dk.dtu.ToDoList.data.Task
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
-
-
-interface WeatherApiService {
-    @GET("weather")
-    suspend fun getWeather(
-        @Query("q") city: String,
-        @Query("appid") apiKey: String,
-        @Query("units") units: String = "metric"
-    ): WeatherResponse
-}
-
-data class WeatherResponse(
-    val weather: List<Weather>,
-    val main: Main,
-    val name: String
-)
-
-data class Weather(val description: String)
-data class Main(val temp: Float)
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 
 @Composable
 fun ProfileScreen(tasks: MutableList<Task>, navController: NavController) {
     var showDialog by remember { mutableStateOf(false) }
-    var weatherDescription by remember { mutableStateOf("Fetching weather...") }
-    val scope = rememberCoroutineScope()
-
     val completedTasks = tasks.count { it.completed }
     val totalTasks = tasks.size
     val completionPercentage = if (totalTasks > 0) (completedTasks / totalTasks.toFloat()) * 100 else 0f
+    var weatherInfo by remember { mutableStateOf("Fetching weather...") }
+    val coroutineScope = rememberCoroutineScope()
 
-    // Initialize Weather API
-    val weatherApi = Retrofit.Builder()
-        .baseUrl("https://api.openweathermap.org/data/2.5/")
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-        .create(WeatherApiService::class.java)
-
-    // Fetch Weather Data
+    // Fetch weather details
     LaunchedEffect(Unit) {
-        scope.launch {
-            try {
-                val weather = weatherApi.getWeather(
-                    city = "Copenhagen",
-                    apiKey = "f062e109162abcf31ec182583cae89e0"
-                )
-                weatherDescription = "Today is ${weather.weather[0].description}, ${weather.main.temp}°C."
-            } catch (e: Exception) {
-                weatherDescription = "Could not fetch weather."
+        coroutineScope.launch(Dispatchers.IO) {
+            while (true) {
+                val weatherApi = provideWeatherApi()
+                val response = weatherApi.getCurrentWeather("Copenhagen", "metric", "f062e109162abcf31ec182583cae89e0")
+                val description = response.weather.firstOrNull()?.description?.capitalize() ?: "No data"
+                val temperature = response.main.temp
+                val city = response.name
+                weatherInfo = "$city: ${temperature}°C, $description"
+
+                // Update every 30 minutes (1800000 ms)
+                kotlinx.coroutines.delay(30 * 60 * 1000L)
             }
         }
     }
@@ -122,7 +100,14 @@ fun ProfileScreen(tasks: MutableList<Task>, navController: NavController) {
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Keep track of your tasks and achieve more.\n$weatherDescription",
+                    text = "Keep track of your tasks and achieve more.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Todays Weather: $weatherInfo",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onPrimary,
                     textAlign = TextAlign.Center
@@ -262,6 +247,43 @@ fun ProfileScreen(tasks: MutableList<Task>, navController: NavController) {
     }
 }
 
+// Updated WeatherResponse class
+data class WeatherResponse(
+    val weather: List<WeatherInfo>,
+    val main: MainInfo,
+    val name: String
+)
+
+data class WeatherInfo(val description: String)
+data class MainInfo(val temp: Double)
+
+// Retrofit setup
+fun provideWeatherApi(): WeatherApi {
+    val loggingInterceptor = HttpLoggingInterceptor().apply {
+        level = HttpLoggingInterceptor.Level.BODY
+    }
+    val client = OkHttpClient.Builder()
+        .addInterceptor(loggingInterceptor)
+        .build()
+
+    val retrofit = Retrofit.Builder()
+        .baseUrl("https://api.openweathermap.org/")
+        .client(client)
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+
+    return retrofit.create(WeatherApi::class.java)
+}
+
+interface WeatherApi {
+    @GET("data/2.5/weather")
+    suspend fun getCurrentWeather(
+        @Query("q") city: String,
+        @Query("units") units: String,
+        @Query("appid") apiKey: String
+    ): WeatherResponse
+}
+
 @Composable
 fun ActionButton(icon: ImageVector, label: String, onClick: () -> Unit) {
     Column(
@@ -283,10 +305,7 @@ fun ActionButton(icon: ImageVector, label: String, onClick: () -> Unit) {
 }
 
 @Composable
-fun StatsItem(
-    label: String,
-    value: String
-) {
+fun StatsItem(label: String, value: String) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.padding(horizontal = 8.dp)
