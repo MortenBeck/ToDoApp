@@ -1,5 +1,6 @@
 package dk.dtu.ToDoList.feature
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -15,6 +16,9 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import java.util.Date
 import androidx.navigation.NavController
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import dk.dtu.ToDoList.data.TasksRepository
 
 @Composable
 fun AddTaskDialog(
@@ -27,6 +31,8 @@ fun AddTaskDialog(
         var taskName by remember { mutableStateOf("") }
         var priorityLevel by remember { mutableStateOf("Low") } // Default priority
         var isFavorite by remember { mutableStateOf(false) }
+        var description by remember { mutableStateOf("")}
+        var selectedTag by remember { mutableStateOf(TaskTag.WORK) }
 
         Dialog(onDismissRequest = onDismiss) {
             Surface(
@@ -111,16 +117,31 @@ fun AddTaskDialog(
                         Button(
                             onClick = {
                                 if (taskName.isNotBlank()) {
+                                    val userId = "testuser123" // This should come from the current user (e.g., Firebase Auth)
                                     val newTask = Task(
+                                        id = "",
                                         name = taskName,
+                                        description = description,
                                         priority = TaskPriority.valueOf(priorityLevel.uppercase()),
                                         favorite = isFavorite,
                                         deadline = Date(), // Default to current date if no calendar selected
-                                        tag = TaskTag.WORK,
-                                        completed = false
+                                        tag = selectedTag,
+                                        completed = false,
+                                        userId = userId,
+                                        isDeleted = false
                                     )
-                                    onTaskAdded(newTask)
-                                    onDismiss()
+
+                                    // Use TasksRepository.addTask to add the task
+                                    TasksRepository.addTask(newTask,
+                                        onSuccess = { taskId ->
+                                            // Task added successfully
+                                            onTaskAdded(newTask)
+                                            onDismiss() // Dismiss the dialog
+                                        },
+                                        onFailure = { exception ->
+                                            Log.e("AddTaskDialog", "Error adding task: ${exception.message}")
+                                        }
+                                    )
                                 }
                             }
                         ) {
@@ -132,7 +153,6 @@ fun AddTaskDialog(
         }
     }
 }
-
 
 
 @Composable

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
@@ -18,6 +19,8 @@ import dk.dtu.ToDoList.R
 import dk.dtu.ToDoList.data.Task
 import dk.dtu.ToDoList.data.TasksRepository
 import dk.dtu.ToDoList.feature.*
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,8 +35,27 @@ class MainActivity : ComponentActivity() {
 fun ToDoApp() {
     val navController = rememberNavController()
 
+    val userId = FirebaseAuth.getInstance().currentUser?.uid ?: "default user"
+
     // Create mutableTasks from TasksRepository.Tasks
-    val mutableTasks = remember { mutableStateListOf<Task>().apply { addAll(TasksRepository.Tasks) } }
+    val mutableTasks = remember { mutableStateListOf<Task>() }
+
+    LaunchedEffect(userId) {
+        TasksRepository.getTasks(userId,
+            onSuccess = { tasks ->
+                mutableTasks.clear()
+                mutableTasks.addAll(tasks)
+            },
+            onFailure = { exception ->
+                // Handle failure (e.g., show a message to the user)
+                println("Error fetching tasks: ${exception.message}")
+            }
+        )
+    }
+
+
+
+
 
     Scaffold(
         bottomBar = {

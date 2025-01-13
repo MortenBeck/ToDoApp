@@ -1,213 +1,171 @@
 package dk.dtu.ToDoList.data
 
-
-import java.text.SimpleDateFormat
-import java.util.Locale
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.QuerySnapshot
+import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.DocumentReference
+import java.time.LocalDate
 
 object TasksRepository {
 
-    val simpleDateFormat = SimpleDateFormat("dd-MM-yyyy", Locale.US)
+    val db = FirebaseFirestore.getInstance()
 
-    val Tasks = listOf(
-        Task(
-            name = "Homework - UX",
-            deadline = simpleDateFormat.parse("30-11-2024")!!,
-            priority = TaskPriority.HIGH,
-            tag = TaskTag.SCHOOL,
-            completed = false
-        ),
-        Task(
-            name = "Fix project at work",
-            deadline = simpleDateFormat.parse("02-12-2024")!!,
-            priority = TaskPriority.HIGH,
-            tag = TaskTag.WORK,
-            completed = false
-        ),
-        Task(
-            name = "Walk the dog",
-            deadline = simpleDateFormat.parse("02-12-2024")!!,
-            priority = TaskPriority.MEDIUM,
-            tag = TaskTag.PET,
-            completed = false
-        ),
-        Task(
-            name = "Cancel Netflix subscription",
-            deadline = simpleDateFormat.parse("03-12-2024")!!,
-            priority = TaskPriority.LOW,
-            tag = TaskTag.HOME,
-            completed = false
-        ),
-        Task(
-            name = "Call mechanic",
-            deadline = simpleDateFormat.parse("05-12-2024")!!,
-            priority = TaskPriority.HIGH,
-            tag = TaskTag.TRANSPORT,
-            completed = false
-        ),
-        Task(
-            name = "Grocery Shopping",
-            deadline = simpleDateFormat.parse("05-12-2024")!!,
-            priority = TaskPriority.MEDIUM,
-            tag = TaskTag.HOME,
-            completed = false
-        ),
-        Task(
-            name = "Reorganize desk at work",
-            deadline = simpleDateFormat.parse("05-12-2024")!!,
-            priority = TaskPriority.LOW,
-            tag = TaskTag.WORK,
-            completed = false
-        ),
-        Task(
-            name = "Clean bathroom",
-            deadline = simpleDateFormat.parse("06-12-2024")!!,
-            priority = TaskPriority.MEDIUM,
-            tag = TaskTag.HOME,
-            completed = false
-        ),
-        Task(
-            name = "Get ready for album drop",
-            deadline = simpleDateFormat.parse("07-12-2024")!!,
-            priority = TaskPriority.LOW,
-            tag = TaskTag.HOME,
-            completed = false
-        ),
-        Task(
-            name = "Homework - Math",
-            deadline = simpleDateFormat.parse("07-01-2025")!!,
-            priority = TaskPriority.HIGH,
-            tag = TaskTag.SCHOOL,
-            completed = false
-        ),
-        Task(
-            name = "Find passport",
-            deadline = simpleDateFormat.parse("10-01-2025")!!,
-            priority = TaskPriority.MEDIUM,
-            tag = TaskTag.HOME,
-            completed = false
-        ),
-        Task(
-            name = "Research christmas gifts",
-            deadline = simpleDateFormat.parse("12-12-2024")!!,
-            priority = TaskPriority.LOW,
-            tag = TaskTag.HOME,
-            completed = false
-        )
-    )
+    // A helper method to convert a Firestore document into a Task object
+    private fun documentToTask(document: DocumentSnapshot): Task? {
+        return document.toObject(Task::class.java)
+    }
 
+    // Add a new task to Firestore
+    fun addTask(task: Task, onSuccess: (String) -> Unit, onFailure: (Exception) -> Unit) {
+        db.collection("tasks")
+            .add(task)
+            .addOnSuccessListener { documentReference ->
+                onSuccess(documentReference.id) // return the task ID
+            }
+            .addOnFailureListener { exception ->
+                onFailure(exception)
+            }
+    }
 
-    // In a real app, this would be coming from a data source like a database
-    val todayTasks = listOf(
-            Task(
-                name = "Homework - UX",
-                deadline = simpleDateFormat.parse("17-11-2024")!!,
-                priority = TaskPriority.HIGH,
-                tag = TaskTag.SCHOOL,
-                completed = false
-            ),
-            Task(
-                name = "Fix project at work",
-                deadline = simpleDateFormat.parse("17-11-2024")!!,
-                priority = TaskPriority.HIGH,
-                tag = TaskTag.WORK,
-                completed = false
-            ),
-            Task(
-                name = "Walk the dog",
-                deadline = simpleDateFormat.parse("17-11-2024")!!,
-                priority = TaskPriority.MEDIUM,
-                tag = TaskTag.PET,
-                completed = false
-            ),
-            Task(
-                name = "Cancel Netflix subscription",
-                deadline = simpleDateFormat.parse("17-11-2024")!!,
-                priority = TaskPriority.LOW,
-                tag = TaskTag.HOME,
-                completed = false
-            ))
+    // Get all tasks for a user (you can add filtering based on userId or other criteria)
+    fun getTasks(userId: String, onSuccess: (List<Task>) -> Unit, onFailure: (Exception) -> Unit) {
+        db.collection("tasks")
+            .whereEqualTo("userId", userId) // filter by user ID (assuming each task is tied to a user)
+            .whereEqualTo("isDeleted", false)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val tasks = querySnapshot.documents.mapNotNull { document -> documentToTask(document) }
+                onSuccess(tasks)
+            }
+            .addOnFailureListener { exception ->
+                onFailure(exception)
+            }
+    }
 
+    // Update an existing task in Firestore
+    fun updateTask(taskId: String, updatedTask: Task, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+        db.collection("tasks")
+            .document(taskId)
+            .set(updatedTask)
+            .addOnSuccessListener {
+                onSuccess()
+            }
+            .addOnFailureListener { exception ->
+                onFailure(exception)
+            }
+    }
 
+    // Fetch today's tasks
+    fun getTodayTasks(userId: String, onSuccess: (List<Task>) -> Unit, onFailure: (Exception) -> Unit) {
+        val today = System.currentTimeMillis()
+        db.collection("tasks")
+            .whereEqualTo("userId", userId)
+            .whereLessThan("deadline", today)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val tasks = querySnapshot.documents.mapNotNull { document -> documentToTask(document) }
+                onSuccess(tasks)
+            }
+            .addOnFailureListener { exception ->
+                onFailure(exception)
+            }
+    }
 
-    val futureTasks = listOf(
-            Task(
-                name = "Call mechanic",
-                deadline = simpleDateFormat.parse("18-11-2024")!!,
-                priority = TaskPriority.HIGH,
-                tag = TaskTag.TRANSPORT,
-                completed = false
-            ),
-            Task(
-                name = "Grocery Shopping",
-                deadline = simpleDateFormat.parse("18-11-2024")!!,
-                priority = TaskPriority.MEDIUM,
-                tag = TaskTag.HOME,
-                completed = false
-            ),
-            Task(
-                name = "Reorganize desk at work",
-                deadline = simpleDateFormat.parse("18-11-2024")!!,
-                priority = TaskPriority.LOW,
-                tag = TaskTag.WORK,
-                completed = false
-            ),
-            Task(
-                name = "Clean bathroom",
-                deadline = simpleDateFormat.parse("19-11-2024")!!,
-                priority = TaskPriority.MEDIUM,
-                tag = TaskTag.HOME,
-                completed = false
-            ),
-            Task(
-                name = "Get ready for album drop",
-                deadline = simpleDateFormat.parse("21-11-2024")!!,
-                priority = TaskPriority.LOW,
-                tag = TaskTag.HOME,
-                completed = false
-            ),
-            Task(
-                name = "Homework - Math",
-                deadline = simpleDateFormat.parse("22-11-2024")!!,
-                priority = TaskPriority.HIGH,
-                tag = TaskTag.SCHOOL,
-                completed = false
-            ),
-            Task(
-                name = "Find passport",
-                deadline = simpleDateFormat.parse("31-11-2024")!!,
-                priority = TaskPriority.MEDIUM,
-                tag = TaskTag.HOME,
-                completed = false
-            ),
-            Task(
-                name = "Research christmas gifts",
-                deadline = simpleDateFormat.parse("12-12-2024")!!,
-                priority = TaskPriority.LOW,
-                tag = TaskTag.HOME,
-                completed = false
-            )
-        )
-    val favouriteTasks = listOf(
-        Task(
-            name = "Walk the dog",
-            deadline = simpleDateFormat.parse("17-11-2024")!!,
-            priority = TaskPriority.MEDIUM,
-            tag = TaskTag.PET,
-            completed = false
-        ),
-        Task(
-            name = "Grocery Shopping",
-            deadline = simpleDateFormat.parse("18-11-2024")!!,
-            priority = TaskPriority.MEDIUM,
-            tag = TaskTag.HOME,
-            completed = false
-        ),
-        Task(
-            name = "Research christmas gifts",
-            deadline = simpleDateFormat.parse("12-12-2024")!!,
-            priority = TaskPriority.LOW,
-            tag = TaskTag.HOME,
-            completed = false
-        )
-    )
+    // Fetch future tasks (tasks with a deadline in the future)
+    fun getFutureTasks(userId: String, onSuccess: (List<Task>) -> Unit, onFailure: (Exception) -> Unit) {
+        val today = System.currentTimeMillis()
+        db.collection("tasks")
+            .whereEqualTo("userId", userId)
+            .whereGreaterThan("deadline", today)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val tasks = querySnapshot.documents.mapNotNull { document -> documentToTask(document) }
+                onSuccess(tasks)
+            }
+            .addOnFailureListener { exception ->
+                onFailure(exception)
+            }
+    }
+
+    // Fetch expired tasks (tasks with a deadline in the past and not deleted)
+    fun getExpiredTasks(userId: String, onSuccess: (List<Task>) -> Unit, onFailure: (Exception) -> Unit) {
+        val currentTime = System.currentTimeMillis() // Current timestamp
+        db.collection("tasks")
+            .whereEqualTo("userId", userId) // Filter tasks by user ID
+            .whereEqualTo("isDeleted", false) // Exclude deleted tasks
+            .whereLessThan("deadline", currentTime) // Find tasks with past deadlines
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val expiredTasks = querySnapshot.documents.mapNotNull { document ->
+                    documentToTask(document) // Convert documents to Task objects
+                }
+                onSuccess(expiredTasks) // Return the expired tasks via the success callback
+            }
+            .addOnFailureListener { exception ->
+                onFailure(exception) // Handle any errors
+            }
+    }
+
+    // Fetch favorite tasks
+    fun getFavoriteTasks(userId: String, onSuccess: (List<Task>) -> Unit, onFailure: (Exception) -> Unit) {
+        db.collection("tasks")
+            .whereEqualTo("userId", userId)
+            .whereEqualTo("isFavorite", true)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val tasks = querySnapshot.documents.mapNotNull { document -> documentToTask(document) }
+                onSuccess(tasks)
+            }
+            .addOnFailureListener { exception ->
+                onFailure(exception)
+            }
+    }
+
+    // Soft-Delete tasks, Users won't see the task but Firestore keeps them archived for restoration purposes
+    fun softDeleteTask(taskId: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+        db.collection("tasks")
+            .document(taskId)
+            .update("isDeleted", true)
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { exception -> onFailure(exception) }
+    }
+
+    // Method to get deleted and completed tasks for archive purposes
+    fun getDeletedTasks(userId: String, onSuccess: (List<Task>) -> Unit, onFailure: (Exception) -> Unit) {
+        db.collection("tasks")
+            .whereEqualTo("userId", userId)
+            .whereIn("isDeleted", listOf(true, false))
+            .whereEqualTo("completed", true) // Fetch only deleted tasks
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val tasks = querySnapshot.documents.mapNotNull { document -> documentToTask(document) }
+                onSuccess(tasks)
+            }
+            .addOnFailureListener { exception ->
+                onFailure(exception)
+            }
+    }
+
+    // Fetch tasks for a specific date
+    fun getTasksForDate(
+        selectedDate: LocalDate,
+        onSuccess: (List<Task>) -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        val db = FirebaseFirestore.getInstance()
+        val tasksCollection = db.collection("tasks")
+
+        // Fetch tasks for the selected date
+        tasksCollection
+            .whereEqualTo("deadline", selectedDate)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val tasks = querySnapshot.documents.mapNotNull { it.toObject(Task::class.java) }
+                onSuccess(tasks)
+            }
+            .addOnFailureListener { exception ->
+                onFailure(exception)
+            }
+    }
 }

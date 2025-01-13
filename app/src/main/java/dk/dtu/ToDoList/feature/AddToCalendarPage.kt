@@ -1,5 +1,7 @@
 package dk.dtu.ToDoList.feature
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.material3.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -17,14 +19,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.navigation.NavController
+import com.google.firebase.auth.FirebaseAuth
 import dk.dtu.ToDoList.data.Task
 import dk.dtu.ToDoList.data.TaskPriority
 import dk.dtu.ToDoList.data.TaskTag
-import dk.dtu.ToDoList.data.TasksRepository.Tasks
+import dk.dtu.ToDoList.data.TasksRepository
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
 import java.util.Date
+@RequiresApi(Build.VERSION_CODES.O)
 
 @Composable
 fun AddToCalendarPage(
@@ -58,15 +62,30 @@ fun AddToCalendarPage(
 
         Button(
             onClick = {
+                val userId = FirebaseAuth.getInstance().currentUser?.uid ?: "testuser123"
                 val newTask = Task(
                     name = taskName,
                     priority = TaskPriority.LOW, // Default priority
                     favorite = false,
                     deadline = Date.from(selectedDate.atStartOfDay(ZoneId.systemDefault()).toInstant()),
                     tag = TaskTag.WORK,
-                    completed = false
+                    completed = false,
+                    description = "description",
+                    userId = userId,
+                    isDeleted = false
                 )
-                onTaskAdded(newTask) // Add the task
+                TasksRepository.addTask(
+                    task = newTask,
+                    onSuccess = { taskId ->
+                        // Once the task is added successfully, notify the parent and navigate back
+                        onTaskAdded(newTask)
+                        navController.popBackStack() // Go back to the previous screen
+                    },
+                    onFailure = { exception ->
+                        // Handle failure if needed (e.g., show an error message)
+                        println("Error adding task: ${exception.message}")
+                    }
+                )
                 navController.popBackStack() // Go back to the previous screen
             },
             modifier = Modifier.align(Alignment.CenterHorizontally)

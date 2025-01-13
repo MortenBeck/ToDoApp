@@ -53,7 +53,7 @@ fun HomeScreen(tasks: MutableList<Task>, navController: NavController) {
 
             // Display the list of tasks
             TaskListScreen(
-                tasks = searchFilteredTasks.toMutableList(),
+                tasks = searchFilteredTasks, // Correct parameter passed
                 onDelete = { task ->
                     taskToDelete = task
                 },
