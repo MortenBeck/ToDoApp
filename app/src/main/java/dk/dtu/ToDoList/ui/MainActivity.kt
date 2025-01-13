@@ -87,7 +87,8 @@ fun ToDoApp() {
             composable("Tasks") {
                 HomeScreen(
                     tasks = mutableTasks,
-                    navController = navController
+                    navController = navController,
+                    userId = userId
                 )
             }
             composable("Favourites") {

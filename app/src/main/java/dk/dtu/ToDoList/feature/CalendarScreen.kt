@@ -214,7 +214,7 @@ fun TasksForDate(
 
         if (tasksForDate.isNotEmpty()) {
             TaskList(
-                Tasks = tasksForDate,
+                tasks = tasksForDate,
                 modifier = Modifier.fillMaxWidth(),
                 onDelete = onDelete,
                 onFavoriteToggle = onFavoriteToggle,

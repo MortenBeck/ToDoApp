@@ -17,15 +17,26 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.unit.dp
+import dk.dtu.ToDoList.data.TasksRepository
 
 @Composable
-fun HomeScreen(tasks: MutableList<Task>, navController: NavController) {
+fun HomeScreen(tasks: MutableList<Task>, navController: NavController, userId: String) {
     var showDialog by remember { mutableStateOf(false) }
     var taskToDelete by remember { mutableStateOf<Task?>(null) }
     var searchText by remember { mutableStateOf("") }
 
     // Create a mutable state for filtered tasks
     var filteredTasks by remember { mutableStateOf(tasks.toList()) }
+
+    LaunchedEffect(userId) {
+        TasksRepository.getTasks(userId, onSuccess = {fetchedTasks ->
+            tasks.clear()
+            tasks.addAll(fetchedTasks)
+            filteredTasks = tasks.toList()
+        }, onFailure = {exception ->
+
+        })
+    }
 
     // Apply search filter
     val searchFilteredTasks = filteredTasks.filter {
@@ -53,8 +64,9 @@ fun HomeScreen(tasks: MutableList<Task>, navController: NavController) {
 
             // Display the list of tasks
             TaskListScreen(
+                userId = userId,
                 tasks = searchFilteredTasks, // Correct parameter passed
-                onDelete = { task ->
+                onTaskDeleted = { task ->
                     taskToDelete = task
                 },
                 onFavoriteToggle = { taskToToggle ->

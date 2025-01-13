@@ -30,17 +30,16 @@ import java.util.Calendar
 @Composable
 fun TaskListScreen(
     userId: String,
+    tasks: List<Task>,
     onTaskDeleted: (Task) -> Unit,
     onFavoriteToggle: (Task) -> Unit,
     onCompleteToggle: (Task) -> Unit
 ) {
-    val tasks = remember { mutableStateOf<List<Task>>(emptyList()) }
     val isLoading = remember { mutableStateOf(true) }
 
     // Fetch tasks from Firebase
     LaunchedEffect(userId) {
         TasksRepository.getTasks(userId, onSuccess = { fetchedTasks ->
-            tasks.value = fetchedTasks
             isLoading.value = false
         }, onFailure = { error ->
             isLoading.value = false
@@ -66,10 +65,11 @@ fun TaskListScreen(
             set(Calendar.MILLISECOND, 0)
         }.time
 
-        val todayTasks = tasks.value.filter { it.deadline >= todayStart && it.deadline < tomorrowStart }
-        val futureTasks = tasks.value.filter { it.deadline >= tomorrowStart }
-        val expiredTasks = tasks.value.filter { it.deadline < todayStart && !it.completed }
-        val completedTasks = tasks.value.filter { it.deadline < todayStart && it.completed }
+        val todayTasks = tasks.filter { it.deadline >= todayStart && it.deadline < tomorrowStart }
+        val futureTasks = tasks.filter { it.deadline >= tomorrowStart }
+        val expiredTasks = tasks.filter { it.deadline < todayStart && !it.completed }
+        val completedTasks = tasks.filter { it.deadline < todayStart && it.completed }
+
 
         // States for each section's expanded/collapsed status
         val isExpiredExpanded = remember { mutableStateOf(true) }

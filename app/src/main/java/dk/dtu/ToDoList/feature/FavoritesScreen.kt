@@ -54,7 +54,7 @@ fun FavouritesScreen(tasks: MutableList<Task>,navController: NavController) {
 
             // Favourites Task List
             TaskList(
-                Tasks = favouriteTasks,
+                tasks = favouriteTasks,
                 modifier = Modifier.weight(1f),
                 onDelete = { task ->
                     taskToDelete = task // Open confirmation dialog for this task

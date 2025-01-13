@@ -48,12 +48,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
-
+import com.google.android.gms.tasks.Tasks
 
 
 @Composable
 fun TaskList(
-    Tasks: List<Task>,
+    tasks: List<Task>,
     modifier: Modifier = Modifier,
     onDelete: (Task) -> Unit, // Pass a callback to handle deletion
     onFavoriteToggle: (Task) -> Unit,
@@ -61,7 +61,7 @@ fun TaskList(
 ) {
     val scrollState = rememberLazyListState()
 
-    LaunchedEffect(Tasks) {
+    LaunchedEffect(tasks) {
         scrollState.scrollToItem(0)
     }
 
@@ -71,7 +71,7 @@ fun TaskList(
             .fillMaxWidth()
             .heightIn(max = 300.dp) // Add a maximum height
     ) {
-        itemsIndexed(Tasks) { _, task ->
+        itemsIndexed(tasks) { _, task ->
             TaskItem(
                 task = task,
                 onDelete = onDelete,
