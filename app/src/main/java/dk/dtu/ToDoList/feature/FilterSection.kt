@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.*
 import dk.dtu.ToDoList.data.Task
+import dk.dtu.ToDoList.data.TaskPriority
 import dk.dtu.ToDoList.data.TaskTag
 
 
@@ -28,6 +29,7 @@ fun FilterSection(
     var showCompleted by remember { mutableStateOf(true) }
     var showFavoriteOnly by remember { mutableStateOf(false) }
     var selectedTag by remember { mutableStateOf<TaskTag?>(null) }
+    var selectedPriority by remember { mutableStateOf<TaskPriority?>(null) } // Track selected priority
 
     Column(
         modifier = Modifier
@@ -58,8 +60,9 @@ fun FilterSection(
                 text = { Text("All Tasks") },
                 onClick = {
                     selectedTag = null
+                    selectedPriority = null // Reset priority filter
                     expanded = false
-                    applyFilters(tasks, selectedTag, showCompleted, showFavoriteOnly, onFilterChange)
+                    applyFilters(tasks, selectedTag, selectedPriority, showCompleted, showFavoriteOnly, onFilterChange)
                 }
             )
             TaskTag.values().forEach { tag ->
@@ -68,7 +71,29 @@ fun FilterSection(
                     onClick = {
                         selectedTag = tag
                         expanded = false
-                        applyFilters(tasks, selectedTag, showCompleted, showFavoriteOnly, onFilterChange)
+                        applyFilters(tasks, selectedTag, selectedPriority, showCompleted, showFavoriteOnly, onFilterChange)
+                    }
+                )
+            }
+
+            HorizontalDivider()
+
+            // Filter by Priority
+            DropdownMenuItem(
+                text = { Text("All Priorities") },
+                onClick = {
+                    selectedPriority = null
+                    expanded = false
+                    applyFilters(tasks, selectedTag, selectedPriority, showCompleted, showFavoriteOnly, onFilterChange)
+                }
+            )
+            TaskPriority.values().forEach { priority ->
+                DropdownMenuItem(
+                    text = { Text("Priority: ${priority.name}") },
+                    onClick = {
+                        selectedPriority = priority
+                        expanded = false
+                        applyFilters(tasks, selectedTag, selectedPriority, showCompleted, showFavoriteOnly, onFilterChange)
                     }
                 )
             }
@@ -81,7 +106,7 @@ fun FilterSection(
                 onClick = {
                     showCompleted = !showCompleted
                     expanded = false
-                    applyFilters(tasks, selectedTag, showCompleted, showFavoriteOnly, onFilterChange)
+                    applyFilters(tasks, selectedTag, selectedPriority, showCompleted, showFavoriteOnly, onFilterChange)
                 }
             )
 
@@ -91,20 +116,22 @@ fun FilterSection(
                 onClick = {
                     showFavoriteOnly = !showFavoriteOnly
                     expanded = false
-                    applyFilters(tasks, selectedTag, showCompleted, showFavoriteOnly, onFilterChange)
+                    applyFilters(tasks, selectedTag, selectedPriority, showCompleted, showFavoriteOnly, onFilterChange)
                 }
             )
 
             HorizontalDivider()
+
             // Reset Filters
             DropdownMenuItem(
                 text = { Text("Reset Filters") },
                 onClick = {
                     selectedTag = null
+                    selectedPriority = null
                     showCompleted = true
                     showFavoriteOnly = false
                     expanded = false
-                    applyFilters(tasks, selectedTag, showCompleted, showFavoriteOnly, onFilterChange)
+                    applyFilters(tasks, selectedTag, selectedPriority, showCompleted, showFavoriteOnly, onFilterChange)
                 }
             )
         }
@@ -114,15 +141,17 @@ fun FilterSection(
 private fun applyFilters(
     tasks: List<Task>,
     selectedTag: TaskTag?,
+    selectedPriority: TaskPriority?, // Add priority filter
     showCompleted: Boolean,
     showFavoriteOnly: Boolean,
     onFilterChange: (List<Task>) -> Unit
 ) {
     val filteredList = tasks.filter { task ->
         val matchesTag = selectedTag?.let { task.tag == it } ?: true
+        val matchesPriority = selectedPriority?.let { task.priority == it } ?: true
         val matchesCompletion = if (!showCompleted) !task.completed else true
         val matchesFavorite = if (showFavoriteOnly) task.favorite else true
-        matchesTag && matchesCompletion && matchesFavorite
+        matchesTag && matchesPriority && matchesCompletion && matchesFavorite
     }
     onFilterChange(filteredList)
 }
