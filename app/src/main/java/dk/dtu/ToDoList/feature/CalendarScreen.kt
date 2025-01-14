@@ -62,12 +62,7 @@ fun CalendarScreen(tasks: MutableList<Task>, navController: NavController) { // 
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        // Title
-        Text(
-            text = "Calendar",
-            style = MaterialTheme.typography.headlineLarge,
-            modifier = Modifier.padding(bottom = 24.dp)
-        )
+
 
         // Calendar
         Calendar(

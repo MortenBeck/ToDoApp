@@ -28,6 +28,7 @@ import dk.dtu.ToDoList.feature.CalendarScreen
 import dk.dtu.ToDoList.feature.FavouritesScreen
 import dk.dtu.ToDoList.feature.HomeScreen
 import dk.dtu.ToDoList.feature.ProfileScreen
+import dk.dtu.ToDoList.ui.theme.ToDoListTheme // Ensure your theme is imported here
 
 
 class MainActivity : ComponentActivity() {
@@ -41,8 +42,10 @@ class MainActivity : ComponentActivity() {
         val firestore = FirebaseFirestore.getInstance()
 
         setContent {
-
-            ToDoApp()
+            // Apply your theme here at the top level
+            ToDoListTheme {
+                ToDoApp() // Call ToDoApp with the theme applied
+            }
         }
     }
 }
@@ -70,19 +73,15 @@ fun ToDoApp() {
         )
     }
 
-
-
-
-
     Scaffold(
         bottomBar = {
             BottomNavBar(
                 items = listOf(
-                    BottomNavItem("Tasks", R.drawable.home_grey,R.drawable.home_black),
-                    BottomNavItem("Calendar", R.drawable.calender_grey,R.drawable.calender_black),
-                    BottomNavItem("Profile", R.drawable.profile_grey, R.drawable.profile_black),
+                    BottomNavItem("Tasks", R.drawable.home_grey, R.drawable.home_black),
+                    BottomNavItem("Calendar", R.drawable.calender_grey, R.drawable.calender_black),
+                    BottomNavItem("Profile", R.drawable.profile_grey, R.drawable.profile_black)
                 ),
-                currentScreen = navController.currentBackStackEntryFlow.collectAsState(initial = navController.currentBackStackEntry).value?.destination?.route ?: "Tasks", // Get current screen
+                currentScreen = navController.currentBackStackEntryFlow.collectAsState(initial = navController.currentBackStackEntry).value?.destination?.route ?: "Tasks",
                 onItemClick = { item ->
                     navController.navigate(item.label) {
                         popUpTo(navController.graph.startDestinationId) { saveState = true }
@@ -117,7 +116,7 @@ fun ToDoApp() {
                 CalendarScreen(
                     tasks = mutableTasks,
                     navController = navController
-                ) // Use the shared mutable task list
+                )
             }
             composable("Profile") {
                 ProfileScreen(
@@ -127,7 +126,6 @@ fun ToDoApp() {
             }
             composable("addToCalendar?taskName={taskName}") { backStackEntry ->
                 val taskName = backStackEntry.arguments?.getString("taskName") ?: "New Task"
-
                 AddToCalendarPage(
                     navController = navController,
                     taskName = taskName,
@@ -139,4 +137,3 @@ fun ToDoApp() {
         }
     }
 }
-
