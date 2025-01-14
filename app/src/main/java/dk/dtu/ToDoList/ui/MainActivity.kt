@@ -28,7 +28,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        FireBaseApp.initializeApp(this)
+        FirebaseApp.initializeApp(this)
+
+        val firebaseAuth = FirebaseAuth.getInstance()
+        val firestore = FirebaseFirestore.getInstance()
+
         setContent {
 
             ToDoApp()
