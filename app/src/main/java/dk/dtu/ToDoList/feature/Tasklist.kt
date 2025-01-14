@@ -55,6 +55,7 @@ import androidx.compose.ui.text.style.TextOverflow
 
 
 
+
 @Composable
 fun TaskList(
     Tasks: List<Task>,
@@ -171,7 +172,10 @@ fun TaskItem(
             ) {
                 // Deadline Badge
                 Badge(
-                    text = if (isToday) "Today" else SimpleDateFormat("dd-MM-yyyy", Locale.US).format(task.deadline),
+                    text = if (isToday) "Today" else SimpleDateFormat(
+                        "dd-MM-yyyy",
+                        Locale.US
+                    ).format(task.deadline),
                     color = if (isToday) Color.Red else Color.White,
                     textColor = if (isToday) Color.White else Color.Black,
                     icon = R.drawable.calender_black // Replace with your calendar icon resource
@@ -181,12 +185,12 @@ fun TaskItem(
                 Badge(
                     text = task.tag.name, // Converts enum tag to string
                     color = when (task.tag) {
-                        TaskTag.WORK -> Color.Blue
-                        TaskTag.SCHOOL -> Color.Green
-                        TaskTag.PET -> Color(0xFFFFA500) // Orange
-                        TaskTag.HOME -> Color(0xFF800080) // Purple
-                        TaskTag.TRANSPORT -> Color.Cyan
-                        TaskTag.PRIVATE -> Color.Magenta
+                        TaskTag.WORK -> Color(0xFF6d8FFF)
+                        TaskTag.SCHOOL -> Color(0xFFFF9c6d)
+                        TaskTag.PET -> Color(0xFF6dFF6d)
+                        TaskTag.HOME -> Color(0xFFd16dFF)
+                        TaskTag.TRANSPORT -> Color(0xFFFFF86d)
+                        TaskTag.PRIVATE -> Color(0xFFff6D6D)
                         else -> Color.Gray // Fallback color
                     },
                     icon = when (task.tag) {
@@ -204,20 +208,23 @@ fun TaskItem(
 
         Spacer(modifier = Modifier.width(8.dp))
 
-        // Favorite Icon
-        IconButton(onClick = { onFavoriteToggle(task) }) {
-            Icon(
-                imageVector = if (task.favorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                contentDescription = if (task.favorite) "Unfavorite Task" else "Favorite Task",
-                tint = if (task.favorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-            )
-        }
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(2.dp), // Adjust the spacing between icons
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Favorite Icon
+            IconButton(onClick = { onFavoriteToggle(task) }) {
+                Icon(
+                    imageVector = if (task.favorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = if (task.favorite) "Unfavorite Task" else "Favorite Task",
+                    tint = if (task.favorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                )
+            }
 
-        Spacer(modifier = Modifier.width(8.dp))
-
-        // Delete Icon
-        IconButton(onClick = { onDelete(task) }) {
-            Icon(Icons.Default.Delete, contentDescription = "Delete Task")
+            // Delete Icon
+            IconButton(onClick = { onDelete(task) }) {
+                Icon(Icons.Default.Delete, contentDescription = "Delete Task")
+            }
         }
     }
 }
