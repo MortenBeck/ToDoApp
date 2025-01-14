@@ -51,6 +51,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import com.google.android.gms.tasks.Tasks
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun TaskList(
     tasks: List<Task>,

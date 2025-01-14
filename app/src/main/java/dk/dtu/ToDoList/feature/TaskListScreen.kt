@@ -1,5 +1,7 @@
 package dk.dtu.ToDoList.feature
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -116,6 +118,7 @@ fun TaskListScreen(
 }
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun TaskListContent(
     expiredTasks: List<Task>,
