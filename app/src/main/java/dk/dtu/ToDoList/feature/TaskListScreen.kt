@@ -115,7 +115,7 @@ fun TaskListScreen(
                 }
                 if (isExpiredExpanded.value) {
                     itemsIndexed(expiredTasks) { _, task ->
-                        TaskItem(
+                        SwipeableTaskItem (
                             task = task,
                             onDelete = onDelete,
                             onFavoriteToggle = onFavoriteToggle,
@@ -140,7 +140,7 @@ fun TaskListScreen(
                 }
                 if (isTodayExpanded.value) {
                     itemsIndexed(todayTasks) { _, task ->
-                        TaskItem(
+                        SwipeableTaskItem(
                             task = task,
                             onDelete = onDelete,
                             onFavoriteToggle = onFavoriteToggle,
@@ -165,7 +165,7 @@ fun TaskListScreen(
                 }
                 if (isFutureExpanded.value) {
                     itemsIndexed(futureTasks) { _, task ->
-                        TaskItem(
+                        SwipeableTaskItem(
                             task = task,
                             onDelete = onDelete,
                             onFavoriteToggle = onFavoriteToggle,
@@ -186,7 +186,7 @@ fun TaskListScreen(
                 }
                 if (isCompletedExpanded.value) {
                     itemsIndexed(completedTasks) { _, task ->
-                        TaskItem(
+                        SwipeableTaskItem(
                             task = task,
                             onDelete = onDelete,
                             onFavoriteToggle = onFavoriteToggle,

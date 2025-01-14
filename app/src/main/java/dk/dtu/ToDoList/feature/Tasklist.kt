@@ -50,6 +50,13 @@ import androidx.compose.ui.text.style.TextDecoration
 import java.util.Calendar
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.layout.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.dp
+import androidx.compose.animation.core.animateFloatAsState
+
 
 
 
@@ -77,7 +84,7 @@ fun TaskList(
             .heightIn(max = 300.dp) // Add a maximum height
     ) {
         itemsIndexed(Tasks) { _, task ->
-            TaskItem(
+            SwipeableTaskItem(
                 task = task,
                 onDelete = onDelete,
                 onFavoriteToggle = onFavoriteToggle,
@@ -92,7 +99,8 @@ fun TaskItem(
     task: Task,
     onDelete: (Task) -> Unit,
     onFavoriteToggle: (Task) -> Unit,
-    onCompleteToggle: (Task) -> Unit
+    onCompleteToggle: (Task) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val taskColor = if (task.completed) Color.Gray else Color.Black
     val taskDecor = if (task.completed) TextDecoration.LineThrough else TextDecoration.None
@@ -103,7 +111,7 @@ fun TaskItem(
     val isToday = isTaskToday(task)
 
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp, horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -272,4 +280,44 @@ fun isTaskToday(task: Task): Boolean {
 
     return todayCalendar.get(Calendar.YEAR) == taskCalendar.get(Calendar.YEAR) &&
             todayCalendar.get(Calendar.DAY_OF_YEAR) == taskCalendar.get(Calendar.DAY_OF_YEAR)
+}
+
+@Composable
+fun SwipeableTaskItem(
+    task: Task,
+    onDelete: (Task) -> Unit,
+    onFavoriteToggle: (Task) -> Unit,
+    onCompleteToggle: (Task) -> Unit
+) {
+    var offsetX by remember { mutableStateOf(0f) }
+    val swipeThreshold = 200f // Threshold to trigger delete
+    val animatedOffsetX by animateFloatAsState(targetValue = offsetX)
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp, horizontal = 8.dp)
+            .pointerInput(Unit) {
+                detectHorizontalDragGestures(
+                    onHorizontalDrag = { change, dragAmount ->
+                        offsetX = (offsetX + dragAmount).coerceIn(0f, swipeThreshold)
+                        change.consume() // Consume gesture to avoid propagation
+                    },
+                    onDragEnd = {
+                        if (offsetX > swipeThreshold * 0.8f) {
+                            onDelete(task) // Trigger delete if threshold is exceeded
+                        }
+                        offsetX = 0f // Reset offset after drag ends
+                    }
+                )
+            }
+    ) {
+        TaskItem(
+            task = task,
+            onDelete = onDelete,
+            onFavoriteToggle = onFavoriteToggle,
+            onCompleteToggle = onCompleteToggle,
+            modifier = Modifier.offset(x = animatedOffsetX.dp) // Apply swipe animation
+        )
+    }
 }
