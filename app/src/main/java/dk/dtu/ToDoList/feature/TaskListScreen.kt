@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import dk.dtu.ToDoList.data.Task
 import java.util.Calendar
 import androidx.compose.material3.*
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.navigation.NavController
@@ -65,7 +66,6 @@ fun TaskListScreen(
     val expiredTasks = tasks.filter { it.deadline < todayStart && !it.completed }
     val completedTasks = tasks.filter { it.deadline < todayStart && it.completed }
 
-    // States for each section's expanded/collapsed status
     val isExpiredExpanded = remember { mutableStateOf(true) }
     val isTodayExpanded = remember { mutableStateOf(true) }
     val isFutureExpanded = remember { mutableStateOf(true) }
@@ -75,7 +75,6 @@ fun TaskListScreen(
         expiredTasks.isEmpty() && todayTasks.isEmpty() && futureTasks.isEmpty() && completedTasks.isEmpty()
 
     if (isEmpty) {
-        // Show fallback message
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -97,104 +96,52 @@ fun TaskListScreen(
             }
         }
     } else {
-
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 16.dp)
         ) {
-            // "Expired Tasks" Section
-            if (expiredTasks.isNotEmpty()) {
-                item {
-                    SectionHeader(
-                        title = "Expired",
-                        count = expiredTasks.size,
-                        isExpanded = isExpiredExpanded.value,
-                        onToggle = { isExpiredExpanded.value = !isExpiredExpanded.value }
-                    )
-                }
-                if (isExpiredExpanded.value) {
-                    itemsIndexed(expiredTasks) { _, task ->
-                        SwipeableTaskItem (
-                            task = task,
-                            onDelete = onDelete,
-                            onFavoriteToggle = onFavoriteToggle,
-                            onCompleteToggle = onCompleteToggle
+            // Function to handle rendering of sections
+            fun renderSection(
+                title: String,
+                tasks: List<Task>,
+                isExpanded: MutableState<Boolean>
+            ) {
+                if (tasks.isNotEmpty()) {
+                    item {
+                        SectionHeader(
+                            title = title,
+                            count = tasks.size,
+                            isExpanded = isExpanded.value,
+                            onToggle = { isExpanded.value = !isExpanded.value }
                         )
                     }
-                    item {
-                        Spacer(modifier = Modifier.height(16.dp))
+                    if (isExpanded.value) {
+                        itemsIndexed(
+                            items = tasks,
+                            key = { _, task -> "${task.name}_${task.deadline.time}" } // Composite key
+                        ) { _, task ->
+                            SwipeableTaskItem(
+                                task = task,
+                                onDelete = {
+                                    tasks.toMutableList().remove(task) // Remove from original list
+                                    onDelete(task) // Trigger external delete logic
+                                },
+                                onFavoriteToggle = onFavoriteToggle,
+                                onCompleteToggle = onCompleteToggle
+                            )
+                        }
+                        item {
+                            Spacer(modifier = Modifier.height(16.dp))
+                        }
                     }
                 }
             }
 
-            // "Today" Section
-            if (todayTasks.isNotEmpty()) {
-                item {
-                    SectionHeader(
-                        title = "Today",
-                        count = todayTasks.size,
-                        isExpanded = isTodayExpanded.value,
-                        onToggle = { isTodayExpanded.value = !isTodayExpanded.value }
-                    )
-                }
-                if (isTodayExpanded.value) {
-                    itemsIndexed(todayTasks) { _, task ->
-                        SwipeableTaskItem(
-                            task = task,
-                            onDelete = onDelete,
-                            onFavoriteToggle = onFavoriteToggle,
-                            onCompleteToggle = onCompleteToggle
-                        )
-                    }
-                    item {
-                        Spacer(modifier = Modifier.height(16.dp))
-                    }
-                }
-            }
-
-            // "Future" Section
-            if (futureTasks.isNotEmpty()) {
-                item {
-                    SectionHeader(
-                        title = "Future",
-                        count = futureTasks.size,
-                        isExpanded = isFutureExpanded.value,
-                        onToggle = { isFutureExpanded.value = !isFutureExpanded.value }
-                    )
-                }
-                if (isFutureExpanded.value) {
-                    itemsIndexed(futureTasks) { _, task ->
-                        SwipeableTaskItem(
-                            task = task,
-                            onDelete = onDelete,
-                            onFavoriteToggle = onFavoriteToggle,
-                            onCompleteToggle = onCompleteToggle
-                        )
-                    }
-                }
-            }
-            // "Completed" Section
-            if (completedTasks.isNotEmpty()) {
-                item {
-                    SectionHeader(
-                        title = "Past Completions",
-                        count = completedTasks.size,
-                        isExpanded = isCompletedExpanded.value,
-                        onToggle = { isCompletedExpanded.value = !isCompletedExpanded.value }
-                    )
-                }
-                if (isCompletedExpanded.value) {
-                    itemsIndexed(completedTasks) { _, task ->
-                        SwipeableTaskItem(
-                            task = task,
-                            onDelete = onDelete,
-                            onFavoriteToggle = onFavoriteToggle,
-                            onCompleteToggle = onCompleteToggle
-                        )
-                    }
-                }
-            }
+            renderSection("Expired", expiredTasks, isExpiredExpanded)
+            renderSection("Today", todayTasks, isTodayExpanded)
+            renderSection("Future", futureTasks, isFutureExpanded)
+            renderSection("Past Completions", completedTasks, isCompletedExpanded)
         }
     }
 }

@@ -289,6 +289,7 @@ fun SwipeableTaskItem(
     onFavoriteToggle: (Task) -> Unit,
     onCompleteToggle: (Task) -> Unit
 ) {
+    // Associate offset with the unique memory of the composable, tied to the task
     var offsetX by remember { mutableStateOf(0f) }
     val swipeThreshold = 200f // Threshold to trigger delete
     val animatedOffsetX by animateFloatAsState(targetValue = offsetX)
@@ -300,14 +301,16 @@ fun SwipeableTaskItem(
             .pointerInput(Unit) {
                 detectHorizontalDragGestures(
                     onHorizontalDrag = { change, dragAmount ->
-                        offsetX = (offsetX + dragAmount).coerceIn(0f, swipeThreshold)
-                        change.consume() // Consume gesture to avoid propagation
+                        // Update the offset only during drag
+                        offsetX = (offsetX + dragAmount).coerceAtLeast(0f) // Only allow dragging right
+                        change.consume()
                     },
                     onDragEnd = {
-                        if (offsetX > swipeThreshold * 0.8f) {
-                            onDelete(task) // Trigger delete if threshold is exceeded
+                        if (offsetX > swipeThreshold) {
+                            // Trigger delete if swipe exceeds threshold
+                            onDelete(task)
                         }
-                        offsetX = 0f // Reset offset after drag ends
+                        offsetX = 0f // Reset offset for any other cases
                     }
                 )
             }
@@ -317,7 +320,8 @@ fun SwipeableTaskItem(
             onDelete = onDelete,
             onFavoriteToggle = onFavoriteToggle,
             onCompleteToggle = onCompleteToggle,
-            modifier = Modifier.offset(x = animatedOffsetX.dp) // Apply swipe animation
+            modifier = Modifier.offset(x = animatedOffsetX.dp) // Animate the swipe effect
         )
     }
 }
+
