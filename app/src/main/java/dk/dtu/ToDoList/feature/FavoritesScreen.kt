@@ -29,12 +29,11 @@ import androidx.navigation.NavController
 
 
 @Composable
-fun FavouritesScreen(tasks: MutableList<Task>,navController: NavController) {
+fun FavouritesScreen(tasks: MutableList<Task>, navController: NavController) {
     // State to hold the currently filtered favorite tasks
     val favouriteTasks by remember {
         derivedStateOf { tasks.filter { it.favorite } }
     }
-
 
     var taskToDelete by remember { mutableStateOf<Task?>(null) }
     var showDialog by remember { mutableStateOf(false) }
@@ -60,7 +59,6 @@ fun FavouritesScreen(tasks: MutableList<Task>,navController: NavController) {
                     taskToDelete = task // Open confirmation dialog for this task
                 },
                 onFavoriteToggle = { taskToToggle ->
-                    // Update the task's favorite status
                     taskToToggle.id?.let { taskId ->
                         TasksRepository.updateTask(
                             taskId = taskId,
@@ -75,7 +73,6 @@ fun FavouritesScreen(tasks: MutableList<Task>,navController: NavController) {
                     }
                 },
                 onCompleteToggle = { taskToComplete ->
-                    // Update the task's completed status
                     taskToComplete.id?.let { taskId ->
                         TasksRepository.updateTask(
                             taskId = taskId,
@@ -96,9 +93,9 @@ fun FavouritesScreen(tasks: MutableList<Task>,navController: NavController) {
         IconButton(
             onClick = { showDialog = true },
             modifier = Modifier
-                .padding(bottom = 16.dp, end = 16.dp) // Adjust padding for better placement
+                .padding(bottom = 16.dp, end = 16.dp)
                 .size(64.dp)
-                .align(Alignment.BottomEnd) // Ensure alignment at bottom-right corner
+                .align(Alignment.BottomEnd)
         ) {
             Surface(
                 shape = CircleShape,
@@ -134,16 +131,13 @@ fun FavouritesScreen(tasks: MutableList<Task>,navController: NavController) {
         }
     }
 
-    // Pass the Task object directly
-    // Show delete confirmation dialog if taskToDelete is not null
+    // Delete Confirmation Dialog
     if (taskToDelete != null && taskToDelete!!.id != null) {
         DeleteConfirmation(
-            task = taskToDelete!!,  // Passing the Task object to the confirmation dialog
+            task = taskToDelete!!,
             onConfirm = {
-                // Safely access the id and pass it to softDeleteTask
                 val taskId = taskToDelete!!.id
                 if (taskId != null) {
-                    // Proceed with soft delete
                     TasksRepository.softDeleteTask(taskId, onSuccess = {
                         tasks.remove(taskToDelete) // Remove task from the local list
                         taskToDelete = null // Close the dialog
@@ -151,7 +145,6 @@ fun FavouritesScreen(tasks: MutableList<Task>,navController: NavController) {
                         println("Error deleting task: ${exception.message}")
                     })
                 } else {
-                    // Handle the case where taskId is null (this should not normally happen)
                     println("Task ID is null. Cannot delete task.")
                 }
             },
@@ -161,3 +154,4 @@ fun FavouritesScreen(tasks: MutableList<Task>,navController: NavController) {
         )
     }
 }
+

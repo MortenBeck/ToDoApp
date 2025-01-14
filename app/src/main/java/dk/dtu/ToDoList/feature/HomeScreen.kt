@@ -129,16 +129,24 @@ fun HomeScreen(
         )
     }
 
+    // Safe task deletion
     if (taskToDelete != null) {
         DeleteConfirmation(
             task = taskToDelete!!,
             onConfirm = {
-                tasks.remove(taskToDelete)
-                filteredTasks = tasks.toList()
-                taskToDelete = null
+                // Check if taskToDelete is not null and proceed with soft delete
+                taskToDelete?.id?.let { taskId ->
+                    TasksRepository.softDeleteTask(taskId, onSuccess = {
+                        tasks.remove(taskToDelete) // Update the local task list to reflect the deletion
+                        filteredTasks = tasks.toList() // Update filtered tasks
+                        taskToDelete = null // Reset taskToDelete
+                    }, onFailure = { exception ->
+                        println("Failed to soft delete task: ${exception.message}")
+                    })
+                }
             },
             onDismiss = {
-                taskToDelete = null
+                taskToDelete = null // Reset taskToDelete if dismissed
             }
         )
     }
