@@ -26,6 +26,7 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
@@ -46,6 +47,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
+import java.util.Calendar
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.text.style.TextOverflow
+
+
 
 
 
@@ -87,48 +93,33 @@ fun TaskItem(
     onFavoriteToggle: (Task) -> Unit,
     onCompleteToggle: (Task) -> Unit
 ) {
-    val showDeleteDialog = remember { mutableStateOf(false) }
-    val dateFormatter = SimpleDateFormat("dd-MM", Locale.US)
-    val context = LocalContext.current // Get context
-    val vibrator = context.getSystemService(Vibrator::class.java)
+    val taskColor = if (task.completed) Color.Gray else Color.Black
+    val taskDecor = if (task.completed) TextDecoration.LineThrough else TextDecoration.None
 
-    val taskColor = if(task.completed) Color.Gray else Color.Black
-    val taskDecor = if(task.completed) TextDecoration.LineThrough else TextDecoration.None
+    val context = LocalContext.current
+    val vibrator = context.getSystemService(Vibrator::class.java) // Access Vibrator service
+
+    val isToday = isTaskToday(task) // Helper function to check if the task is due today
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp, horizontal = 16.dp)
-            .background(if(task.completed) Color.LightGray.copy(alpha = 0.2f) else Color.Transparent),
+            .padding(vertical = 8.dp, horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Priority Icon
-        val priorityColor = when (task.priority) {
-            TaskPriority.HIGH -> Color.Red
-            TaskPriority.MEDIUM -> Color.Yellow
-            TaskPriority.LOW -> Color.Green
-        }
-        Image(
-            painter = painterResource(id = R.drawable.priority),
-            contentDescription = "Priority Icon",
-            colorFilter = ColorFilter.tint(priorityColor),
-            modifier = Modifier
-                .size(24.dp)
-                .padding(end = 8.dp)
-        )
-        // Completion Button
+        // Completion Circle
         IconButton(
             onClick = {
-                // Trigger vibration on task completion
+                // Trigger vibration when task is toggled
                 vibrator?.vibrate(
                     VibrationEffect.createOneShot(
                         200, // Duration in milliseconds
-                        VibrationEffect.DEFAULT_AMPLITUDE
+                        VibrationEffect.DEFAULT_AMPLITUDE // Default amplitude
                     )
                 )
                 onCompleteToggle(task)
             },
-            modifier = Modifier.padding(end = 8.dp)
+            modifier = Modifier.size(24.dp)
         ) {
             Icon(
                 imageVector = if (task.completed) Icons.Default.CheckCircle else Icons.Default.RadioButtonUnchecked,
@@ -137,52 +128,83 @@ fun TaskItem(
             )
         }
 
-        // Task details in a column
+        Spacer(modifier = Modifier.width(8.dp))
+
+        // Task Content
         Column(
-            modifier = Modifier
-                .padding(start = 8.dp)
-                .weight(1f)
+            modifier = Modifier.weight(1f)
         ) {
-            Text(
-                text = task.name,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = taskColor,
-                style = TextStyle(textDecoration = taskDecor)
-            )
-            if (task.deadline.time != 0L) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Image(
-                        painter = painterResource(id = R.drawable.calender_black),
-                        contentDescription = "Calendar Icon",
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Text(
-                        text = dateFormatter.format(task.deadline),
-                        fontSize = 14.sp,
-                        color = Color.Gray
-                    )
-                }
+            // Task Title with Priority Indicator
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                // Priority Indicator
+                Box(
+                    modifier = Modifier
+                        .size(12.dp)
+                        .background(
+                            color = when (task.priority) {
+                                TaskPriority.HIGH -> Color.Red
+                                TaskPriority.MEDIUM -> Color.Yellow
+                                TaskPriority.LOW -> Color.Blue
+                            },
+                            shape = CircleShape
+                        )
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                // Task Title
+                Text(
+                    text = task.name,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = taskColor,
+                    style = TextStyle(textDecoration = taskDecor)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            // Badges Row
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Deadline Badge
+                Badge(
+                    text = if (isToday) "Today" else SimpleDateFormat("dd-MM-yyyy", Locale.US).format(task.deadline),
+                    color = if (isToday) Color.Red else Color.White,
+                    textColor = if (isToday) Color.White else Color.Black,
+                    icon = R.drawable.calender_black // Replace with your calendar icon resource
+                )
+
+                // Tag Badge
+                Badge(
+                    text = task.tag.name, // Converts enum tag to string
+                    color = when (task.tag) {
+                        TaskTag.WORK -> Color.Blue
+                        TaskTag.SCHOOL -> Color.Green
+                        TaskTag.PET -> Color(0xFFFFA500) // Orange
+                        TaskTag.HOME -> Color(0xFF800080) // Purple
+                        TaskTag.TRANSPORT -> Color.Cyan
+                        TaskTag.PRIVATE -> Color.Magenta
+                        else -> Color.Gray // Fallback color
+                    },
+                    icon = when (task.tag) {
+                        TaskTag.WORK -> R.drawable.work
+                        TaskTag.SCHOOL -> R.drawable.school
+                        TaskTag.PET -> R.drawable.pet
+                        TaskTag.HOME -> R.drawable.home_black
+                        TaskTag.TRANSPORT -> R.drawable.transport
+                        TaskTag.PRIVATE -> R.drawable.lock
+                        else -> R.drawable.folder // Fallback icon
+                    }
+                )
             }
         }
-        val tagIcon = when (task.tag) {
-            TaskTag.WORK -> R.drawable.work
-            TaskTag.SCHOOL -> R.drawable.school
-            TaskTag.PET -> R.drawable.pet
-            TaskTag.HOME -> R.drawable.home_black
-            TaskTag.TRANSPORT -> R.drawable.transport
-            TaskTag.PRIVATE -> R.drawable.lock
-            else -> R.drawable.folder// Fallback icon if needed
-        }
-        Image(
-            painter = painterResource(id = tagIcon),
-            contentDescription = "${task.tag} Icon",
-            modifier = Modifier
-                .size(16.dp)
-                .padding(end = 4.dp)
-        )
-        Spacer(modifier = Modifier.height(4.dp))
 
+        Spacer(modifier = Modifier.width(8.dp))
+
+        // Favorite Icon
         IconButton(onClick = { onFavoriteToggle(task) }) {
             Icon(
                 imageVector = if (task.favorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
@@ -191,23 +213,54 @@ fun TaskItem(
             )
         }
 
-        Spacer(modifier = Modifier.height(4.dp))
-        // Delete Button
-        IconButton(onClick = { showDeleteDialog.value = true }) {
+        Spacer(modifier = Modifier.width(8.dp))
+
+        // Delete Icon
+        IconButton(onClick = { onDelete(task) }) {
             Icon(Icons.Default.Delete, contentDescription = "Delete Task")
         }
     }
+}
 
-    // Delete Confirmation Dialog
-    if (showDeleteDialog.value) {
-        DeleteConfirmation(
-            task = task,
-            onConfirm = {
-                onDelete(task)
-                showDeleteDialog.value = false
-            },
-            onDismiss = { showDeleteDialog.value = false }
+@Composable
+fun Badge(text: String, color: Color, textColor: Color = Color.White, icon: Int) {
+    Row(
+        modifier = Modifier
+            .background(color = color, shape = MaterialTheme.shapes.medium)
+            .border(width = 1.dp, color = Color.Black, shape = MaterialTheme.shapes.medium)
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Icon
+        Icon(
+            painter = painterResource(id = icon),
+            contentDescription = null,
+            tint = textColor,
+            modifier = Modifier
+                .size(16.dp)
+                .padding(end = 4.dp)
+        )
+
+        // Truncated Text
+        Text(
+            text = text,
+            color = textColor,
+            style = MaterialTheme.typography.labelMedium,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis // Add ellipsis for overflow
         )
     }
 }
 
+
+
+
+@Composable
+fun isTaskToday(task: Task): Boolean {
+    val todayCalendar = Calendar.getInstance()
+    val taskCalendar = Calendar.getInstance()
+    taskCalendar.time = task.deadline
+
+    return todayCalendar.get(Calendar.YEAR) == taskCalendar.get(Calendar.YEAR) &&
+            todayCalendar.get(Calendar.DAY_OF_YEAR) == taskCalendar.get(Calendar.DAY_OF_YEAR)
+}
