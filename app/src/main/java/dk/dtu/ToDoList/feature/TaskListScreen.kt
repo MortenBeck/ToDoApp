@@ -146,7 +146,6 @@ fun TaskListScreen(
     }
 }
 
-// Creating an area for the "Today" and "Future" headline
 @Composable
 fun SectionHeader(
     title: String,
