@@ -102,7 +102,7 @@ fun FilterSection(
 }
 
 private fun applyFilters(
-    tasks: List<Task>,
+    tasks: MutableList<Task>,
     selectedTag: TaskTag?,
     showCompleted: Boolean,
     showFavoriteOnly: Boolean,

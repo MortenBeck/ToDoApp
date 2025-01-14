@@ -29,69 +29,92 @@ import java.util.Calendar
 
 @Composable
 fun TaskListScreen(
-    userId: String,
+    userId: String?,
     onTaskDeleted: (Task) -> Unit,
     onFavoriteToggle: (Task) -> Unit,
     onCompleteToggle: (Task) -> Unit
 ) {
     val isLoading = remember { mutableStateOf(true) }
-    val tasksState = remember { mutableStateOf<List<Task>>(emptyList()) } // State to hold fetched tasks
+    val tasksState = remember { mutableStateOf<List<Task>>(emptyList()) }
+
+    val effectiveUserId = userId.takeIf {!it.isNullOrBlank() } ?: "testuser123"
 
     // Fetch tasks from Firebase
     LaunchedEffect(userId) {
         TasksRepository.getTasks(
-            userId,
+            effectiveUserId,
             onSuccess = { fetchedTasks ->
-                tasksState.value = fetchedTasks // Update the state with fetched tasks
+                tasksState.value = fetchedTasks
                 isLoading.value = false
             },
             onFailure = { error ->
                 isLoading.value = false
-                // Optionally handle the error (e.g., show a message to the user)
             }
         )
     }
 
     if (isLoading.value) {
-        CircularProgressIndicator(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.primary
-        )
+        Box(
+            modifier = Modifier
+                .fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(48.dp),
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
     } else {
-        // Filter tasks based on date categories
-        val todayStart = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }.time
-
-        val tomorrowStart = Calendar.getInstance().apply {
-            add(Calendar.DAY_OF_MONTH, 1)
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }.time
-
         val tasks = tasksState.value
-        val todayTasks = tasks.filter { it.deadline >= todayStart && it.deadline < tomorrowStart }
-        val futureTasks = tasks.filter { it.deadline >= tomorrowStart }
-        val expiredTasks = tasks.filter { it.deadline < todayStart && !it.completed }
-        val completedTasks = tasks.filter { it.deadline < todayStart && it.completed }
+        if (tasks.isEmpty()) {
+            // Show empty state message
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "You have no tasks. Add one now!",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        } else {
+            // Categorize and display tasks
+            val todayStart = Calendar.getInstance().apply {
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }.time
 
-        // The rest of the composable remains the same
-        TaskListContent(
-            expiredTasks = expiredTasks,
-            todayTasks = todayTasks,
-            futureTasks = futureTasks,
-            completedTasks = completedTasks,
-            onTaskDeleted = onTaskDeleted,
-            onFavoriteToggle = onFavoriteToggle,
-            onCompleteToggle = onCompleteToggle
-        )
+            val tomorrowStart = Calendar.getInstance().apply {
+                add(Calendar.DAY_OF_MONTH, 1)
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }.time
+
+            val todayTasks = tasks.filter { it.deadline >= todayStart && it.deadline < tomorrowStart }
+            val futureTasks = tasks.filter { it.deadline >= tomorrowStart }
+            val expiredTasks = tasks.filter { it.deadline < todayStart && !it.completed }
+            val completedTasks = tasks.filter { it.deadline < todayStart && it.completed }
+
+            TaskListContent(
+                expiredTasks = expiredTasks,
+                todayTasks = todayTasks,
+                futureTasks = futureTasks,
+                completedTasks = completedTasks,
+                onTaskDeleted = onTaskDeleted,
+                onFavoriteToggle = onFavoriteToggle,
+                onCompleteToggle = onCompleteToggle
+            )
+        }
     }
 }
+
 
 @Composable
 fun TaskListContent(

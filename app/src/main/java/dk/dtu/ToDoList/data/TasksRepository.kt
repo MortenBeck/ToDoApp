@@ -30,22 +30,30 @@ object TasksRepository {
 
     // Get all tasks for a user (you can add filtering based on userId or other criteria)
     fun getTasks(userId: String, onSuccess: (List<Task>) -> Unit, onFailure: (Exception) -> Unit) {
+        println("Attempting to fetch tasks for userId: $userId")
         db.collection("tasks")
-            .whereEqualTo(
-                "userId",
-                userId
-            ) // filter by user ID (assuming each task is tied to a user)
+            .whereEqualTo("userId", userId)
             .whereEqualTo("isDeleted", false)
             .get()
             .addOnSuccessListener { querySnapshot ->
-                val tasks =
-                    querySnapshot.documents.mapNotNull { document -> documentToTask(document) }
+                if (querySnapshot.isEmpty) {
+                    println("No tasks found for userId: $userId")
+                } else {
+                    println("Tasks fetched successfully: ${querySnapshot.size()}")
+                }
+                val tasks = querySnapshot.documents.mapNotNull { document ->
+                    documentToTask(document).also { task ->
+                        println("Fetched task: $task")
+                    }
+                }
                 onSuccess(tasks)
             }
             .addOnFailureListener { exception ->
+                println("Failed to fetch tasks for userId: $userId. Error: ${exception.message}")
                 onFailure(exception)
             }
     }
+
 
     // Update an existing task in Firestore
     fun updateTask(
