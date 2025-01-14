@@ -35,7 +35,7 @@ class MainActivity : ComponentActivity() {
 fun ToDoApp() {
     val navController = rememberNavController()
 
-    val userId = FirebaseAuth.getInstance().currentUser?.uid ?: "default user"
+    val userId = FirebaseAuth.getInstance().currentUser?.uid ?: "testuser123"
 
     // Create mutableTasks from TasksRepository.Tasks
     val mutableTasks = remember { mutableStateListOf<Task>() }

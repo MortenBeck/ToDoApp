@@ -33,7 +33,7 @@ object TasksRepository {
         println("Attempting to fetch tasks for userId: $userId")
         db.collection("tasks")
             .whereEqualTo("userId", userId)
-            .whereEqualTo("isDeleted", false)
+            .whereEqualTo("deleted", false)
             .get()
             .addOnSuccessListener { querySnapshot ->
                 if (querySnapshot.isEmpty) {
