@@ -42,7 +42,8 @@ android {
 }
 
 dependencies {
-
+    implementation(libs.coil.compose)
+    implementation(libs.androidx.ui.graphics)
     implementation(libs.navigation.compose)
     implementation(libs.compose.ui)
     implementation(libs.material3)
