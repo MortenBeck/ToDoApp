@@ -98,9 +98,9 @@ fun TaskItem(
     val taskDecor = if (task.completed) TextDecoration.LineThrough else TextDecoration.None
 
     val context = LocalContext.current
-    val vibrator = context.getSystemService(Vibrator::class.java) // Access Vibrator service
+    val vibrator = context.getSystemService(Vibrator::class.java)
 
-    val isToday = isTaskToday(task) // Helper function to check if the task is due today
+    val isToday = isTaskToday(task)
 
     Row(
         modifier = Modifier
@@ -108,14 +108,12 @@ fun TaskItem(
             .padding(vertical = 8.dp, horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Completion Circle
         IconButton(
             onClick = {
-                // Trigger vibration when task is toggled
                 vibrator?.vibrate(
                     VibrationEffect.createOneShot(
-                        200, // Duration in milliseconds
-                        VibrationEffect.DEFAULT_AMPLITUDE // Default amplitude
+                        200,
+                        VibrationEffect.DEFAULT_AMPLITUDE
                     )
                 )
                 onCompleteToggle(task)
@@ -131,13 +129,10 @@ fun TaskItem(
 
         Spacer(modifier = Modifier.width(8.dp))
 
-        // Task Content
         Column(
             modifier = Modifier.weight(1f)
         ) {
-            // Task Title with Priority Indicator
             Row(verticalAlignment = Alignment.CenterVertically) {
-                // Priority Indicator
                 Box(
                     modifier = Modifier
                         .size(12.dp)
@@ -150,36 +145,36 @@ fun TaskItem(
                             shape = CircleShape
                         )
                         .border(
-                            width = 1.dp, // Border width
-                            color = Color.Black, // Border color
-                            shape = CircleShape // Circle-shaped border
+                            width = 1.dp,
+                            color = Color.Black,
+                            shape = CircleShape
                         )
                 )
 
                 Spacer(modifier = Modifier.width(8.dp))
 
-                // Task Title
+
                 Text(
                     text = task.name,
-                    modifier = Modifier.fillMaxWidth(), // Add Modifier to manage layout
+                    modifier = Modifier.fillMaxWidth(),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = taskColor,
-                    textDecoration = taskDecor, // Apply text decoration directly
-                    maxLines = 1, // Restrict to one line
-                    overflow = TextOverflow.Ellipsis // Truncate text with ellipsis if it overflows
+                    textDecoration = taskDecor,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
 
             }
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Badges Row
+
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Deadline Badge
+
                 Badge(
                     text = if (isToday) "Today" else SimpleDateFormat(
                         "dd-MM-yyyy",
@@ -190,7 +185,7 @@ fun TaskItem(
                     icon = R.drawable.calender_black // Replace with your calendar icon resource
                 )
 
-                // Tag Badge
+
                 Badge(
                     text = task.tag.name, // Converts enum tag to string
                     color = when (task.tag) {
@@ -221,7 +216,7 @@ fun TaskItem(
             horizontalArrangement = Arrangement.spacedBy(2.dp), // Adjust the spacing between icons
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Favorite Icon
+            // Favorite
             IconButton(onClick = { onFavoriteToggle(task) }) {
                 Icon(
                     imageVector = if (task.favorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
@@ -230,7 +225,7 @@ fun TaskItem(
                 )
             }
 
-            // Delete Icon
+            // Delete
             IconButton(onClick = { onDelete(task) }) {
                 Icon(Icons.Default.Delete, contentDescription = "Delete Task")
             }
@@ -247,7 +242,6 @@ fun Badge(text: String, color: Color, textColor: Color = Color.White, icon: Int)
             .padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Icon
         Icon(
             painter = painterResource(id = icon),
             contentDescription = null,
@@ -257,7 +251,6 @@ fun Badge(text: String, color: Color, textColor: Color = Color.White, icon: Int)
                 .padding(end = 4.dp)
         )
 
-        // Truncated Text
         Text(
             text = text,
             color = textColor,
