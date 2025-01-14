@@ -7,7 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.*
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -17,13 +17,17 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.FirebaseApp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import dk.dtu.ToDoList.R
 import dk.dtu.ToDoList.data.Task
 import dk.dtu.ToDoList.data.TasksRepository
-import dk.dtu.ToDoList.feature.*
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.FirebaseApp
-import com.google.firebase.firestore.FirebaseFirestore
+import dk.dtu.ToDoList.feature.AddToCalendarPage
+import dk.dtu.ToDoList.feature.CalendarScreen
+import dk.dtu.ToDoList.feature.FavouritesScreen
+import dk.dtu.ToDoList.feature.HomeScreen
+import dk.dtu.ToDoList.feature.ProfileScreen
 
 
 class MainActivity : ComponentActivity() {
@@ -75,7 +79,6 @@ fun ToDoApp() {
             BottomNavBar(
                 items = listOf(
                     BottomNavItem("Tasks", R.drawable.home_grey,R.drawable.home_black),
-                    BottomNavItem("Favourites", R.drawable.favorite_grey,R.drawable.favorite_black),
                     BottomNavItem("Calendar", R.drawable.calender_grey,R.drawable.calender_black),
                     BottomNavItem("Profile", R.drawable.profile_grey, R.drawable.profile_black),
                 ),
