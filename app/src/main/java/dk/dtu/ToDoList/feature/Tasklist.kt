@@ -23,6 +23,8 @@ import dk.dtu.ToDoList.data.TaskTag
 import dk.dtu.ToDoList.data.TaskPriority
 import dk.dtu.ToDoList.data.TasksRepository.simpleDateFormat
 import java.text.SimpleDateFormat
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.Spring
 import java.util.Locale
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -289,10 +291,17 @@ fun SwipeableTaskItem(
     onFavoriteToggle: (Task) -> Unit,
     onCompleteToggle: (Task) -> Unit
 ) {
-    // Associate offset with the unique memory of the composable, tied to the task
-    var offsetX by remember { mutableStateOf(0f) }
-    val swipeThreshold = 200f // Threshold to trigger delete
-    val animatedOffsetX by animateFloatAsState(targetValue = offsetX)
+    var offsetX by remember { mutableStateOf(0f) } // Offset for drag
+    val swipeThreshold = 200f
+    val dragScaleFactor = 0.5f // Adjust this to control drag speed (0.5f = slower, 1.0f = normal)
+
+    val animatedOffsetX by animateFloatAsState(
+        targetValue = offsetX,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        )
+    )
 
     Box(
         modifier = Modifier
@@ -301,16 +310,15 @@ fun SwipeableTaskItem(
             .pointerInput(Unit) {
                 detectHorizontalDragGestures(
                     onHorizontalDrag = { change, dragAmount ->
-                        // Update the offset only during drag
-                        offsetX = (offsetX + dragAmount).coerceAtLeast(0f) // Only allow dragging right
+                        // Apply the dragScaleFactor to slow down the drag movement
+                        offsetX = (offsetX + dragAmount * dragScaleFactor).coerceAtLeast(0f)
                         change.consume()
                     },
                     onDragEnd = {
                         if (offsetX > swipeThreshold) {
-                            // Trigger delete if swipe exceeds threshold
-                            onDelete(task)
+                            onDelete(task) // Trigger delete if swipe exceeds threshold
                         }
-                        offsetX = 0f // Reset offset for any other cases
+                        offsetX = 0f // Reset offset after drag ends
                     }
                 )
             }
@@ -320,7 +328,7 @@ fun SwipeableTaskItem(
             onDelete = onDelete,
             onFavoriteToggle = onFavoriteToggle,
             onCompleteToggle = onCompleteToggle,
-            modifier = Modifier.offset(x = animatedOffsetX.dp) // Animate the swipe effect
+            modifier = Modifier.offset(x = animatedOffsetX.dp)
         )
     }
 }
