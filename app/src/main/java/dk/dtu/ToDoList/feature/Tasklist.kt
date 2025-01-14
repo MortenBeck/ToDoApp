@@ -149,6 +149,11 @@ fun TaskItem(
                             },
                             shape = CircleShape
                         )
+                        .border(
+                            width = 1.dp, // Border width
+                            color = Color.Black, // Border color
+                            shape = CircleShape // Circle-shaped border
+                        )
                 )
 
                 Spacer(modifier = Modifier.width(8.dp))
@@ -156,11 +161,15 @@ fun TaskItem(
                 // Task Title
                 Text(
                     text = task.name,
+                    modifier = Modifier.fillMaxWidth(), // Add Modifier to manage layout
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = taskColor,
-                    style = TextStyle(textDecoration = taskDecor)
+                    textDecoration = taskDecor, // Apply text decoration directly
+                    maxLines = 1, // Restrict to one line
+                    overflow = TextOverflow.Ellipsis // Truncate text with ellipsis if it overflows
                 )
+
             }
 
             Spacer(modifier = Modifier.height(4.dp))
