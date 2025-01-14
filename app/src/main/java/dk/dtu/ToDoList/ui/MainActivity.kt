@@ -20,12 +20,17 @@ import dk.dtu.ToDoList.data.Task
 import dk.dtu.ToDoList.data.TasksRepository
 import dk.dtu.ToDoList.feature.*
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.FirebaseApp
 import com.google.firebase.firestore.FirebaseFirestore
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        FireBaseApp.initializeApp(this)
         setContent {
+
             ToDoApp()
         }
     }

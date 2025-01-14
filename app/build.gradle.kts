@@ -74,9 +74,12 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson)
     implementation(libs.okhttp.logging.interceptor)
-    implementation(libs.firebase.bom)
+    implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.analytics)
+    implementation(libs.play.services.base)
+    implementation(libs.play.services.auth)
+    implementation(libs.play.services.maps)
 
 }

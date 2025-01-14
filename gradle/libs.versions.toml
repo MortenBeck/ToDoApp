@@ -24,6 +24,9 @@ compose-material = "1.4.2"
 navigation = "2.6.0"
 compose = "1.6.0"
 material3 = "1.2.1"
+playServicesAuth = "21.3.0"
+playServicesBase = "18.5.0"
+playServicesMaps = "19.0.0"
 retrofit = "2.9.0"
 okhttp = "4.10.0"
 
@@ -59,6 +62,9 @@ androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecy
 androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycleViewmodelKtx" }
 androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigationFragmentKtx" }
 androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "navigationUiKtx" }
+play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
+play-services-base = { module = "com.google.android.gms:play-services-base", version.ref = "playServicesBase" }
+play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
 retrofit-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
 okhttp-logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "okhttp" }
