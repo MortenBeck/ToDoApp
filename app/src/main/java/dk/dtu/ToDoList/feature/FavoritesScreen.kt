@@ -22,20 +22,18 @@ import androidx.compose.ui.unit.dp
 import dk.dtu.ToDoList.data.Task
 import dk.dtu.ToDoList.data.TaskPriority
 import dk.dtu.ToDoList.data.TaskTag
-import dk.dtu.ToDoList.data.TasksRepository.simpleDateFormat
+import dk.dtu.ToDoList.data.TasksRepository
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.navigation.NavController
-import dk.dtu.ToDoList.data.TasksRepository.Tasks
 
 
 @Composable
-fun FavouritesScreen(tasks: MutableList<Task>,navController: NavController) {
+fun FavouritesScreen(tasks: MutableList<Task>, navController: NavController) {
     // State to hold the currently filtered favorite tasks
     val favouriteTasks by remember {
         derivedStateOf { tasks.filter { it.favorite } }
     }
-
 
     var taskToDelete by remember { mutableStateOf<Task?>(null) }
     var showDialog by remember { mutableStateOf(false) }
@@ -55,21 +53,37 @@ fun FavouritesScreen(tasks: MutableList<Task>,navController: NavController) {
 
             // Favourites Task List
             TaskList(
-                Tasks = favouriteTasks,
+                tasks = favouriteTasks,
                 modifier = Modifier.weight(1f),
                 onDelete = { task ->
                     taskToDelete = task // Open confirmation dialog for this task
                 },
                 onFavoriteToggle = { taskToToggle ->
-                    val index = tasks.indexOfFirst { it == taskToToggle }
-                    if (index != -1) {
-                        tasks[index] = tasks[index].copy(favorite = !tasks[index].favorite)
+                    taskToToggle.id?.let { taskId ->
+                        TasksRepository.updateTask(
+                            taskId = taskId,
+                            updatedTask = taskToToggle.copy(favorite = !taskToToggle.favorite),
+                            onSuccess = {
+                                // Handle success
+                            },
+                            onFailure = { exception ->
+                                // Handle failure
+                            }
+                        )
                     }
                 },
                 onCompleteToggle = { taskToComplete ->
-                    val index = tasks.indexOfFirst { it == taskToComplete }
-                    if (index != -1) {
-                        tasks[index] = tasks[index].copy(completed = !tasks[index].completed)
+                    taskToComplete.id?.let { taskId ->
+                        TasksRepository.updateTask(
+                            taskId = taskId,
+                            updatedTask = taskToComplete.copy(completed = !taskToComplete.completed),
+                            onSuccess = {
+                                // Handle success
+                            },
+                            onFailure = { exception ->
+                                // Handle failure
+                            }
+                        )
                     }
                 }
             )
@@ -79,9 +93,9 @@ fun FavouritesScreen(tasks: MutableList<Task>,navController: NavController) {
         IconButton(
             onClick = { showDialog = true },
             modifier = Modifier
-                .padding(bottom = 16.dp, end = 16.dp) // Adjust padding for better placement
+                .padding(bottom = 16.dp, end = 16.dp)
                 .size(64.dp)
-                .align(Alignment.BottomEnd) // Ensure alignment at bottom-right corner
+                .align(Alignment.BottomEnd)
         ) {
             Surface(
                 shape = CircleShape,
@@ -106,25 +120,38 @@ fun FavouritesScreen(tasks: MutableList<Task>,navController: NavController) {
                 navController = navController,
                 onDismiss = { showDialog = false },
                 onTaskAdded = { newTask ->
-                    tasks.add(newTask) // Add the new task to the list
-                    showDialog = false
+                    TasksRepository.addTask(newTask, onSuccess = {
+                        tasks.add(newTask) // Add the new task to the list
+                        showDialog = false
+                    }, onFailure = {
+                        println("Error adding task: ${it.message}")
+                    })
                 }
             )
         }
     }
 
-    // Confirmation Dialog
-    if (taskToDelete != null) {
+    // Delete Confirmation Dialog
+    if (taskToDelete != null && taskToDelete!!.id != null) {
         DeleteConfirmation(
             task = taskToDelete!!,
             onConfirm = {
-                // Remove task from the original list
-                tasks.remove(taskToDelete)
-                taskToDelete = null // Close the dialog
+                val taskId = taskToDelete!!.id
+                if (taskId != null) {
+                    TasksRepository.softDeleteTask(taskId, onSuccess = {
+                        tasks.remove(taskToDelete) // Remove task from the local list
+                        taskToDelete = null // Close the dialog
+                    }, onFailure = { exception ->
+                        println("Error deleting task: ${exception.message}")
+                    })
+                } else {
+                    println("Task ID is null. Cannot delete task.")
+                }
             },
             onDismiss = {
-                taskToDelete = null // Close the dialog
+                taskToDelete = null // Close the dialog without deleting the task
             }
         )
     }
 }
+

@@ -1,7 +1,9 @@
 package dk.dtu.ToDoList.feature
 
+import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,7 +23,7 @@ import androidx.compose.ui.Alignment
 import dk.dtu.ToDoList.data.Task
 import dk.dtu.ToDoList.data.TaskTag
 import dk.dtu.ToDoList.data.TaskPriority
-import dk.dtu.ToDoList.data.TasksRepository.simpleDateFormat
+import dk.dtu.ToDoList.data.TasksRepository
 import java.text.SimpleDateFormat
 import java.util.Locale
 import androidx.compose.foundation.Image
@@ -46,12 +48,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
+import com.google.android.gms.tasks.Tasks
 
 
-
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun TaskList(
-    Tasks: List<Task>,
+    tasks: List<Task>,
     modifier: Modifier = Modifier,
     onDelete: (Task) -> Unit, // Pass a callback to handle deletion
     onFavoriteToggle: (Task) -> Unit,
@@ -59,7 +62,7 @@ fun TaskList(
 ) {
     val scrollState = rememberLazyListState()
 
-    LaunchedEffect(Tasks) {
+    LaunchedEffect(tasks) {
         scrollState.scrollToItem(0)
     }
 
@@ -69,7 +72,7 @@ fun TaskList(
             .fillMaxWidth()
             .heightIn(max = 300.dp) // Add a maximum height
     ) {
-        itemsIndexed(Tasks) { _, task ->
+        itemsIndexed(tasks) { _, task ->
             TaskItem(
                 task = task,
                 onDelete = onDelete,
@@ -80,6 +83,7 @@ fun TaskList(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun TaskItem(
     task: Task,
@@ -172,7 +176,7 @@ fun TaskItem(
             TaskTag.HOME -> R.drawable.home_black
             TaskTag.TRANSPORT -> R.drawable.transport
             TaskTag.PRIVATE -> R.drawable.lock
-            else -> R.drawable.folder// Fallback icon if needed
+            else -> R.drawable.folder // Fallback icon if needed
         }
         Image(
             painter = painterResource(id = tagIcon),

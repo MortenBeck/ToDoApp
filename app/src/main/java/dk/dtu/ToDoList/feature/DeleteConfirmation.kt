@@ -7,11 +7,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import dk.dtu.ToDoList.data.Task
 
 
 @Composable
 fun DeleteConfirmation(
-    task: dk.dtu.ToDoList.data.Task,
+    task: Task,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {

@@ -1,29 +1,18 @@
 package dk.dtu.ToDoList.feature
 
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.runtime.*
 import dk.dtu.ToDoList.data.Task
 import dk.dtu.ToDoList.data.TaskPriority
 import dk.dtu.ToDoList.data.TaskTag
 
-
 @Composable
 fun FilterSection(
-    onFilterChange: (List<Task>) -> Unit,
-    tasks: List<Task>
+    tasks: MutableList<Task>,
+    onFilterChange: (List<Task>) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
     var showCompleted by remember { mutableStateOf(true) }
@@ -98,7 +87,7 @@ fun FilterSection(
                 )
             }
 
-            HorizontalDivider()
+            Divider()
 
             // Filter by Completion
             DropdownMenuItem(
@@ -122,6 +111,7 @@ fun FilterSection(
 
             HorizontalDivider()
 
+
             // Reset Filters
             DropdownMenuItem(
                 text = { Text("Reset Filters") },
@@ -139,7 +129,7 @@ fun FilterSection(
 }
 
 private fun applyFilters(
-    tasks: List<Task>,
+    tasks: MutableList<Task>,
     selectedTag: TaskTag?,
     selectedPriority: TaskPriority?, // Add priority filter
     showCompleted: Boolean,

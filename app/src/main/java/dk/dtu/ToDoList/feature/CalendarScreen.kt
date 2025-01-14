@@ -1,5 +1,7 @@
 package dk.dtu.ToDoList.feature
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -28,9 +30,10 @@ import java.time.format.DateTimeFormatter
 import androidx.compose.ui.Alignment
 import androidx.navigation.NavController
 import androidx.compose.material3.*
-import dk.dtu.ToDoList.data.TasksRepository.Tasks
+import dk.dtu.ToDoList.data.TasksRepository
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun CalendarScreen(tasks: MutableList<Task>, navController: NavController) { // MutableList to allow deletion
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
@@ -39,6 +42,20 @@ fun CalendarScreen(tasks: MutableList<Task>, navController: NavController) { // 
     var showAddTaskDialog by remember{mutableStateOf(false)}
     var taskToDelete by remember { mutableStateOf<Task?>(null) }
     var showDialog by remember { mutableStateOf(false) }
+    var tasks by remember { mutableStateOf<List<Task>>(emptyList())}
+
+
+
+    // Fetch tasks when the screen is loaded or selected date is changed
+    TasksRepository.getTasksForDate(
+        selectedDate,
+        onSuccess = { fetchedTasks ->
+            tasks = fetchedTasks
+        },
+        onFailure = { exception ->
+            println("Error fetching tasks: ${exception.message}")
+        }
+    )
 
     Column(
         modifier = Modifier
@@ -72,15 +89,33 @@ fun CalendarScreen(tasks: MutableList<Task>, navController: NavController) { // 
                 showDeleteDialog = true
             },
             onFavoriteToggle = { taskToToggle ->
-                val index = tasks.indexOfFirst { it == taskToToggle }
-                if (index != -1) {
-                    tasks[index] = tasks[index].copy(favorite = !tasks[index].favorite)
+                // Ensure task has an ID before calling updateTask
+                taskToToggle.id?.let { taskId ->
+                    TasksRepository.updateTask(
+                        taskId = taskId, // Pass the task ID
+                        updatedTask = taskToToggle.copy(favorite = !taskToToggle.favorite),
+                        onSuccess = {
+                            // Handle success (optional)
+                        },
+                        onFailure = { exception ->
+                            // Handle failure (optional)
+                        }
+                    )
                 }
             },
             onCompleteToggle = { taskToComplete ->
-                val index = tasks.indexOfFirst { it == taskToComplete }
-                if (index != -1) {
-                    tasks[index] = tasks[index].copy(completed = !tasks[index].completed)
+                // Ensure task has an ID before calling updateTask
+                taskToComplete.id?.let { taskId ->
+                    TasksRepository.updateTask(
+                        taskId = taskId, // Pass the task ID
+                        updatedTask = taskToComplete.copy(completed = !taskToComplete.completed),
+                        onSuccess = {
+                            // Handle success (optional)
+                        },
+                        onFailure = { exception ->
+                            // Handle failure (optional)
+                        }
+                    )
                 }
             }
         )
@@ -121,8 +156,13 @@ fun CalendarScreen(tasks: MutableList<Task>, navController: NavController) { // 
             navController = navController,
             onDismiss = { showDialog = false }, // Close dialog on dismiss
             onTaskAdded = { newTask ->
-                tasks.add(newTask) // Add the new task to the list
-                showDialog = false // Close the dialog after adding the task
+                // Add the new task to Firestore
+                TasksRepository.addTask(newTask, onSuccess = {
+                    tasks = tasks + newTask // Add the new task to the list
+                    showDialog = false // Close the dialog after adding the task
+                }, onFailure = {
+                    println("Error adding task: ${it.message}")
+                })
             }
         )
     }
@@ -132,9 +172,16 @@ fun CalendarScreen(tasks: MutableList<Task>, navController: NavController) { // 
         DeleteConfirmation(
             task = taskToDelete!!,
             onConfirm = {
-                tasks.remove(taskToDelete) // Remove the task from the list
-                taskToDelete = null
-                showDeleteDialog = false
+                // Delete the task from Firestore using the task's ID
+                taskToDelete!!.id?.let { taskId ->
+                    TasksRepository.softDeleteTask(taskId, onSuccess = {
+                        tasks = tasks.filter { it != taskToDelete } // Remove from the list
+                        taskToDelete = null
+                        showDeleteDialog = false
+                    }, onFailure = {
+                        println("Error deleting task: ${it.message}")
+                    })
+                }
             },
             onDismiss = {
                 taskToDelete = null
@@ -167,7 +214,7 @@ fun TasksForDate(
 
         if (tasksForDate.isNotEmpty()) {
             TaskList(
-                Tasks = tasksForDate,
+                tasks = tasksForDate,
                 modifier = Modifier.fillMaxWidth(),
                 onDelete = onDelete,
                 onFavoriteToggle = onFavoriteToggle,

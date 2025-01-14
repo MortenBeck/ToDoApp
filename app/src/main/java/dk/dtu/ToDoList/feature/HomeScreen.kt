@@ -2,30 +2,42 @@ package dk.dtu.ToDoList.feature
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import dk.dtu.ToDoList.data.Task
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.Icons
 import androidx.navigation.NavController
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.unit.dp
+import dk.dtu.ToDoList.data.Task
+import dk.dtu.ToDoList.data.TasksRepository
 
 @Composable
-fun HomeScreen(tasks: MutableList<Task>, navController: NavController) {
+fun HomeScreen(
+    tasks: MutableList<Task>,
+    navController: NavController,
+    userId: String
+) {
     var showDialog by remember { mutableStateOf(false) }
     var taskToDelete by remember { mutableStateOf<Task?>(null) }
     var searchText by remember { mutableStateOf("") }
-
-    // Create a mutable state for filtered tasks
     var filteredTasks by remember { mutableStateOf(tasks.toList()) }
+
+    // Fetch tasks from the repository
+    LaunchedEffect(userId) {
+        TasksRepository.getTasks(
+            userId,
+            onSuccess = { fetchedTasks ->
+                tasks.clear()
+                tasks.addAll(fetchedTasks)
+                filteredTasks = tasks.toList() // Update filtered tasks
+            },
+            onFailure = { exception ->
+                // Handle errors
+            }
+        )
+    }
 
     // Apply search filter
     val searchFilteredTasks = filteredTasks.filter {
@@ -51,26 +63,24 @@ fun HomeScreen(tasks: MutableList<Task>, navController: NavController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Display the list of tasks
+            // Task List
             TaskListScreen(
-                tasks = searchFilteredTasks.toMutableList(),
-                onDelete = { task ->
+                userId = userId,
+                onTaskDeleted = { task ->
                     taskToDelete = task
                 },
                 onFavoriteToggle = { taskToToggle ->
-                    val index = tasks.indexOfFirst { it == taskToToggle }
+                    val index = tasks.indexOfFirst { it.id == taskToToggle.id }
                     if (index != -1) {
                         tasks[index] = tasks[index].copy(favorite = !tasks[index].favorite)
-                        // Update filtered tasks to reflect changes
-                        filteredTasks = tasks.toList()
+                        filteredTasks = tasks.toList() // Update filtered tasks
                     }
                 },
                 onCompleteToggle = { taskToComplete ->
-                    val index = tasks.indexOfFirst { it == taskToComplete }
+                    val index = tasks.indexOfFirst { it.id == taskToComplete.id }
                     if (index != -1) {
                         tasks[index] = tasks[index].copy(completed = !tasks[index].completed)
-                        // Update filtered tasks to reflect changes
-                        filteredTasks = tasks.toList()
+                        filteredTasks = tasks.toList() // Update filtered tasks
                     }
                 }
             )
@@ -113,22 +123,30 @@ fun HomeScreen(tasks: MutableList<Task>, navController: NavController) {
             onDismiss = { showDialog = false },
             onTaskAdded = { newTask ->
                 tasks.add(newTask)
-                filteredTasks = tasks.toList() // Update filtered tasks
+                filteredTasks = tasks.toList()
                 showDialog = false
             }
         )
     }
 
+    // Safe task deletion
     if (taskToDelete != null) {
         DeleteConfirmation(
             task = taskToDelete!!,
             onConfirm = {
-                tasks.remove(taskToDelete)
-                filteredTasks = tasks.toList() // Update filtered tasks
-                taskToDelete = null
+                // Check if taskToDelete is not null and proceed with soft delete
+                taskToDelete?.id?.let { taskId ->
+                    TasksRepository.softDeleteTask(taskId, onSuccess = {
+                        tasks.remove(taskToDelete) // Update the local task list to reflect the deletion
+                        filteredTasks = tasks.toList() // Update filtered tasks
+                        taskToDelete = null // Reset taskToDelete
+                    }, onFailure = { exception ->
+                        println("Failed to soft delete task: ${exception.message}")
+                    })
+                }
             },
             onDismiss = {
-                taskToDelete = null
+                taskToDelete = null // Reset taskToDelete if dismissed
             }
         )
     }
