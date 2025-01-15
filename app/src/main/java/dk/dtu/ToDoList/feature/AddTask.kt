@@ -27,6 +27,7 @@ fun AddTaskDialog(
         var taskName by remember { mutableStateOf("") }
         var priorityLevel by remember { mutableStateOf("Low") } // Default priority
         var isFavorite by remember { mutableStateOf(false) }
+        var selectedTag by remember { mutableStateOf(TaskTag.WORK) }
 
         Dialog(onDismissRequest = onDismiss) {
             Surface(
@@ -70,6 +71,19 @@ fun AddTaskDialog(
                             PriorityButton("Mid", priorityLevel) { priorityLevel = "Mid" }
                             PriorityButton("High", priorityLevel) { priorityLevel = "High" }
                         }
+                    }
+
+                    // Tag Selector
+                    Column(modifier = Modifier.padding(bottom = 16.dp)) {
+                        Text(
+                            text = "Task Tag",
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                        DropdownTagSelector(
+                            selectedTag = selectedTag,
+                            onTagSelected = { selectedTag = it }
+                        )
                     }
 
                     // Favorite Toggle & Add to Calendar
@@ -158,5 +172,36 @@ fun PriorityButton(
             else
                 MaterialTheme.colorScheme.onSurface
         )
+    }
+}
+
+@Composable
+fun DropdownTagSelector(
+    selectedTag: TaskTag,
+    onTagSelected: (TaskTag) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box(modifier = Modifier.fillMaxWidth()) {
+        OutlinedButton(
+            onClick = { expanded = !expanded },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(text = selectedTag.name)
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            TaskTag.values().forEach { tag ->
+                DropdownMenuItem(
+                    onClick = {
+                        onTagSelected(tag)
+                        expanded = false
+                    },
+                    text = { Text(text = tag.name) }
+                )
+            }
+        }
     }
 }
