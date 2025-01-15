@@ -64,7 +64,7 @@ fun AddTaskDialog(
                             modifier = Modifier.padding(bottom = 8.dp)
                         )
                         Row(
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             PriorityButton("Low", priorityLevel) { priorityLevel = "Low" }
@@ -91,7 +91,7 @@ fun AddTaskDialog(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = 16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
+                        horizontalArrangement = Arrangement.SpaceEvenly,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         // Favorite Toggle
