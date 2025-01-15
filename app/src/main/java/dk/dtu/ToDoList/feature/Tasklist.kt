@@ -202,6 +202,7 @@ fun TaskItem(
                         TaskTag.WORK -> Color(0xFF6d8FFF)
                         TaskTag.SCHOOL -> Color(0xFFFF9c6d)
                         TaskTag.PET -> Color(0xFF6dFF6d)
+                        TaskTag.SPORT -> Color(0xFFd631bb)
                         TaskTag.HOME -> Color(0xFFd16dFF)
                         TaskTag.TRANSPORT -> Color(0xFFFFF86d)
                         TaskTag.PRIVATE -> Color(0xFFff6D6D)
@@ -211,6 +212,7 @@ fun TaskItem(
                         TaskTag.WORK -> R.drawable.work
                         TaskTag.SCHOOL -> R.drawable.school
                         TaskTag.PET -> R.drawable.pet
+                        TaskTag.SPORT -> R.drawable.sport
                         TaskTag.HOME -> R.drawable.home_black
                         TaskTag.TRANSPORT -> R.drawable.transport
                         TaskTag.PRIVATE -> R.drawable.lock
