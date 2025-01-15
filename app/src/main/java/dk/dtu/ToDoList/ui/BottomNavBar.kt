@@ -7,8 +7,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.ui.tooling.preview.Preview
-import dk.dtu.ToDoList.R
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 

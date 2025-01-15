@@ -198,7 +198,7 @@ fun DropdownTagSelector(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            TaskTag.values().forEach { tag ->
+            TaskTag.entries.forEach { tag ->
                 DropdownMenuItem(
                     onClick = {
                         onTagSelected(tag)

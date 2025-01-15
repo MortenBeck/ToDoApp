@@ -1,17 +1,10 @@
 package dk.dtu.ToDoList.feature
 
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.*
@@ -65,7 +58,7 @@ fun FilterSection(
                     applyFilters(tasks, selectedTag, selectedPriority, showCompleted, showFavoriteOnly, onFilterChange)
                 }
             )
-            TaskTag.values().forEach { tag ->
+            TaskTag.entries.forEach { tag ->
                 DropdownMenuItem(
                     text = { Text("Tag: ${tag.name}") },
                     onClick = {
@@ -87,7 +80,7 @@ fun FilterSection(
                     applyFilters(tasks, selectedTag, selectedPriority, showCompleted, showFavoriteOnly, onFilterChange)
                 }
             )
-            TaskPriority.values().forEach { priority ->
+            TaskPriority.entries.forEach { priority ->
                 DropdownMenuItem(
                     text = { Text("Priority: ${priority.name}") },
                     onClick = {

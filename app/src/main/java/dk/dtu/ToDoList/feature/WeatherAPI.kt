@@ -2,7 +2,6 @@ package dk.dtu.ToDoList.feature
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -10,6 +9,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
+import kotlin.math.round
 
 // Data classes for the API response
 data class WeatherResponse(
@@ -60,7 +60,8 @@ suspend fun fetchWeatherPeriodically(
     while (true) {
         try {
             val response = weatherApi.getCurrentWeather(city, "metric", apiKey)
-            val temperature = "${response.main.temp}°C"
+            val roundedTemperature = round(response.main.temp).toInt() // Round to nearest whole number
+            val temperature = "$roundedTemperature°C"
             val iconRes = dk.dtu.ToDoList.R.drawable.weather // Replace with logic to map weather description to icons
             withContext(Dispatchers.Main) {
                 onWeatherUpdated(temperature, iconRes)

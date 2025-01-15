@@ -1,5 +1,6 @@
 package dk.dtu.ToDoList.feature
 
+import android.os.Build
 import androidx.compose.material3.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -20,7 +21,6 @@ import androidx.navigation.NavController
 import dk.dtu.ToDoList.data.Task
 import dk.dtu.ToDoList.data.TaskPriority
 import dk.dtu.ToDoList.data.TaskTag
-import dk.dtu.ToDoList.data.TasksRepository.Tasks
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
@@ -32,7 +32,12 @@ fun AddToCalendarPage(
     taskName: String,
     onTaskAdded: (Task) -> Unit // Ensures we can add the task from this page
 ) {
-    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
+    var selectedDate by remember { if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        mutableStateOf(LocalDate.now())
+    } else {
+        TODO("VERSION.SDK_INT < O")
+    }
+    }
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
 
     Column(

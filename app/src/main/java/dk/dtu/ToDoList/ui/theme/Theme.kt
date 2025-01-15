@@ -1,6 +1,7 @@
 package dk.dtu.ToDoList.ui.theme
 
 import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -13,9 +14,10 @@ private val LightColorScheme = lightColorScheme(
     tertiary = Amber500
 )
 
+@RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun ToDoListTheme(
-    dynamicColor: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
+    dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
     val colorScheme = if (dynamicColor) {

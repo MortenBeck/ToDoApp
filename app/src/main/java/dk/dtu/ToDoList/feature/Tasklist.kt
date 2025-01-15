@@ -1,5 +1,7 @@
 package dk.dtu.ToDoList.feature
 
+import android.annotation.SuppressLint
+import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import androidx.compose.foundation.layout.Column
@@ -13,7 +15,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -21,12 +22,10 @@ import androidx.compose.ui.Alignment
 import dk.dtu.ToDoList.data.Task
 import dk.dtu.ToDoList.data.TaskTag
 import dk.dtu.ToDoList.data.TaskPriority
-import dk.dtu.ToDoList.data.TasksRepository.simpleDateFormat
 import java.text.SimpleDateFormat
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.Spring
 import java.util.Locale
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -39,31 +38,19 @@ import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import dk.dtu.ToDoList.R
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.*
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
 import java.util.Calendar
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
-import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.unit.dp
 import androidx.compose.animation.core.animateFloatAsState
-
-
-
-
-
-
 
 @Composable
 fun TaskList(
@@ -120,12 +107,14 @@ fun TaskItem(
     ) {
         IconButton(
             onClick = {
-                vibrator?.vibrate(
-                    VibrationEffect.createOneShot(
-                        200,
-                        VibrationEffect.DEFAULT_AMPLITUDE
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    vibrator?.vibrate(
+                        VibrationEffect.createOneShot(
+                            200,
+                            VibrationEffect.DEFAULT_AMPLITUDE
+                        )
                     )
-                )
+                }
                 onCompleteToggle(task)
             },
             modifier = Modifier.size(24.dp)
@@ -232,7 +221,7 @@ fun TaskItem(
             IconButton(onClick = { onFavoriteToggle(task) }) {
                 Icon(
                     imageVector = if (task.favorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                    contentDescription = if (task.favorite) "Unfavorite Task" else "Favorite Task",
+                    contentDescription = if (task.favorite) "Un-favorite Task" else "Favorite Task",
                     tint = if (task.favorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                 )
             }
@@ -286,6 +275,7 @@ fun isTaskToday(task: Task): Boolean {
             todayCalendar.get(Calendar.DAY_OF_YEAR) == taskCalendar.get(Calendar.DAY_OF_YEAR)
 }
 
+@SuppressLint("UseOfNonLambdaOffsetOverload")
 @Composable
 fun SwipeableTaskItem(
     task: Task,

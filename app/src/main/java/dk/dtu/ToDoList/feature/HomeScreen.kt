@@ -11,12 +11,6 @@ import dk.dtu.ToDoList.data.Task
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.Icons
 import androidx.navigation.NavController
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.unit.dp
 
 @Composable
 fun HomeScreen(tasks: MutableList<Task>, navController: NavController) {

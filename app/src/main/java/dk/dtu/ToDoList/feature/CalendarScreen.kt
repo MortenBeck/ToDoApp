@@ -1,5 +1,6 @@
 package dk.dtu.ToDoList.feature
 
+import android.os.Build
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -28,12 +29,17 @@ import java.time.format.DateTimeFormatter
 import androidx.compose.ui.Alignment
 import androidx.navigation.NavController
 import androidx.compose.material3.*
-import dk.dtu.ToDoList.data.TasksRepository.Tasks
+
 
 
 @Composable
 fun CalendarScreen(tasks: MutableList<Task>, navController: NavController) { // MutableList to allow deletion
-    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
+    var selectedDate by remember { if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        mutableStateOf(LocalDate.now())
+    } else {
+        TODO("VERSION.SDK_INT < O")
+    }
+    }
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showAddTaskDialog by remember{mutableStateOf(false)}
@@ -148,7 +154,11 @@ fun TasksForDate(
 ) {
     val tasksForDate = remember(selectedDate, tasks) {
         tasks.filter { task ->
-            task.deadline.toInstant().atZone(ZoneId.systemDefault()).toLocalDate() == selectedDate
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                task.deadline.toInstant().atZone(ZoneId.systemDefault()).toLocalDate() == selectedDate
+            } else {
+                TODO("VERSION.SDK_INT < O")
+            }
         }
     }
 

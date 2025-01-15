@@ -1,5 +1,6 @@
 package dk.dtu.ToDoList.feature
 
+import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -35,9 +36,13 @@ fun Calendar(
 ) {
     val taskDates = remember(tasks) {
         tasks.map { task ->
-            task.deadline.toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                task.deadline.toInstant()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate()
+            } else {
+                TODO("VERSION.SDK_INT < O")
+            }
         }.toSet() // Use a Set for quick lookup
     }
 
@@ -147,7 +152,11 @@ fun DayCell(
     hasTask: Boolean, // New parameter to indicate if the day has tasks
     onDateSelected: (LocalDate) -> Unit
 ) {
-    val isToday = date == LocalDate.now()
+    val isToday = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        date == LocalDate.now()
+    } else {
+        TODO("VERSION.SDK_INT < O")
+    }
 
     Box(
         modifier = Modifier

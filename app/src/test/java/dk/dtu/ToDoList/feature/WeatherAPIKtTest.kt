@@ -1,7 +1,5 @@
 package dk.dtu.ToDoList.feature
 
-import org.junit.jupiter.api.Assertions.*
-
 class WeatherAPIKtTest {
 
     @org.junit.jupiter.api.BeforeEach
