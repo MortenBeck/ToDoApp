@@ -49,6 +49,7 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import java.util.Locale
 
 @Composable
 fun ProfileScreen(tasks: MutableList<Task>, navController: NavController) {
@@ -56,25 +57,6 @@ fun ProfileScreen(tasks: MutableList<Task>, navController: NavController) {
     val completedTasks = tasks.count { it.completed }
     val totalTasks = tasks.size
     val completionPercentage = if (totalTasks > 0) (completedTasks / totalTasks.toFloat()) * 100 else 0f
-    var weatherInfo by remember { mutableStateOf("Fetching weather...") }
-    val coroutineScope = rememberCoroutineScope()
-
-    // Fetch weather details
-    LaunchedEffect(Unit) {
-        coroutineScope.launch(Dispatchers.IO) {
-            while (true) {
-                val weatherApi = provideWeatherApi()
-                val response = weatherApi.getCurrentWeather("Copenhagen", "metric", "f062e109162abcf31ec182583cae89e0")
-                val description = response.weather.firstOrNull()?.description?.capitalize() ?: "No data"
-                val temperature = response.main.temp
-                val city = response.name
-                weatherInfo = "$city: ${temperature}°C, $description"
-
-                // Update every 30 minutes (1800000 ms)
-                kotlinx.coroutines.delay(30 * 60 * 1000L)
-            }
-        }
-    }
 
     Column(
         modifier = Modifier
@@ -101,13 +83,6 @@ fun ProfileScreen(tasks: MutableList<Task>, navController: NavController) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = "Keep track of your tasks and achieve more.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    textAlign = TextAlign.Center
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Todays Weather: $weatherInfo",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onPrimary,
                     textAlign = TextAlign.Center
@@ -245,43 +220,6 @@ fun ProfileScreen(tasks: MutableList<Task>, navController: NavController) {
             )
         }
     }
-}
-
-// Updated WeatherResponse class
-data class WeatherResponse(
-    val weather: List<WeatherInfo>,
-    val main: MainInfo,
-    val name: String
-)
-
-data class WeatherInfo(val description: String)
-data class MainInfo(val temp: Double)
-
-// Retrofit setup
-fun provideWeatherApi(): WeatherApi {
-    val loggingInterceptor = HttpLoggingInterceptor().apply {
-        level = HttpLoggingInterceptor.Level.BODY
-    }
-    val client = OkHttpClient.Builder()
-        .addInterceptor(loggingInterceptor)
-        .build()
-
-    val retrofit = Retrofit.Builder()
-        .baseUrl("https://api.openweathermap.org/")
-        .client(client)
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-
-    return retrofit.create(WeatherApi::class.java)
-}
-
-interface WeatherApi {
-    @GET("data/2.5/weather")
-    suspend fun getCurrentWeather(
-        @Query("q") city: String,
-        @Query("units") units: String,
-        @Query("appid") apiKey: String
-    ): WeatherResponse
 }
 
 @Composable
