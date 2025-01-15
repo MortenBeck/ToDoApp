@@ -1,4 +1,4 @@
-package dk.dtu.ToDoList.data
+package dk.dtu.ToDoList.model.data
 
 import java.util.Date
 

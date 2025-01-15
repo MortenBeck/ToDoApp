@@ -1,4 +1,4 @@
-package dk.dtu.ToDoList.ui.theme
+package dk.dtu.ToDoList.view.theme
 
 import android.os.Build
 import androidx.annotation.RequiresApi

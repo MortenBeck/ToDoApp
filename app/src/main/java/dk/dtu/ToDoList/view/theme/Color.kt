@@ -1,4 +1,4 @@
-package dk.dtu.ToDoList.ui.theme
+package dk.dtu.ToDoList.view.theme
 
 import androidx.compose.ui.graphics.Color
 

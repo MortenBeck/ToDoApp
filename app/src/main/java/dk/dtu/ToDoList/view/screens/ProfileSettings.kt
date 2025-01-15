@@ -1,4 +1,4 @@
-package dk.dtu.ToDoList.feature
+package dk.dtu.ToDoList.view.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

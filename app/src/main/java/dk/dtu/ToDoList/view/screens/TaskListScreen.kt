@@ -1,4 +1,4 @@
-package dk.dtu.ToDoList.feature
+package dk.dtu.ToDoList.view.screens
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -22,14 +22,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import dk.dtu.ToDoList.data.Task
+import dk.dtu.ToDoList.model.data.Task
 import java.util.Calendar
 import androidx.compose.material3.*
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
-
+import dk.dtu.ToDoList.view.components.SwipeableTaskItem
 
 
 @Composable

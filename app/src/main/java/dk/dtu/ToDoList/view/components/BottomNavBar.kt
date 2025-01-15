@@ -1,4 +1,4 @@
-package dk.dtu.ToDoList.ui
+package dk.dtu.ToDoList.view.components
 
 
 import androidx.compose.runtime.Composable

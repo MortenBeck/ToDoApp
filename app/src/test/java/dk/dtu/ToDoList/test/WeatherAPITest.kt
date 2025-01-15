@@ -1,6 +1,6 @@
-package dk.dtu.ToDoList.feature
+package dk.dtu.ToDoList.test
 
-class WeatherAPIKtTest {
+class WeatherAPITest {
 
     @org.junit.jupiter.api.BeforeEach
     fun setUp() {

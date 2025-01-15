@@ -1,4 +1,4 @@
-package dk.dtu.ToDoList.feature
+package dk.dtu.ToDoList.view.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -7,9 +7,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import dk.dtu.ToDoList.data.Task
-import dk.dtu.ToDoList.data.TaskPriority
-import dk.dtu.ToDoList.data.TaskTag
+import dk.dtu.ToDoList.model.data.Task
+import dk.dtu.ToDoList.model.data.TaskPriority
+import dk.dtu.ToDoList.model.data.TaskTag
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder

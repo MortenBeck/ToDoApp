@@ -1,4 +1,4 @@
-package dk.dtu.ToDoList.ui
+package dk.dtu.ToDoList.view
 
 import android.os.Build
 import android.os.Bundle
@@ -16,10 +16,16 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dk.dtu.ToDoList.R
-import dk.dtu.ToDoList.data.Task
-import dk.dtu.ToDoList.data.TasksRepository
-import dk.dtu.ToDoList.feature.*
-import dk.dtu.ToDoList.ui.theme.ToDoListTheme
+import dk.dtu.ToDoList.model.data.Task
+import dk.dtu.ToDoList.model.repository.TasksRepository
+import dk.dtu.ToDoList.view.components.BottomNavBar
+import dk.dtu.ToDoList.view.components.BottomNavItem
+import dk.dtu.ToDoList.view.screens.AddToCalendarPage
+import dk.dtu.ToDoList.view.screens.CalendarScreen
+import dk.dtu.ToDoList.view.screens.FavouritesScreen
+import dk.dtu.ToDoList.view.screens.HomeScreen
+import dk.dtu.ToDoList.view.screens.ProfileScreen
+import dk.dtu.ToDoList.view.theme.ToDoListTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

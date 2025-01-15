@@ -1,4 +1,4 @@
-package dk.dtu.ToDoList.feature
+package dk.dtu.ToDoList.view.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -30,7 +30,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import dk.dtu.ToDoList.data.Task
+import dk.dtu.ToDoList.model.data.Task
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import dk.dtu.ToDoList.R

@@ -1,4 +1,4 @@
-package dk.dtu.ToDoList.feature
+package dk.dtu.ToDoList.view.components
 
 import android.os.Build
 import androidx.compose.foundation.background
@@ -18,7 +18,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import dk.dtu.ToDoList.data.Task
+import dk.dtu.ToDoList.model.data.Task
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId

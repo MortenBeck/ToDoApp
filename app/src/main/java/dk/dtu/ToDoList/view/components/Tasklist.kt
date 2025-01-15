@@ -1,4 +1,4 @@
-package dk.dtu.ToDoList.feature
+package dk.dtu.ToDoList.view.components
 
 import android.annotation.SuppressLint
 import android.os.Build
@@ -19,9 +19,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.ui.Alignment
-import dk.dtu.ToDoList.data.Task
-import dk.dtu.ToDoList.data.TaskTag
-import dk.dtu.ToDoList.data.TaskPriority
+import dk.dtu.ToDoList.model.data.Task
+import dk.dtu.ToDoList.model.data.TaskTag
+import dk.dtu.ToDoList.model.data.TaskPriority
 import java.text.SimpleDateFormat
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.Spring

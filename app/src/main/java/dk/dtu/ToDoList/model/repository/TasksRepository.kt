@@ -1,6 +1,9 @@
-package dk.dtu.ToDoList.data
+package dk.dtu.ToDoList.model.repository
 
 
+import dk.dtu.ToDoList.model.data.Task
+import dk.dtu.ToDoList.model.data.TaskPriority
+import dk.dtu.ToDoList.model.data.TaskTag
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -125,7 +128,8 @@ object TasksRepository {
                 priority = TaskPriority.LOW,
                 tag = TaskTag.HOME,
                 completed = false
-            ))
+            )
+    )
 
 
 

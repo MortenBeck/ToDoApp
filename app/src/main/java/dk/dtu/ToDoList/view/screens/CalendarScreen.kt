@@ -1,4 +1,4 @@
-package dk.dtu.ToDoList.feature
+package dk.dtu.ToDoList.view.screens
 
 import android.os.Build
 import androidx.compose.foundation.layout.Box
@@ -21,7 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import dk.dtu.ToDoList.data.Task
+import dk.dtu.ToDoList.model.data.Task
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
@@ -29,7 +29,10 @@ import java.time.format.DateTimeFormatter
 import androidx.compose.ui.Alignment
 import androidx.navigation.NavController
 import androidx.compose.material3.*
-
+import dk.dtu.ToDoList.view.components.AddTaskDialog
+import dk.dtu.ToDoList.view.components.Calendar
+import dk.dtu.ToDoList.view.components.DeleteConfirmation
+import dk.dtu.ToDoList.view.components.TaskList
 
 
 @Composable

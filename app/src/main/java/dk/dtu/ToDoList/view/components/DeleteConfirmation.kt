@@ -1,13 +1,14 @@
-package dk.dtu.ToDoList.feature
+package dk.dtu.ToDoList.view.components
 
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import dk.dtu.ToDoList.model.data.Task
 
 @Composable
 fun DeleteConfirmation(
-    task: dk.dtu.ToDoList.data.Task,
+    task: Task,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {

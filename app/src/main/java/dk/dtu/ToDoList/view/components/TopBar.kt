@@ -1,14 +1,9 @@
-package dk.dtu.ToDoList.feature
+package dk.dtu.ToDoList.view.components
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.IconButton
 import androidx.compose.runtime.*
@@ -21,9 +16,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import dk.dtu.ToDoList.R
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 @Composable
 fun TopBar(
@@ -32,18 +24,6 @@ fun TopBar(
     navController: NavController
 ) {
     var isSearchActive by remember { mutableStateOf(false) }
-    var temperature by remember { mutableStateOf("Fetching...") }
-    var weatherIconRes by remember { mutableStateOf(R.drawable.weather) }
-
-    // Fetch weather periodically
-    LaunchedEffect(Unit) {
-        CoroutineScope(Dispatchers.IO).launch {
-            fetchWeatherPeriodically { updatedTemperature, updatedIconRes ->
-                temperature = updatedTemperature
-                weatherIconRes = updatedIconRes
-            }
-        }
-    }
 
     Row(
         modifier = Modifier
@@ -52,21 +32,8 @@ fun TopBar(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        // Weather Info on Top Left
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Image(
-                painter = painterResource(id = weatherIconRes),
-                contentDescription = "Weather Icon",
-                modifier = Modifier.size(32.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            BasicText(
-                text = temperature,
-                style = TextStyle(fontSize = 14.sp, color = Color.Black)
-            )
-        }
+        WeatherWidget()
 
-        // Search Bar
         AnimatedVisibility(
             visible = isSearchActive,
             enter = slideInHorizontally(initialOffsetX = { it }) + fadeIn(),
@@ -92,7 +59,6 @@ fun TopBar(
             }
         }
 
-        // Search Icon on Top Right
         IconButton(
             onClick = { isSearchActive = !isSearchActive },
             modifier = Modifier.padding(start = if (isSearchActive) 8.dp else 0.dp)

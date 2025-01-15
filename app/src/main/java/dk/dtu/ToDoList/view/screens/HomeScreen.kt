@@ -1,4 +1,4 @@
-package dk.dtu.ToDoList.feature
+package dk.dtu.ToDoList.view.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -7,10 +7,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import dk.dtu.ToDoList.data.Task
+import dk.dtu.ToDoList.model.data.Task
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.Icons
 import androidx.navigation.NavController
+import dk.dtu.ToDoList.view.components.AddTaskDialog
+import dk.dtu.ToDoList.view.components.DeleteConfirmation
+import dk.dtu.ToDoList.view.components.FilterSection
+import dk.dtu.ToDoList.view.components.TopBar
 
 @Composable
 fun HomeScreen(tasks: MutableList<Task>, navController: NavController) {
