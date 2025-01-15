@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import java.util.Date
 import androidx.navigation.NavController
+import dk.dtu.ToDoList.model.data.RecurrencePattern
 
 @Composable
 fun AddTaskDialog(
@@ -28,6 +29,7 @@ fun AddTaskDialog(
         var priorityLevel by remember { mutableStateOf("Low") } // Default priority
         var isFavorite by remember { mutableStateOf(false) }
         var selectedTag by remember { mutableStateOf(TaskTag.WORK) }
+        var selectedRecurrence by remember { mutableStateOf<RecurrencePattern?>(null) }
 
         Dialog(onDismissRequest = onDismiss) {
             Surface(
@@ -86,6 +88,18 @@ fun AddTaskDialog(
                         )
                     }
 
+                    // Recurrence Selector
+                    Column(modifier = Modifier.padding(bottom = 16.dp)) {
+                        Text(
+                            text = "Repeat",
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                        DropdownRecurrenceSelector(
+                            selectedRecurrence = selectedRecurrence,
+                            onRecurrenceSelected = { selectedRecurrence = it }
+                        )
+                    }
                     // Favorite Toggle & Add to Calendar
                     Row(
                         modifier = Modifier
@@ -131,7 +145,8 @@ fun AddTaskDialog(
                                         favorite = isFavorite,
                                         deadline = Date(), // Default to current date if no calendar selected
                                         tag = selectedTag, // Use selectedTag instead of TaskTag.WORK
-                                        completed = false
+                                        completed = false,
+                                        recurrence = selectedRecurrence
                                     )
                                     onTaskAdded(newTask)
                                     onDismiss()
@@ -205,6 +220,44 @@ fun DropdownTagSelector(
                         expanded = false
                     },
                     text = { Text(text = tag.name) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun DropdownRecurrenceSelector(
+    selectedRecurrence: RecurrencePattern?,
+    onRecurrenceSelected: (RecurrencePattern?) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box(modifier = Modifier.fillMaxWidth()) {
+        OutlinedButton(
+            onClick = { expanded = !expanded },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(text = selectedRecurrence?.name ?: "Don't Repeat")
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            DropdownMenuItem(
+                onClick = {
+                    onRecurrenceSelected(null)
+                    expanded = false
+                },
+                text = { Text("Don't Repeat") }
+            )
+            RecurrencePattern.values().forEach { pattern ->
+                DropdownMenuItem(
+                    onClick = {
+                        onRecurrenceSelected(pattern)
+                        expanded = false
+                    },
+                    text = { Text(pattern.name) }
                 )
             }
         }
