@@ -7,6 +7,8 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/ToDoList.app.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/ToDoList.app.androidTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/ToDoList.app.main.iml" filepath="$PROJECT_DIR$/.idea/modules/app/ToDoList.app.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/ToDoList.app.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/ToDoList.app.unitTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/app.ToDoList.app.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/app.ToDoList.app.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/app.ToDoList.app.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/app.ToDoList.app.unitTest.iml" />
     </modules>
   </component>
 </project>
