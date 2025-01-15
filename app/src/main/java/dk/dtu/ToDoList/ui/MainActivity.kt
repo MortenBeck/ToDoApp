@@ -18,15 +18,19 @@ import dk.dtu.ToDoList.R
 import dk.dtu.ToDoList.data.Task
 import dk.dtu.ToDoList.data.TasksRepository
 import dk.dtu.ToDoList.feature.*
+import dk.dtu.ToDoList.ui.theme.ToDoListTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            ToDoApp()
+            ToDoListTheme {
+                ToDoApp()
+            }
         }
     }
 }
+
 
 @Composable
 fun ToDoApp() {
@@ -40,7 +44,6 @@ fun ToDoApp() {
             BottomNavBar(
                 items = listOf(
                     BottomNavItem("Tasks", R.drawable.home_grey,R.drawable.home_black),
-                    BottomNavItem("Favourites", R.drawable.favorite_grey,R.drawable.favorite_black),
                     BottomNavItem("Calendar", R.drawable.calender_grey,R.drawable.calender_black),
                     BottomNavItem("Profile", R.drawable.profile_grey, R.drawable.profile_black),
                 ),
