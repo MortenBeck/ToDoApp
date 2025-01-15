@@ -60,15 +60,15 @@ fun AddTaskDialog(
                     Column(modifier = Modifier.padding(bottom = 16.dp)) {
                         Text(
                             text = "Priority Level",
-                            style = MaterialTheme.typography.bodyLarge,
+                            style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.padding(bottom = 8.dp)
                         )
                         Row(
-                            horizontalArrangement = Arrangement.SpaceEvenly,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             PriorityButton("Low", priorityLevel) { priorityLevel = "Low" }
-                            PriorityButton("Mid", priorityLevel) { priorityLevel = "Mid" }
+                            PriorityButton("Medium", priorityLevel) { priorityLevel = "Medium" }
                             PriorityButton("High", priorityLevel) { priorityLevel = "High" }
                         }
                     }
@@ -163,14 +163,19 @@ fun PriorityButton(
             else
                 MaterialTheme.colorScheme.surface
         ),
-        modifier = Modifier.padding(horizontal = 4.dp)
+        modifier = Modifier
+            .wrapContentWidth()
+            .padding(horizontal = 2.dp),
+        contentPadding = PaddingValues(horizontal = 4.dp)
     ) {
         Text(
             text = text,
             color = if (selectedPriority == text)
                 MaterialTheme.colorScheme.onPrimary
             else
-                MaterialTheme.colorScheme.onSurface
+                MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            style = MaterialTheme.typography.bodyLarge
         )
     }
 }
