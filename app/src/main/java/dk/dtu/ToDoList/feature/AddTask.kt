@@ -130,7 +130,7 @@ fun AddTaskDialog(
                                         priority = TaskPriority.valueOf(priorityLevel.uppercase()),
                                         favorite = isFavorite,
                                         deadline = Date(), // Default to current date if no calendar selected
-                                        tag = TaskTag.WORK,
+                                        tag = selectedTag, // Use selectedTag instead of TaskTag.WORK
                                         completed = false
                                     )
                                     onTaskAdded(newTask)
@@ -198,10 +198,10 @@ fun DropdownTagSelector(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            TaskTag.entries.forEach { tag ->
+            TaskTag.values().forEach { tag -> // Ensure this iterates over all TaskTag values
                 DropdownMenuItem(
                     onClick = {
-                        onTagSelected(tag)
+                        onTagSelected(tag) // Correctly updates the tag
                         expanded = false
                     },
                     text = { Text(text = tag.name) }
