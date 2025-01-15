@@ -25,18 +25,27 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.paint
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import dk.dtu.ToDoList.data.Task
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import dk.dtu.ToDoList.R
+
 
 @Composable
 fun ProfileScreen(tasks: MutableList<Task>, navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f))
+                .paint(
+                     painterResource(id = R.drawable.background_gradient),
+                     contentScale = ContentScale.FillBounds
+                )
+
     ) {
         // Profile section
         Column(
