@@ -4,10 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Text
@@ -31,9 +28,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -56,7 +50,7 @@ import androidx.compose.animation.core.animateFloatAsState
 fun TaskList(
     Tasks: List<Task>,
     modifier: Modifier = Modifier,
-    onDelete: (Task) -> Unit, // Pass a callback to handle deletion
+    onDelete: (Task) -> Unit,
     onFavoriteToggle: (Task) -> Unit,
     onCompleteToggle: (Task) -> Unit
 ) {
@@ -70,7 +64,7 @@ fun TaskList(
         state = scrollState,
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(max = 300.dp) // Add a maximum height
+            .heightIn(max = 300.dp)
     ) {
         itemsIndexed(Tasks) { _, task ->
             SwipeableTaskItem(
@@ -152,7 +146,6 @@ fun TaskItem(
 
                 Spacer(modifier = Modifier.width(8.dp))
 
-
                 Text(
                     text = task.name,
                     modifier = Modifier.fillMaxWidth(),
@@ -163,31 +156,27 @@ fun TaskItem(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-
             }
 
             Spacer(modifier = Modifier.height(4.dp))
-
 
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-
-                Badge(
-                    text = if (isToday) "Today" else SimpleDateFormat(
+                BadgeItem(
+                    badgeText = if (isToday) "Today" else SimpleDateFormat(
                         "dd-MM-yyyy",
                         Locale.US
                     ).format(task.deadline),
-                    color = if (isToday) Color.Red else Color.White,
-                    textColor = if (isToday) Color.White else Color.Black,
-                    icon = R.drawable.calender_black // Replace with your calendar icon resource
+                    badgeColor = if (isToday) Color.Red else Color.White,
+                    badgeTextColor = if (isToday) Color.White else Color.Black,
+                    badgeIcon = R.drawable.calender_black
                 )
 
-
-                Badge(
-                    text = task.tag.name, // Converts enum tag to string
-                    color = when (task.tag) {
+                BadgeItem(
+                    badgeText = task.tag.name,
+                    badgeColor = when (task.tag) {
                         TaskTag.WORK -> Color(0xFF6d8FFF)
                         TaskTag.SCHOOL -> Color(0xFFFF9c6d)
                         TaskTag.PET -> Color(0xFF6dFF6d)
@@ -195,9 +184,10 @@ fun TaskItem(
                         TaskTag.HOME -> Color(0xFFd16dFF)
                         TaskTag.TRANSPORT -> Color(0xFFFFF86d)
                         TaskTag.PRIVATE -> Color(0xFFff6D6D)
-                        else -> Color.Gray // Fallback color
+                        else -> Color.Gray
                     },
-                    icon = when (task.tag) {
+                    badgeTextColor = Color.White,
+                    badgeIcon = when (task.tag) {
                         TaskTag.WORK -> R.drawable.work
                         TaskTag.SCHOOL -> R.drawable.school
                         TaskTag.PET -> R.drawable.pet
@@ -205,65 +195,46 @@ fun TaskItem(
                         TaskTag.HOME -> R.drawable.home_black
                         TaskTag.TRANSPORT -> R.drawable.transport
                         TaskTag.PRIVATE -> R.drawable.lock
-                        else -> R.drawable.folder // Fallback icon
+                        else -> R.drawable.folder
                     }
                 )
-            }
-        }
-
-        Spacer(modifier = Modifier.width(8.dp))
-
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(2.dp), // Adjust the spacing between icons
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Favorite
-            IconButton(onClick = { onFavoriteToggle(task) }) {
-                Icon(
-                    imageVector = if (task.favorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                    contentDescription = if (task.favorite) "Un-favorite Task" else "Favorite Task",
-                    tint = if (task.favorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                )
-            }
-
-            // Delete
-            IconButton(onClick = { onDelete(task) }) {
-                Icon(Icons.Default.Delete, contentDescription = "Delete Task")
             }
         }
     }
 }
 
 @Composable
-fun Badge(text: String, color: Color, textColor: Color = Color.White, icon: Int) {
+fun BadgeItem(
+    badgeText: String,
+    badgeColor: Color,
+    badgeTextColor: Color = Color.White,
+    badgeIcon: Int
+) {
     Row(
         modifier = Modifier
-            .background(color = color, shape = MaterialTheme.shapes.medium)
+            .background(color = badgeColor, shape = MaterialTheme.shapes.medium)
             .border(width = 1.dp, color = Color.Black, shape = MaterialTheme.shapes.medium)
             .padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
-            painter = painterResource(id = icon),
+            painter = painterResource(id = badgeIcon),
             contentDescription = null,
-            tint = textColor,
+            tint = badgeTextColor,
             modifier = Modifier
                 .size(16.dp)
                 .padding(end = 4.dp)
         )
 
         Text(
-            text = text,
-            color = textColor,
+            text = badgeText,
+            color = badgeTextColor,
             style = MaterialTheme.typography.labelMedium,
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis // Add ellipsis for overflow
+            overflow = TextOverflow.Ellipsis
         )
     }
 }
-
-
-
 
 @Composable
 fun isTaskToday(task: Task): Boolean {
@@ -283,9 +254,9 @@ fun SwipeableTaskItem(
     onFavoriteToggle: (Task) -> Unit,
     onCompleteToggle: (Task) -> Unit
 ) {
-    var offsetX by remember { mutableStateOf(0f) } // Offset for drag
+    var offsetX by remember { mutableStateOf(0f) }
     val swipeThreshold = 200f
-    val dragScaleFactor = 0.5f // Adjust this to control drag speed (0.5f = slower, 1.0f = normal)
+    val dragScaleFactor = 0.5f
 
     val animatedOffsetX by animateFloatAsState(
         targetValue = offsetX,
@@ -302,15 +273,14 @@ fun SwipeableTaskItem(
             .pointerInput(Unit) {
                 detectHorizontalDragGestures(
                     onHorizontalDrag = { change, dragAmount ->
-                        // Apply the dragScaleFactor to slow down the drag movement
                         offsetX = (offsetX + dragAmount * dragScaleFactor).coerceAtLeast(0f)
                         change.consume()
                     },
                     onDragEnd = {
                         if (offsetX > swipeThreshold) {
-                            onDelete(task) // Trigger delete if swipe exceeds threshold
+                            onDelete(task)
                         }
-                        offsetX = 0f // Reset offset after drag ends
+                        offsetX = 0f
                     }
                 )
             }
@@ -324,4 +294,3 @@ fun SwipeableTaskItem(
         )
     }
 }
-

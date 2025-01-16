@@ -28,6 +28,7 @@ fun TopBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .background(Color(0xFF7FA7F6))
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
