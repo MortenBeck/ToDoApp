@@ -24,7 +24,10 @@ data class Task(
     val subtasks: List<SubTask> = emptyList(),
     val reminderTime: Date? = null,
     val recurrence: RecurrencePattern? = null
-)
+) {
+    val dueDate: Date get() = deadline
+}
+
 //Possibility for future SubTask element
 data class SubTask(
     val name: String,
