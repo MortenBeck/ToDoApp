@@ -1,22 +1,27 @@
 package dk.dtu.ToDoList.view.components
 
-import androidx.compose.animation.*
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.IconButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import dk.dtu.ToDoList.R
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
 
+@OptIn(androidx.compose.animation.ExperimentalAnimationApi::class)
 @Composable
 fun TopBar(
     searchText: String,
@@ -25,49 +30,84 @@ fun TopBar(
 ) {
     var isSearchActive by remember { mutableStateOf(false) }
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+    Surface(
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.fillMaxWidth()
     ) {
-        WeatherWidget()
-
-        AnimatedVisibility(
-            visible = isSearchActive,
-            enter = slideInHorizontally(initialOffsetX = { it }) + fadeIn(),
-            exit = slideOutHorizontally(targetOffsetX = { it }) + fadeOut()
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth(0.6f)
-                    .height(40.dp)
-                    .background(
-                        color = Color.LightGray,
-                        shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onTap = {
+                            if (isSearchActive) {
+                                isSearchActive = false
+                                onSearchTextChange("")
+                            }
+                        }
                     )
-                    .padding(horizontal = 12.dp),
-                contentAlignment = Alignment.CenterStart
-            ) {
-                BasicTextField(
-                    value = searchText,
-                    onValueChange = onSearchTextChange,
-                    textStyle = TextStyle(color = Color.Black, fontSize = 16.sp),
-                    singleLine = true
-                )
-            }
-        }
-
-        IconButton(
-            onClick = { isSearchActive = !isSearchActive },
-            modifier = Modifier.padding(start = if (isSearchActive) 8.dp else 0.dp)
+                }
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.search),
-                contentDescription = "Search Icon",
-                modifier = Modifier.size(32.dp)
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                WeatherWidget()
+
+                AnimatedVisibility(
+                    visible = isSearchActive,
+                    enter = slideInHorizontally(initialOffsetX = { it }) + fadeIn(),
+                    exit = slideOutHorizontally(targetOffsetX = { it }) + fadeOut()
+                ) {
+                    Surface(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(48.dp)
+                            .padding(horizontal = 8.dp)
+                            .pointerInput(Unit) {
+                                detectTapGestures(onTap = { /* Do nothing, prevent tap from bubbling */ })
+                            },
+                        shape = MaterialTheme.shapes.medium,
+                        color = MaterialTheme.colorScheme.surfaceVariant
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 16.dp),
+                            contentAlignment = Alignment.CenterStart
+                        ) {
+                            BasicTextField(
+                                value = searchText,
+                                onValueChange = onSearchTextChange,
+                                textStyle = TextStyle(
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    fontSize = 16.sp
+                                ),
+                                modifier = Modifier.fillMaxWidth(),
+                                singleLine = true
+                            )
+                        }
+                    }
+                }
+
+                IconButton(
+                    onClick = {
+                        isSearchActive = !isSearchActive
+                        if (!isSearchActive) {
+                            onSearchTextChange("")
+                        }
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Search,
+                        contentDescription = "Toggle search",
+                        tint = Color.Black
+                    )
+                }
+            }
         }
     }
 }

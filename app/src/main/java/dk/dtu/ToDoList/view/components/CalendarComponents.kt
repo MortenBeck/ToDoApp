@@ -9,6 +9,9 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -25,6 +28,8 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.temporal.WeekFields
 import java.util.*
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 
 @Composable
 fun Calendar(
@@ -32,7 +37,7 @@ fun Calendar(
     currentMonth: YearMonth,
     onDateSelected: (LocalDate) -> Unit,
     onMonthChanged: (YearMonth) -> Unit,
-    tasks: List<Task> // Pass tasks to the Calendar
+    tasks: List<Task>
 ) {
     val taskDates = remember(tasks) {
         tasks.map { task ->
@@ -43,23 +48,20 @@ fun Calendar(
             } else {
                 TODO("VERSION.SDK_INT < O")
             }
-        }.toSet() // Use a Set for quick lookup
+        }.toSet()
     }
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(
-                color = MaterialTheme.colorScheme.surface,
-                shape = MaterialTheme.shapes.medium
-            )
-            .border(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.outline,
-                shape = MaterialTheme.shapes.medium
-            )
             .padding(16.dp)
     ) {
+        Text(
+            text = "Your Calendar",
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.padding(bottom = 24.dp)
+        )
+
         // Month Navigation
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -67,16 +69,22 @@ fun Calendar(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = { onMonthChanged(currentMonth.minusMonths(1)) }) {
-                Text("←")
+                Icon(
+                    imageVector = Icons.Default.KeyboardArrowLeft,
+                    contentDescription = "Previous month"
+                )
             }
 
             Text(
                 text = currentMonth.format(DateTimeFormatter.ofPattern("MMMM yyyy")),
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleLarge
             )
 
             IconButton(onClick = { onMonthChanged(currentMonth.plusMonths(1)) }) {
-                Text("→")
+                Icon(
+                    imageVector = Icons.Default.KeyboardArrowRight,
+                    contentDescription = "Next month"
+                )
             }
         }
 
@@ -93,7 +101,9 @@ fun Calendar(
                     text = dayOfWeek.getDisplayName(java.time.format.TextStyle.SHORT, Locale.getDefault()),
                     modifier = Modifier.weight(1f),
                     textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.labelMedium
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 )
             }
         }
@@ -101,28 +111,7 @@ fun Calendar(
         Spacer(modifier = Modifier.height(8.dp))
 
         // Calendar Grid
-        val days = mutableListOf<LocalDate>()
-        val firstOfMonth = currentMonth.atDay(1)
-        val lastOfMonth = currentMonth.atEndOfMonth()
-
-        val firstDayOfWeek = WeekFields.of(Locale.getDefault()).firstDayOfWeek
-        var current = firstOfMonth
-        while (current.dayOfWeek != firstDayOfWeek) {
-            current = current.minusDays(1)
-            days.add(0, current)
-        }
-
-        current = firstOfMonth
-        while (!current.isAfter(lastOfMonth)) {
-            days.add(current)
-            current = current.plusDays(1)
-        }
-
-        current = lastOfMonth.plusDays(1)
-        while (days.size < 42) {
-            days.add(current)
-            current = current.plusDays(1)
-        }
+        val days = calculateDaysInMonth(currentMonth)
 
         LazyVerticalGrid(
             columns = GridCells.Fixed(7),
@@ -135,7 +124,7 @@ fun Calendar(
                     date = date,
                     isSelected = date == selectedDate,
                     isCurrentMonth = date.month == currentMonth.month,
-                    hasTask = taskDates.contains(date), // Check if tasks exist for the day
+                    hasTask = taskDates.contains(date),
                     onDateSelected = onDateSelected
                 )
             }
@@ -143,29 +132,24 @@ fun Calendar(
     }
 }
 
-
 @Composable
 fun DayCell(
     date: LocalDate,
     isSelected: Boolean,
     isCurrentMonth: Boolean,
-    hasTask: Boolean, // New parameter to indicate if the day has tasks
+    hasTask: Boolean,
     onDateSelected: (LocalDate) -> Unit
 ) {
-    val isToday = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        date == LocalDate.now()
-    } else {
-        TODO("VERSION.SDK_INT < O")
-    }
+    val isToday = date == LocalDate.now()
 
     Box(
         modifier = Modifier
             .aspectRatio(1f)
-            .clip(MaterialTheme.shapes.small)
+            .clip(CircleShape)
             .background(
                 when {
                     isSelected -> MaterialTheme.colorScheme.primary
-                    isToday -> MaterialTheme.colorScheme.primaryContainer
+                    isToday -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
                     else -> Color.Transparent
                 }
             )
@@ -173,10 +157,13 @@ fun DayCell(
             .padding(4.dp),
         contentAlignment = Alignment.Center
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
             Text(
                 text = date.dayOfMonth.toString(),
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.bodyLarge,
                 color = when {
                     isSelected -> MaterialTheme.colorScheme.onPrimary
                     !isCurrentMonth -> MaterialTheme.colorScheme.outline
@@ -184,14 +171,45 @@ fun DayCell(
                 }
             )
             if (hasTask) {
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(2.dp))
                 Box(
                     modifier = Modifier
-                        .size(6.dp)
+                        .size(4.dp)
                         .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.secondary)
+                        .background(
+                            if (isSelected) MaterialTheme.colorScheme.onPrimary
+                            else MaterialTheme.colorScheme.primary
+                        )
                 )
             }
         }
     }
+}
+
+private fun calculateDaysInMonth(currentMonth: YearMonth): List<LocalDate> {
+    val days = mutableListOf<LocalDate>()
+    val firstOfMonth = currentMonth.atDay(1)
+    val lastOfMonth = currentMonth.atEndOfMonth()
+
+    val firstDayOfWeek = WeekFields.of(Locale.getDefault()).firstDayOfWeek
+    var current = firstOfMonth
+
+    while (current.dayOfWeek != firstDayOfWeek) {
+        current = current.minusDays(1)
+        days.add(0, current)
+    }
+
+    current = firstOfMonth
+    while (!current.isAfter(lastOfMonth)) {
+        days.add(current)
+        current = current.plusDays(1)
+    }
+
+    current = lastOfMonth.plusDays(1)
+    while (days.size < 42) {
+        days.add(current)
+        current = current.plusDays(1)
+    }
+
+    return days
 }

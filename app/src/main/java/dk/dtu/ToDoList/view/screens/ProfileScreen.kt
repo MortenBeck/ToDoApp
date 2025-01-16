@@ -34,18 +34,22 @@ import dk.dtu.ToDoList.model.data.Task
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import dk.dtu.ToDoList.R
+import dk.dtu.ToDoList.model.repository.TasksRepository
 
 
 @Composable
-fun ProfileScreen(tasks: MutableList<Task>, navController: NavController) {
+fun ProfileScreen(navController: NavController) {
+    val todayTasks = TasksRepository.todayTasks
+    val allTasks = TasksRepository.Tasks
+    val completedTodayCount = todayTasks.count { it.completed }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-                .paint(
-                     painterResource(id = R.drawable.background_gradient),
-                     contentScale = ContentScale.FillBounds
-                )
-
+            .paint(
+                painterResource(id = R.drawable.background_gradient),
+                contentScale = ContentScale.FillBounds
+            )
     ) {
         // Profile section
         Column(
@@ -97,11 +101,11 @@ fun ProfileScreen(tasks: MutableList<Task>, navController: NavController) {
                     .padding(16.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                StatColumn("Tasks\nToday", tasks.size.toString())
+                StatColumn("Tasks\nToday", todayTasks.size.toString())
                 VerticalDivider()
-                StatColumn("Tasks Completed\nToday", tasks.count { it.completed }.toString())
+                StatColumn("Tasks Completed\nToday", completedTodayCount.toString())
                 VerticalDivider()
-                StatColumn("Days\nCompleted", "24")
+                StatColumn("Upcoming\nTasks", TasksRepository.futureTasks.size.toString())
             }
         }
 
