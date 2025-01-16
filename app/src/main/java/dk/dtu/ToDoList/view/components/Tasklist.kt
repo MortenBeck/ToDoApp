@@ -195,6 +195,7 @@ fun TaskItem(
                         TaskTag.HOME -> Color(0xFFd16dFF)
                         TaskTag.TRANSPORT -> Color(0xFFFFF86d)
                         TaskTag.PRIVATE -> Color(0xFFff6D6D)
+                        TaskTag.SOCIAL -> Color(0xFF6d6dFF)
                         else -> Color.Gray // Fallback color
                     },
                     icon = when (task.tag) {
@@ -205,6 +206,7 @@ fun TaskItem(
                         TaskTag.HOME -> R.drawable.home_black
                         TaskTag.TRANSPORT -> R.drawable.transport
                         TaskTag.PRIVATE -> R.drawable.lock
+                        TaskTag.SOCIAL -> R.drawable.social
                         else -> R.drawable.folder // Fallback icon
                     }
                 )
