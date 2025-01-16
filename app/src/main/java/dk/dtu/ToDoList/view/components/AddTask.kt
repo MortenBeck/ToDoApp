@@ -17,6 +17,10 @@ import java.util.Date
 import androidx.navigation.NavController
 import dk.dtu.ToDoList.model.data.RecurrencePattern
 import androidx.compose.ui.graphics.Color
+import java.time.LocalDate
+import java.time.YearMonth
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun AddTaskDialog(
@@ -30,6 +34,9 @@ fun AddTaskDialog(
         var priorityLevel by remember { mutableStateOf("Low") }
         var selectedTag by remember { mutableStateOf(TaskTag.WORK) }
         var selectedRecurrence by remember { mutableStateOf<RecurrencePattern?>(null) }
+        var showDatePicker by remember { mutableStateOf(false) }
+        var selectedDate by remember { mutableStateOf(LocalDate.now()) }
+        var currentMonth by remember { mutableStateOf(YearMonth.now()) }
 
         Dialog(onDismissRequest = onDismiss) {
             Surface(
@@ -81,6 +88,46 @@ fun AddTaskDialog(
                     Spacer(modifier = Modifier.height(20.dp))
 
                     Text(
+                        text = "Deadline",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    OutlinedButton(
+                        onClick = { showDatePicker = true },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(selectedDate.format(DateTimeFormatter.ofPattern("MMM dd, yyyy")))
+                    }
+
+                    if (showDatePicker) {
+                        Dialog(onDismissRequest = { showDatePicker = false }) {
+                            Surface(
+                                shape = MaterialTheme.shapes.large,
+                                color = MaterialTheme.colorScheme.surface,
+                                tonalElevation = 3.dp
+                            ) {
+                                Calendar(
+                                    selectedDate = selectedDate,
+                                    currentMonth = currentMonth,
+                                    onDateSelected = { date ->
+                                        selectedDate = date
+                                        showDatePicker = false
+                                    },
+                                    onMonthChanged = { month ->
+                                        currentMonth = month
+                                    },
+                                    tasks = emptyList()
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    Text(
                         text = "Category",
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -127,7 +174,7 @@ fun AddTaskDialog(
                                         name = taskName,
                                         priority = TaskPriority.valueOf(priorityLevel.uppercase()),
                                         favorite = false,
-                                        deadline = Date(),
+                                        deadline = Date.from(selectedDate.atStartOfDay(ZoneId.systemDefault()).toInstant()),
                                         tag = selectedTag,
                                         completed = false,
                                         recurrence = selectedRecurrence
