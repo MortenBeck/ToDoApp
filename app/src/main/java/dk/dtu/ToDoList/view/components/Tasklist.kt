@@ -186,7 +186,7 @@ fun TaskItem(
                         TaskTag.PRIVATE -> Color(0xFFff6D6D)
                         else -> Color.Gray
                     },
-                    badgeTextColor = Color.White,
+                    badgeTextColor = Color.Black,
                     badgeIcon = when (task.tag) {
                         TaskTag.WORK -> R.drawable.work
                         TaskTag.SCHOOL -> R.drawable.school
