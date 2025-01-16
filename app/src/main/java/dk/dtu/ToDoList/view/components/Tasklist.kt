@@ -116,7 +116,8 @@ fun TaskItem(
             Icon(
                 imageVector = if (task.completed) Icons.Default.CheckCircle else Icons.Default.RadioButtonUnchecked,
                 contentDescription = if (task.completed) "Mark as Incomplete" else "Mark as Complete",
-                tint = if (task.completed) Color.Green else Color.Gray
+                tint = if (task.completed) Color.Green else Color.Gray,
+                modifier = if (task.completed) Modifier.border(0.5.dp, Color.Black, CircleShape) else Modifier
             )
         }
 
