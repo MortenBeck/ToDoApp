@@ -1,51 +1,36 @@
 package dk.dtu.ToDoList.view.screens
 
 import android.os.Build
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import dk.dtu.ToDoList.model.data.Task
+import dk.dtu.ToDoList.view.components.*
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import androidx.compose.ui.Alignment
-import androidx.navigation.NavController
-import androidx.compose.material3.*
-import dk.dtu.ToDoList.view.components.AddTaskDialog
-import dk.dtu.ToDoList.view.components.Calendar
-import dk.dtu.ToDoList.view.components.DeleteConfirmation
-import dk.dtu.ToDoList.view.components.TaskList
-
 
 @Composable
-fun CalendarScreen(tasks: MutableList<Task>, navController: NavController) { // MutableList to allow deletion
-    var selectedDate by remember { if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        mutableStateOf(LocalDate.now())
-    } else {
-        TODO("VERSION.SDK_INT < O")
-    }
+fun CalendarScreen(tasks: MutableList<Task>, navController: NavController) {
+    var taskUpdateTrigger by remember { mutableStateOf(0) }
+    var selectedDate by remember {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            mutableStateOf(LocalDate.now())
+        } else {
+            TODO("VERSION.SDK_INT < O")
+        }
     }
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
     var showDeleteDialog by remember { mutableStateOf(false) }
-    var showAddTaskDialog by remember{mutableStateOf(false)}
+    var showAddTaskDialog by remember { mutableStateOf(false) }
     var taskToDelete by remember { mutableStateOf<Task?>(null) }
     var showDialog by remember { mutableStateOf(false) }
 
@@ -54,8 +39,6 @@ fun CalendarScreen(tasks: MutableList<Task>, navController: NavController) { // 
             .fillMaxSize()
             .padding(16.dp)
     ) {
-
-        // Calendar
         Calendar(
             selectedDate = selectedDate,
             currentMonth = currentMonth,
@@ -66,10 +49,10 @@ fun CalendarScreen(tasks: MutableList<Task>, navController: NavController) { // 
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Filtered Tasks for Selected Date
         TasksForDate(
             tasks = tasks,
             selectedDate = selectedDate,
+            taskUpdateTrigger = taskUpdateTrigger,
             onDelete = { task ->
                 taskToDelete = task
                 showDeleteDialog = true
@@ -78,27 +61,29 @@ fun CalendarScreen(tasks: MutableList<Task>, navController: NavController) { // 
                 val index = tasks.indexOfFirst { it == taskToToggle }
                 if (index != -1) {
                     tasks[index] = tasks[index].copy(favorite = !tasks[index].favorite)
+                    taskUpdateTrigger += 1
                 }
             },
             onCompleteToggle = { taskToComplete ->
                 val index = tasks.indexOfFirst { it == taskToComplete }
                 if (index != -1) {
-                    tasks[index] = tasks[index].copy(completed = !tasks[index].completed)
+                    val updatedTask = tasks[index].copy(completed = !tasks[index].completed)
+                    tasks[index] = updatedTask
+                    taskUpdateTrigger += 1
                 }
             }
         )
     }
 
-    // Floating Add Task Button - Positioned at Bottom-Right Corner
     Box(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
-        contentAlignment = Alignment.BottomEnd // Align to bottom-end
+        contentAlignment = Alignment.BottomEnd
     ) {
         IconButton(
-            onClick = { showDialog = true }, // Use the correct state variable
-            modifier = Modifier.size(64.dp) // Adjust size as needed
+            onClick = { showDialog = true },
+            modifier = Modifier.size(64.dp)
         ) {
             Surface(
                 shape = CircleShape,
@@ -111,31 +96,29 @@ fun CalendarScreen(tasks: MutableList<Task>, navController: NavController) { // 
                     tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier
                         .padding(12.dp)
-                        .size(32.dp) // Icon size
+                        .size(32.dp)
                 )
             }
         }
     }
 
-// Add Task Dialog
     if (showDialog) {
         AddTaskDialog(
             showDialog = showDialog,
             navController = navController,
-            onDismiss = { showDialog = false }, // Close dialog on dismiss
+            onDismiss = { showDialog = false },
             onTaskAdded = { newTask ->
-                tasks.add(newTask) // Add the new task to the list
-                showDialog = false // Close the dialog after adding the task
+                tasks.add(newTask)
+                showDialog = false
             }
         )
     }
 
-    // Show delete confirmation dialog
     if (showDeleteDialog && taskToDelete != null) {
         DeleteConfirmation(
             task = taskToDelete!!,
             onConfirm = {
-                tasks.remove(taskToDelete) // Remove the task from the list
+                tasks.remove(taskToDelete)
                 taskToDelete = null
                 showDeleteDialog = false
             },
@@ -151,11 +134,12 @@ fun CalendarScreen(tasks: MutableList<Task>, navController: NavController) { // 
 fun TasksForDate(
     tasks: List<Task>,
     selectedDate: LocalDate,
-    onDelete: (Task) -> Unit, // Add onDelete callback
+    taskUpdateTrigger: Int = 0,
+    onDelete: (Task) -> Unit,
     onFavoriteToggle: (Task) -> Unit,
     onCompleteToggle: (Task) -> Unit
 ) {
-    val tasksForDate = remember(selectedDate, tasks) {
+    val tasksForDate = remember(selectedDate, tasks, taskUpdateTrigger) {
         tasks.filter { task ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 task.deadline.toInstant().atZone(ZoneId.systemDefault()).toLocalDate() == selectedDate
