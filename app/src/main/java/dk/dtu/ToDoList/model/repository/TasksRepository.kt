@@ -1,217 +1,175 @@
 package dk.dtu.ToDoList.model.repository
 
-
+import android.content.Context
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.QuerySnapshot
 import dk.dtu.ToDoList.model.data.Task
 import dk.dtu.ToDoList.model.data.TaskPriority
 import dk.dtu.ToDoList.model.data.TaskTag
-import java.text.SimpleDateFormat
-import java.util.Locale
+import dk.dtu.ToDoList.util.UserIdManager
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.tasks.await
+import java.util.Date
 
-object TasksRepository {
+class TasksRepository(private val context: Context) {
+    private val firestore = FirebaseFirestore.getInstance()
+    private val tasksCollection = firestore.collection("tasks")
+    private val userId = UserIdManager.getUserId(context)
 
-    val simpleDateFormat = SimpleDateFormat("dd-MM-yyyy", Locale.US)
-
-    val Tasks = listOf(
-        Task(
-            name = "Homework - UX",
-            deadline = simpleDateFormat.parse("30-11-2024")!!,
-            priority = TaskPriority.HIGH,
-            tag = TaskTag.SCHOOL,
-            completed = false
-        ),
-        Task(
-            name = "Fix project at work",
-            deadline = simpleDateFormat.parse("02-12-2024")!!,
-            priority = TaskPriority.HIGH,
-            tag = TaskTag.WORK,
-            completed = false
-        ),
-        Task(
-            name = "Walk the dog",
-            deadline = simpleDateFormat.parse("02-12-2024")!!,
-            priority = TaskPriority.MEDIUM,
-            tag = TaskTag.PET,
-            completed = false
-        ),
-        Task(
-            name = "Cancel Netflix subscription",
-            deadline = simpleDateFormat.parse("03-12-2024")!!,
-            priority = TaskPriority.LOW,
-            tag = TaskTag.HOME,
-            completed = false
-        ),
-        Task(
-            name = "Call mechanic",
-            deadline = simpleDateFormat.parse("05-12-2024")!!,
-            priority = TaskPriority.HIGH,
-            tag = TaskTag.TRANSPORT,
-            completed = false
-        ),
-        Task(
-            name = "Grocery Shopping",
-            deadline = simpleDateFormat.parse("05-12-2024")!!,
-            priority = TaskPriority.MEDIUM,
-            tag = TaskTag.HOME,
-            completed = false
-        ),
-        Task(
-            name = "Reorganize desk at work",
-            deadline = simpleDateFormat.parse("05-12-2024")!!,
-            priority = TaskPriority.LOW,
-            tag = TaskTag.WORK,
-            completed = false
-        ),
-        Task(
-            name = "Clean bathroom",
-            deadline = simpleDateFormat.parse("06-12-2024")!!,
-            priority = TaskPriority.MEDIUM,
-            tag = TaskTag.HOME,
-            completed = false
-        ),
-        Task(
-            name = "Get ready for album drop",
-            deadline = simpleDateFormat.parse("07-12-2024")!!,
-            priority = TaskPriority.LOW,
-            tag = TaskTag.HOME,
-            completed = false
-        ),
-        Task(
-            name = "Homework - Math",
-            deadline = simpleDateFormat.parse("07-01-2025")!!,
-            priority = TaskPriority.HIGH,
-            tag = TaskTag.SCHOOL,
-            completed = false
-        ),
-        Task(
-            name = "Find passport",
-            deadline = simpleDateFormat.parse("10-01-2025")!!,
-            priority = TaskPriority.MEDIUM,
-            tag = TaskTag.HOME,
-            completed = false
-        ),
-        Task(
-            name = "Research christmas gifts",
-            deadline = simpleDateFormat.parse("12-12-2024")!!,
-            priority = TaskPriority.LOW,
-            tag = TaskTag.HOME,
-            completed = false
-        )
-    )
-
-
-    // In a real app, this would be coming from a data source like a database
-    val todayTasks = listOf(
-            Task(
-                name = "Homework - UX",
-                deadline = simpleDateFormat.parse("17-11-2024")!!,
-                priority = TaskPriority.HIGH,
-                tag = TaskTag.SCHOOL,
-                completed = false
-            ),
-            Task(
-                name = "Fix project at work",
-                deadline = simpleDateFormat.parse("17-11-2024")!!,
-                priority = TaskPriority.HIGH,
-                tag = TaskTag.WORK,
-                completed = false
-            ),
-            Task(
-                name = "Walk the dog",
-                deadline = simpleDateFormat.parse("17-11-2024")!!,
-                priority = TaskPriority.MEDIUM,
-                tag = TaskTag.PET,
-                completed = false
-            ),
-            Task(
-                name = "Cancel Netflix subscription",
-                deadline = simpleDateFormat.parse("17-11-2024")!!,
-                priority = TaskPriority.LOW,
-                tag = TaskTag.HOME,
-                completed = false
+    suspend fun addTask(task: Task): Boolean {
+        return try {
+            val taskWithUserId = task.copy(
+                id = generateTaskId(),
+                userId = userId,
+                createdAt = Date(),
+                modifiedAt = Date()
             )
-    )
+            tasksCollection.document(taskWithUserId.id).set(taskWithUserId).await()
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
 
+    suspend fun getTasks(
+        tag: TaskTag? = null,
+        priority: TaskPriority? = null,
+        completed: Boolean? = null,
+        favorite: Boolean? = null
+    ): List<Task> {
+        return try {
+            var query = tasksCollection.whereEqualTo("userId", userId)
 
+            // Apply filters if provided
+            tag?.let { query = query.whereEqualTo("tag", it) }
+            priority?.let { query = query.whereEqualTo("priority", it) }
+            completed?.let { query = query.whereEqualTo("completed", it) }
+            favorite?.let { query = query.whereEqualTo("favorite", it) }
 
-    val futureTasks = listOf(
-            Task(
-                name = "Call mechanic",
-                deadline = simpleDateFormat.parse("18-11-2024")!!,
-                priority = TaskPriority.HIGH,
-                tag = TaskTag.TRANSPORT,
-                completed = false
-            ),
-            Task(
-                name = "Grocery Shopping",
-                deadline = simpleDateFormat.parse("18-11-2024")!!,
-                priority = TaskPriority.MEDIUM,
-                tag = TaskTag.HOME,
-                completed = false
-            ),
-            Task(
-                name = "Reorganize desk at work",
-                deadline = simpleDateFormat.parse("18-11-2024")!!,
-                priority = TaskPriority.LOW,
-                tag = TaskTag.WORK,
-                completed = false
-            ),
-            Task(
-                name = "Clean bathroom",
-                deadline = simpleDateFormat.parse("19-11-2024")!!,
-                priority = TaskPriority.MEDIUM,
-                tag = TaskTag.HOME,
-                completed = false
-            ),
-            Task(
-                name = "Get ready for album drop",
-                deadline = simpleDateFormat.parse("21-11-2024")!!,
-                priority = TaskPriority.LOW,
-                tag = TaskTag.HOME,
-                completed = false
-            ),
-            Task(
-                name = "Homework - Math",
-                deadline = simpleDateFormat.parse("22-11-2024")!!,
-                priority = TaskPriority.HIGH,
-                tag = TaskTag.SCHOOL,
-                completed = false
-            ),
-            Task(
-                name = "Find passport",
-                deadline = simpleDateFormat.parse("31-11-2024")!!,
-                priority = TaskPriority.MEDIUM,
-                tag = TaskTag.HOME,
-                completed = false
-            ),
-            Task(
-                name = "Research christmas gifts",
-                deadline = simpleDateFormat.parse("12-12-2024")!!,
-                priority = TaskPriority.LOW,
-                tag = TaskTag.HOME,
-                completed = false
-            )
-        )
-    val favouriteTasks = listOf(
-        Task(
-            name = "Walk the dog",
-            deadline = simpleDateFormat.parse("17-11-2024")!!,
-            priority = TaskPriority.MEDIUM,
-            tag = TaskTag.PET,
-            completed = false
-        ),
-        Task(
-            name = "Grocery Shopping",
-            deadline = simpleDateFormat.parse("18-11-2024")!!,
-            priority = TaskPriority.MEDIUM,
-            tag = TaskTag.HOME,
-            completed = false
-        ),
-        Task(
-            name = "Research christmas gifts",
-            deadline = simpleDateFormat.parse("12-12-2024")!!,
-            priority = TaskPriority.LOW,
-            tag = TaskTag.HOME,
-            completed = false
-        )
-    )
+            // Sort by deadline and creation date
+            query = query.orderBy("deadline", Query.Direction.ASCENDING)
+                .orderBy("createdAt", Query.Direction.DESCENDING)
+
+            val querySnapshot: QuerySnapshot = query.get().await()
+            querySnapshot.toObjects(Task::class.java)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
+        }
+    }
+
+    suspend fun updateTask(task: Task): Boolean {
+        return try {
+            // Verify the task belongs to the current user
+            val existingTask = tasksCollection.document(task.id).get().await()
+            if (existingTask.exists() && existingTask.getString("userId") == userId) {
+                val taskWithUpdates = task.copy(
+                    userId = userId,
+                    modifiedAt = Date()
+                )
+                tasksCollection.document(task.id).set(taskWithUpdates).await()
+                true
+            } else {
+                false
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+
+    suspend fun deleteTask(taskId: String): Boolean {
+        return try {
+            // Verify the task belongs to the current user before deleting
+            val task = tasksCollection.document(taskId).get().await()
+            if (task.exists() && task.getString("userId") == userId) {
+                tasksCollection.document(taskId).delete().await()
+                true
+            } else {
+                false
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+
+    fun observeTasks(
+        tag: TaskTag? = null,
+        priority: TaskPriority? = null,
+        completed: Boolean? = null,
+        favorite: Boolean? = null
+    ): Flow<List<Task>> = callbackFlow {
+        var query = tasksCollection.whereEqualTo("userId", userId)
+
+        // Apply filters if provided
+        tag?.let { query = query.whereEqualTo("tag", it) }
+        priority?.let { query = query.whereEqualTo("priority", it) }
+        completed?.let { query = query.whereEqualTo("completed", it) }
+        favorite?.let { query = query.whereEqualTo("favorite", it) }
+
+        // Sort by deadline and creation date
+        query = query.orderBy("deadline", Query.Direction.ASCENDING)
+            .orderBy("createdAt", Query.Direction.DESCENDING)
+
+        val registration = query.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                return@addSnapshotListener
+            }
+
+            snapshot?.let {
+                val tasks = it.toObjects(Task::class.java)
+                trySend(tasks)
+            }
+        }
+
+        awaitClose { registration.remove() }
+    }
+
+    suspend fun updateTaskField(taskId: String, updates: Map<String, Any>): Boolean {
+        return try {
+            // Verify the task belongs to the current user before updating
+            val task = tasksCollection.document(taskId).get().await()
+            if (task.exists() && task.getString("userId") == userId) {
+                val updatesWithTimestamp = updates.toMutableMap().apply {
+                    put("modifiedAt", Date())
+                }
+                tasksCollection.document(taskId).update(updatesWithTimestamp).await()
+                true
+            } else {
+                false
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+
+    suspend fun getTasksByDeadlineRange(
+        startDate: Date,
+        endDate: Date
+    ): List<Task> {
+        return try {
+            val querySnapshot = tasksCollection
+                .whereEqualTo("userId", userId)
+                .whereGreaterThanOrEqualTo("deadline", startDate)
+                .whereLessThanOrEqualTo("deadline", endDate)
+                .orderBy("deadline", Query.Direction.ASCENDING)
+                .get()
+                .await()
+
+            querySnapshot.toObjects(Task::class.java)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
+        }
+    }
+
+    private fun generateTaskId(): String {
+        return tasksCollection.document().id
+    }
 }

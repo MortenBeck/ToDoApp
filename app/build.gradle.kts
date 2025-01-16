@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -70,6 +71,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
+    implementation(libs.firebase.firestore.ktx)
     testImplementation(libs.junit)
     testImplementation(libs.junit.jupiter)
     androidTestImplementation(libs.androidx.junit)
@@ -82,4 +84,8 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson)
     implementation(libs.okhttp.logging.interceptor)
+    implementation(libs.firebase.bom)
+    implementation(libs.firebase.firestore.ktx)
+    implementation(libs.firebase.analytics)
+
 }
