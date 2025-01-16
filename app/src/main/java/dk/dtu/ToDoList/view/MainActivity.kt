@@ -90,11 +90,10 @@ fun ToDoApp() {
                 CalendarScreen(
                     tasks = mutableTasks,
                     navController = navController
-                ) // Use the shared mutable task list
+                )
             }
             composable("Profile") {
                 ProfileScreen(
-                    tasks = mutableTasks,
                     navController = navController
                 )
             }
@@ -105,7 +104,7 @@ fun ToDoApp() {
                     navController = navController,
                     taskName = taskName,
                     onTaskAdded = { newTask ->
-                        mutableTasks.add(newTask) // Add the task to the mutable list
+                        mutableTasks.add(newTask)
                     }
                 )
             }
