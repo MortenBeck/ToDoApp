@@ -13,8 +13,6 @@ import dk.dtu.ToDoList.model.data.TaskPriority
 import dk.dtu.ToDoList.model.data.TaskTag
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
 import java.util.Date
 import androidx.navigation.NavController
 import dk.dtu.ToDoList.model.data.RecurrencePattern
@@ -30,7 +28,6 @@ fun AddTaskDialog(
     if (showDialog) {
         var taskName by remember { mutableStateOf("") }
         var priorityLevel by remember { mutableStateOf("Low") }
-        var isFavorite by remember { mutableStateOf(false) }
         var selectedTag by remember { mutableStateOf(TaskTag.WORK) }
         var selectedRecurrence by remember { mutableStateOf<RecurrencePattern?>(null) }
 
@@ -46,25 +43,10 @@ fun AddTaskDialog(
                         .padding(24.dp)
                         .fillMaxWidth()
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "New Task",
-                            style = MaterialTheme.typography.headlineMedium
-                        )
-                        IconButton(
-                            onClick = { isFavorite = !isFavorite }
-                        ) {
-                            Icon(
-                                imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-                                contentDescription = "Toggle Favorite",
-                                tint = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
+                    Text(
+                        text = "New Task",
+                        style = MaterialTheme.typography.headlineMedium
+                    )
 
                     Spacer(modifier = Modifier.height(24.dp))
 
@@ -144,7 +126,7 @@ fun AddTaskDialog(
                                     val newTask = Task(
                                         name = taskName,
                                         priority = TaskPriority.valueOf(priorityLevel.uppercase()),
-                                        favorite = isFavorite,
+                                        favorite = false,
                                         deadline = Date(),
                                         tag = selectedTag,
                                         completed = false,
