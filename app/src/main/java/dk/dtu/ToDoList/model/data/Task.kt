@@ -28,7 +28,7 @@ data class Task(
     val dueDate: Date get() = deadline
 }
 
-//Possibility for future SubTask element
+// Maybe subtasks at some point?
 data class SubTask(
     val name: String,
     val completed: Boolean = false

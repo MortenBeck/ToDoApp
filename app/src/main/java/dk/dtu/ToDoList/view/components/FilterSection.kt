@@ -44,7 +44,6 @@ fun FilterSection(
         label = "rotation"
     )
 
-    // Function to reset all filters
     fun resetFilters() {
         selectedDate = null
         selectedTags = emptySet()
@@ -53,7 +52,6 @@ fun FilterSection(
         applyFilters(tasks, null, emptySet(), emptySet(), false, onFilterChange)
     }
 
-    // Function to toggle date selection
     fun toggleDateSelection(date: Date) {
         selectedDate = if (selectedDate == date) null else date
         applyFilters(
@@ -120,7 +118,6 @@ fun FilterSection(
         }
 
         if (isExpanded) {
-            // Date Filter Section
             Text(
                 text = "Deadline Date:",
                 style = MaterialTheme.typography.titleSmall,
@@ -151,7 +148,7 @@ fun FilterSection(
                 )
             }
 
-            // Tags Section
+            // Tags
             Text(
                 text = "Tags:",
                 style = MaterialTheme.typography.titleSmall,
@@ -165,14 +162,14 @@ fun FilterSection(
                 TaskTag.entries.forEach { tag ->
                     val isSelected = selectedTags.contains(tag)
                     val tagColor = when (tag) {
-                        TaskTag.WORK -> Color(0xFF6d8FFF)      // Work Blue
-                        TaskTag.SCHOOL -> Color(0xFFFF9c6d)    // School Orange
-                        TaskTag.SPORT -> Color(0xFFd631bb)     // Sport Pink
-                        TaskTag.TRANSPORT -> Color(0xFFFFF86d) // Transport Yellow
-                        TaskTag.PET -> Color(0xFF6dFF6d)       // Pet Green
-                        TaskTag.HOME -> Color(0xFFd16dFF)      // Home Purple
-                        TaskTag.PRIVATE -> Color(0xFFff6D6D)   // Private Red
-                        TaskTag.SOCIAL -> Color(0xFF80DEEA)    // Social Cyan
+                        TaskTag.WORK -> Color(0xFF6d8FFF)
+                        TaskTag.SCHOOL -> Color(0xFFFF9c6d)
+                        TaskTag.SPORT -> Color(0xFFd631bb)
+                        TaskTag.TRANSPORT -> Color(0xFFFFF86d)
+                        TaskTag.PET -> Color(0xFF6dFF6d)
+                        TaskTag.HOME -> Color(0xFFd16dFF)
+                        TaskTag.PRIVATE -> Color(0xFFff6D6D)
+                        TaskTag.SOCIAL -> Color(0xFF80DEEA)
                     }
                     val iconResource = when (tag) {
                         TaskTag.WORK -> R.drawable.work
@@ -223,7 +220,7 @@ fun FilterSection(
                 }
             }
 
-            // Priority Section
+            // Priority
             Text(
                 text = "Priority:",
                 style = MaterialTheme.typography.titleSmall,

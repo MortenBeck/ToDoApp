@@ -15,7 +15,7 @@ import androidx.compose.material3.NavigationBarItem
 @Composable
 fun BottomNavBar(
     items: List<BottomNavItem>,
-    currentScreen: String, // Pass the current screen
+    currentScreen: String,
     onItemClick: (BottomNavItem) -> Unit
 ) {
     NavigationBar(
@@ -24,7 +24,7 @@ fun BottomNavBar(
     ) {
         items.forEach { item ->
             NavigationBarItem(
-                selected = item.label == currentScreen, // Highlight the active screen
+                selected = item.label == currentScreen,
                 onClick = { onItemClick(item) },
                 icon = {
                     Icon(
