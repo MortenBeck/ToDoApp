@@ -26,10 +26,14 @@ import dk.dtu.ToDoList.view.screens.FavouritesScreen
 import dk.dtu.ToDoList.view.screens.HomeScreen
 import dk.dtu.ToDoList.view.screens.ProfileScreen
 import dk.dtu.ToDoList.view.theme.ToDoListTheme
+import com.google.firebase.FirebaseApp
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        FirebaseApp.initializeApp(this)
+
         setContent {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 ToDoListTheme {

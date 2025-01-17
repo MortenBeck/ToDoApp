@@ -17,19 +17,20 @@ import java.util.Date
 import androidx.navigation.NavController
 import dk.dtu.ToDoList.model.data.RecurrencePattern
 
+
 @Composable
 fun AddTaskDialog(
     showDialog: Boolean,
     navController: NavController,
     onDismiss: () -> Unit,
-    onTaskAdded: (Task) -> Unit // Allows task addition
 ) {
     if (showDialog) {
         var taskName by remember { mutableStateOf("") }
-        var priorityLevel by remember { mutableStateOf("Low") } // Default priority
+        var priorityLevel by remember { mutableStateOf("Low") }
         var isFavorite by remember { mutableStateOf(false) }
         var selectedTag by remember { mutableStateOf(TaskTag.WORK) }
         var selectedRecurrence by remember { mutableStateOf<RecurrencePattern?>(null) }
+        var showError by remember { mutableStateOf(false) }
 
         Dialog(onDismissRequest = onDismiss) {
             Surface(
@@ -51,12 +52,24 @@ fun AddTaskDialog(
                     // Task Name Input
                     OutlinedTextField(
                         value = taskName,
-                        onValueChange = { taskName = it },
+                        onValueChange = {
+                            taskName = it
+                            showError = it.isBlank()
+                        },
                         label = { Text("Task Name") },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 16.dp)
+                            .padding(bottom = 16.dp),
+                        isError = showError
                     )
+                    if (showError) {
+                        Text(
+                            text = "Task name cannot be empty.",
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                    }
 
                     // Priority Selector
                     Column(modifier = Modifier.padding(bottom = 16.dp)) {
@@ -100,7 +113,8 @@ fun AddTaskDialog(
                             onRecurrenceSelected = { selectedRecurrence = it }
                         )
                     }
-                    // Favorite Toggle & Add to Calendar
+
+                    // Favorite Toggle
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -108,7 +122,6 @@ fun AddTaskDialog(
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Favorite Toggle
                         IconButton(onClick = { isFavorite = !isFavorite }) {
                             Icon(
                                 imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
@@ -117,10 +130,9 @@ fun AddTaskDialog(
                             )
                         }
 
-                        // Add to Calendar
                         Button(
                             onClick = {
-                                navController.navigate("addToCalendar?taskName=$taskName&priorityLevel=$priorityLevel")
+                                navController.navigate("addToCalendar?taskName=${taskName}&priorityLevel=$priorityLevel")
                             }
                         ) {
                             Text("Add to Calendar")
@@ -143,13 +155,24 @@ fun AddTaskDialog(
                                         name = taskName,
                                         priority = TaskPriority.valueOf(priorityLevel.uppercase()),
                                         favorite = isFavorite,
-                                        deadline = Date(), // Default to current date if no calendar selected
-                                        tag = selectedTag, // Use selectedTag instead of TaskTag.WORK
+                                        deadline = Date(),
+                                        tag = selectedTag,
                                         completed = false,
                                         recurrence = selectedRecurrence
                                     )
-                                    onTaskAdded(newTask)
-                                    onDismiss()
+
+                                    addTaskToFirebase(
+                                        task = newTask,
+                                        onSuccess = {
+                                            onDismiss()
+                                        },
+                                        onFailure = { exception ->
+                                            // Handle Firebase error (e.g., show a Snackbar)
+                                            println("Failed to add task: ${exception.message}")
+                                        }
+                                    )
+                                } else {
+                                    showError = true
                                 }
                             }
                         ) {
@@ -161,6 +184,7 @@ fun AddTaskDialog(
         }
     }
 }
+
 
 
 
