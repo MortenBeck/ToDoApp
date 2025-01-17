@@ -1,46 +1,43 @@
 package dk.dtu.ToDoList.model.repository
 
 import android.content.Context
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import dk.dtu.ToDoList.model.data.Task
 import dk.dtu.ToDoList.model.data.TaskPriority
 import dk.dtu.ToDoList.model.data.TaskTag
-import dk.dtu.ToDoList.util.UserIdManager
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import java.util.Date
 
-
 class TaskCRUD(private val context: Context) {
     private val firestore = FirebaseFirestore.getInstance()
+    private val auth = FirebaseAuth.getInstance()
     private val tasksCollection = firestore.collection("tasks")
+
     private val userId: String
-        get() = UserIdManager.getUserId(context) ?: throw IllegalStateException("User ID is not available")
+        get() = auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
+
     private fun documentToTask(document: DocumentSnapshot): Task? {
-        return document.toObject(Task::class.java)
+        return try {
+            document.toObject(Task::class.java)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
     }
 
-//    suspend fun addTask(task: Task): Boolean {
-//        return try {
-//            val taskWithUserId = task.copy(
-//                id = generateTaskId(),
-//                userId = userId,
-//                createdAt = Date(),
-//                modifiedAt = Date()
-//            )
-//            tasksCollection.document(taskWithUserId.id).set(taskWithUserId).await()
-//            true
-//        } catch (e: Exception) {
-//            e.printStackTrace()
-//            false
-//        }
-//    }
-
     fun getTasksFlow(): Flow<List<Task>> = callbackFlow {
+        // Check authentication
+        if (auth.currentUser == null) {
+            close(IllegalStateException("User not authenticated"))
+            return@callbackFlow
+        }
+
         try {
             val registration = tasksCollection
                 .whereEqualTo("userId", userId)
@@ -62,7 +59,6 @@ class TaskCRUD(private val context: Context) {
 
             awaitClose { registration.remove() }
         } catch (e: Exception) {
-            e.printStackTrace()
             close(e)
         }
     }
@@ -141,6 +137,7 @@ class TaskCRUD(private val context: Context) {
 
         val registration = query.addSnapshotListener { snapshot, error ->
             if (error != null) {
+                close(error)
                 return@addSnapshotListener
             }
 

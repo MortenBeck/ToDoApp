@@ -1,25 +1,32 @@
 package dk.dtu.ToDoList.util
 
 import android.content.Context
-import java.util.UUID
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.tasks.await
 
 object UserIdManager {
-
-    private const val PREFS_NAME = "user_prefs"
-    private const val USER_ID_KEY = "user_id"
+    private val auth = FirebaseAuth.getInstance()
 
     fun getUserId(context: Context): String {
-        val sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return auth.currentUser?.uid
+            ?: throw IllegalStateException("User not authenticated")
+    }
 
-        // Check if a user ID already exists
-        var userId = sharedPreferences.getString(USER_ID_KEY, null)
-
-        if (userId == null) {
-            // Generate a new UUID and save it
-            userId = UUID.randomUUID().toString()
-            sharedPreferences.edit().putString(USER_ID_KEY, userId).apply()
+    // Add authentication methods
+    suspend fun signInAnonymously(): String {
+        return try {
+            val result = auth.signInAnonymously().await()
+            result.user?.uid ?: throw IllegalStateException("Failed to get user ID")
+        } catch (e: Exception) {
+            throw IllegalStateException("Authentication failed", e)
         }
+    }
 
-        return userId
+    fun isUserSignedIn(): Boolean {
+        return auth.currentUser != null
+    }
+
+    fun signOut() {
+        auth.signOut()
     }
 }

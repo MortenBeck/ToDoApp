@@ -15,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -33,8 +34,9 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import dk.dtu.ToDoList.model.repository.TaskCRUD
-import dk.dtu.ToDoList.util.UserIdManager.getUserId
+import dk.dtu.ToDoList.util.UserIdManager
 import kotlinx.coroutines.launch
+import androidx.lifecycle.lifecycleScope
 
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
@@ -42,6 +44,24 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         FirebaseApp.initializeApp(this)
 
+        // Check authentication state
+        val auth = FirebaseAuth.getInstance()
+        if (auth.currentUser == null) {
+            lifecycleScope.launch {
+                try {
+                    UserIdManager.signInAnonymously()
+                    startApp()
+                } catch (e: Exception) {
+                    // Handle authentication error
+                    e.printStackTrace()
+                }
+            }
+        } else {
+            startApp()
+        }
+    }
+
+    private fun startApp() {
         setContent {
             ToDoListTheme {
                 ToDoApp()

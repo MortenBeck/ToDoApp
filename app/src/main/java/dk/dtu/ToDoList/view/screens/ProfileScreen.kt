@@ -35,11 +35,22 @@ import dk.dtu.ToDoList.model.data.Task
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import dk.dtu.ToDoList.R
+import dk.dtu.ToDoList.util.UserIdManager
 import dk.dtu.ToDoList.view.components.SettingsItem
-
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
 
 @Composable
 fun ProfileScreen(navController: NavController) {
+    Button(
+        onClick = {
+            UserIdManager.signOut()
+            // Navigate to login or restart app
+        }
+    ) {
+        Text("Sign Out")
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
