@@ -285,7 +285,7 @@ fun FilterSection(
     }
 }
 
-// Improved filter function with proper date comparison
+// Filter function with date comparison
 private fun applyFilters(
     tasks: List<Task>,
     selectedDate: Date?,
