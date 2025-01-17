@@ -47,7 +47,6 @@ class MainActivity : ComponentActivity() {
 fun ToDoApp() {
     val navController = rememberNavController()
 
-    // Create mutableTasks from TasksRepository.Tasks
     val mutableTasks = remember { mutableStateListOf<Task>().apply { addAll(TasksRepository.Tasks) } }
 
     Scaffold(
@@ -58,7 +57,7 @@ fun ToDoApp() {
                     BottomNavItem("Calendar", R.drawable.calender_grey,R.drawable.calender_black),
                     BottomNavItem("Profile", R.drawable.profile_grey, R.drawable.profile_black),
                 ),
-                currentScreen = navController.currentBackStackEntryFlow.collectAsState(initial = navController.currentBackStackEntry).value?.destination?.route ?: "Tasks", // Get current screen
+                currentScreen = navController.currentBackStackEntryFlow.collectAsState(initial = navController.currentBackStackEntry).value?.destination?.route ?: "Tasks",
                 onItemClick = { item ->
                     navController.navigate(item.label) {
                         popUpTo(navController.graph.startDestinationId) { saveState = true }
