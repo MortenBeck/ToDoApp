@@ -56,10 +56,10 @@ fun TaskListScreen(
         set(Calendar.MILLISECOND, 0)
     }.time
 
-    val todayTasks = tasks.filter { it.deadline >= todayStart && it.deadline < tomorrowStart }
-    val futureTasks = tasks.filter { it.deadline >= tomorrowStart }
-    val expiredTasks = tasks.filter { it.deadline < todayStart && !it.completed }
-    val completedTasks = tasks.filter { it.deadline < todayStart && it.completed }
+    val todayTasks = tasks.filter { it.deadline >= todayStart && it.deadline < tomorrowStart }.sortedBy { it.deadline }
+    val futureTasks = tasks.filter { it.deadline >= tomorrowStart }.sortedBy { it.deadline }
+    val expiredTasks = tasks.filter { it.deadline < todayStart && !it.completed }.sortedBy { it.deadline }
+    val completedTasks = tasks.filter { it.deadline < todayStart && it.completed }.sortedBy { it.deadline }
 
     val isExpiredExpanded = remember { mutableStateOf(true) }
     val isTodayExpanded = remember { mutableStateOf(true) }
