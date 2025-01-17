@@ -11,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -33,15 +34,14 @@ fun ProfileScreen(navController: NavController) {
     // State for task statistics
     var todayTasksCount by remember { mutableStateOf(0) }
     var completedTodayCount by remember { mutableStateOf(0) }
-    var upcomingTasksCount by remember { mutableStateOf(0) }
+    var daysCompleted by remember { mutableStateOf(24) } // Placeholder for now
 
     // Get user email
-    val userEmail = UserIdManager.getCurrentUserEmail() ?: "Anonymous User"
+    val userEmail = "Username1@gmail.com" // Hardcoded for now, replace with actual user email later
 
     // Load task statistics
     LaunchedEffect(key1 = true) {
         scope.launch {
-            // Get today's date range
             val today = Calendar.getInstance().apply {
                 set(Calendar.HOUR_OF_DAY, 0)
                 set(Calendar.MINUTE, 0)
@@ -54,17 +54,9 @@ fun ProfileScreen(navController: NavController) {
                 set(Calendar.SECOND, 0)
             }
 
-            // Get tasks for today
             val todayTasks = taskCRUD.getTasksByDeadlineRange(today.time, tomorrow.time)
             todayTasksCount = todayTasks.size
             completedTodayCount = todayTasks.count { it.completed }
-
-            // Get upcoming tasks (tasks after today)
-            val upcomingTasks = taskCRUD.getTasksByDeadlineRange(
-                tomorrow.time,
-                Calendar.getInstance().apply { add(Calendar.YEAR, 1) }.time
-            )
-            upcomingTasksCount = upcomingTasks.size
         }
     }
 
@@ -86,13 +78,13 @@ fun ProfileScreen(navController: NavController) {
             Box(
                 modifier = Modifier
                     .size(80.dp)
-                    .background(color = MaterialTheme.colorScheme.surface, shape = CircleShape)
+                    .background(color = Color.White, shape = CircleShape)
                     .padding(16.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Person,
                     contentDescription = "Profile",
-                    tint = MaterialTheme.colorScheme.primary,
+                    tint = Color.Black,
                     modifier = Modifier.fillMaxSize()
                 )
             }
@@ -100,21 +92,15 @@ fun ProfileScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = userEmail,
+                text = "Username",
                 style = MaterialTheme.typography.headlineSmall
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Button(
-                onClick = {
-                    UserIdManager.signOut()
-                    // Navigate to login screen or restart app
-                    // You might want to add navigation logic here
-                }
-            ) {
-                Text("Sign Out")
-            }
+            Text(
+                text = userEmail,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
 
         // Stats card
@@ -136,7 +122,7 @@ fun ProfileScreen(navController: NavController) {
                 VerticalDivider()
                 StatColumn("Tasks Completed\nToday", completedTodayCount.toString())
                 VerticalDivider()
-                StatColumn("Upcoming\nTasks", upcomingTasksCount.toString())
+                StatColumn("Days\nCompleted", daysCompleted.toString())
             }
         }
 
@@ -148,8 +134,8 @@ fun ProfileScreen(navController: NavController) {
         ) {
             Text(
                 text = "Settings",
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(vertical = 16.dp)
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 8.dp)
             )
 
             Surface(
