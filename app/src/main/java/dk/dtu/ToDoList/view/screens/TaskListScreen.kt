@@ -152,7 +152,7 @@ fun SectionHeader(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp)
-            .clickable { onToggle() }, // Handle clicks to toggle visibility
+            .clickable { onToggle() },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(

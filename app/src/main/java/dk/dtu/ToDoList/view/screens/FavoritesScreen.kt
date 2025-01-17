@@ -29,7 +29,7 @@ import dk.dtu.ToDoList.view.components.TaskList
 
 @Composable
 fun FavouritesScreen(tasks: MutableList<Task>, navController: NavController) {
-    // State to hold the currently filtered favorite tasks
+
     val favouriteTasks by remember {
         derivedStateOf { tasks.filter { it.favorite } }
     }
@@ -104,7 +104,7 @@ fun FavouritesScreen(tasks: MutableList<Task>, navController: NavController) {
                 navController = navController,
                 onDismiss = { showDialog = false },
                 onTaskAdded = { newTask ->
-                    tasks.add(newTask) // Add the new task to the list
+                    tasks.add(newTask)
                     showDialog = false
                 }
             )
@@ -116,12 +116,11 @@ fun FavouritesScreen(tasks: MutableList<Task>, navController: NavController) {
         DeleteConfirmation(
             task = taskToDelete!!,
             onConfirm = {
-                // Remove task from the original list
                 tasks.remove(taskToDelete)
-                taskToDelete = null // Close the dialog
+                taskToDelete = null
             },
             onDismiss = {
-                taskToDelete = null // Close the dialog
+                taskToDelete = null
             }
         )
     }

@@ -68,19 +68,19 @@ fun AccountSettingsScreen(navController: NavController) {
                 SettingsItem(
                     icon = Icons.Default.Palette,
                     text = "Theme",
-                    onClick = { /* Handle theme settings */ }
+                    onClick = {  }
                 )
                 HorizontalDivider()
                 SettingsItem(
                     icon = Icons.Default.Language,
                     text = "Language",
-                    onClick = { /* Handle language settings */ }
+                    onClick = {  }
                 )
                 HorizontalDivider()
                 SettingsItem(
                     icon = Icons.Default.DataUsage,
                     text = "Data Usage",
-                    onClick = { /* Handle data settings */ }
+                    onClick = {  }
                 )
             }
         }

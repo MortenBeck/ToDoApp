@@ -31,7 +31,7 @@ import java.util.Date
 fun AddToCalendarPage(
     navController: NavController,
     taskName: String,
-    onTaskAdded: (Task) -> Unit // Ensures we can add the task from this page
+    onTaskAdded: (Task) -> Unit
 ) {
     var selectedDate by remember { if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         mutableStateOf(LocalDate.now())
@@ -66,14 +66,14 @@ fun AddToCalendarPage(
             onClick = {
                 val newTask = Task(
                     name = taskName,
-                    priority = TaskPriority.LOW, // Default priority
+                    priority = TaskPriority.LOW,
                     favorite = false,
                     deadline = Date.from(selectedDate.atStartOfDay(ZoneId.systemDefault()).toInstant()),
                     tag = TaskTag.WORK,
                     completed = false
                 )
-                onTaskAdded(newTask) // Add the task
-                navController.popBackStack() // Go back to the previous screen
+                onTaskAdded(newTask)
+                navController.popBackStack()
             },
             modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {

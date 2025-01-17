@@ -109,7 +109,7 @@ fun ProfileScreen(navController: NavController) {
             }
         }
 
-        // Settings section
+        // Settings
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -131,13 +131,13 @@ fun ProfileScreen(navController: NavController) {
                     SettingsItem(
                         icon = Icons.Default.Person,
                         text = "Account settings",
-                        onClick = { navController.navigate("account_settings") }  // Update navigation
+                        onClick = { navController.navigate("account_settings") }
                     )
                     HorizontalDivider()
                     SettingsItem(
                         icon = Icons.Default.Settings,
                         text = "App settings",
-                        onClick = { navController.navigate("app_settings") }  // Update navigation
+                        onClick = { navController.navigate("app_settings") }
                     )
                 }
             }

@@ -22,24 +22,23 @@ fun HomeScreen(tasks: MutableList<Task>, navController: NavController) {
     var taskToDelete by remember { mutableStateOf<Task?>(null) }
     var searchText by remember { mutableStateOf("") }
 
-    // Create a mutable state for filtered tasks
     var filteredTasks by remember { mutableStateOf(tasks.toList()) }
 
-    // Apply search filter
+    // Search filter
     val searchFilteredTasks = filteredTasks.filter {
         it.name.contains(searchText, ignoreCase = true)
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column {
-            // Top Bar for search/profile
+            // Top Bar for search
             TopBar(
                 searchText = searchText,
                 onSearchTextChange = { searchText = it },
                 navController = navController
             )
 
-            // Filter Section
+            // Filter
             FilterSection(
                 tasks = tasks,
                 onFilterChange = { newFilteredTasks ->
@@ -49,7 +48,7 @@ fun HomeScreen(tasks: MutableList<Task>, navController: NavController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Display the list of tasks
+            // Tasklist display
             TaskListScreen(
                 tasks = searchFilteredTasks.toMutableList(),
                 onDelete = { task ->
@@ -59,7 +58,6 @@ fun HomeScreen(tasks: MutableList<Task>, navController: NavController) {
                     val index = tasks.indexOfFirst { it == taskToToggle }
                     if (index != -1) {
                         tasks[index] = tasks[index].copy(favorite = !tasks[index].favorite)
-                        // Update filtered tasks to reflect changes
                         filteredTasks = tasks.toList()
                     }
                 },
@@ -67,14 +65,13 @@ fun HomeScreen(tasks: MutableList<Task>, navController: NavController) {
                     val index = tasks.indexOfFirst { it == taskToComplete }
                     if (index != -1) {
                         tasks[index] = tasks[index].copy(completed = !tasks[index].completed)
-                        // Update filtered tasks to reflect changes
                         filteredTasks = tasks.toList()
                     }
                 }
             )
         }
 
-        // Floating Add Task Button
+        // Add Task Button
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -111,7 +108,7 @@ fun HomeScreen(tasks: MutableList<Task>, navController: NavController) {
             onDismiss = { showDialog = false },
             onTaskAdded = { newTask ->
                 tasks.add(newTask)
-                filteredTasks = tasks.toList() // Update filtered tasks
+                filteredTasks = tasks.toList()
                 showDialog = false
             }
         )
@@ -122,7 +119,7 @@ fun HomeScreen(tasks: MutableList<Task>, navController: NavController) {
             task = taskToDelete!!,
             onConfirm = {
                 tasks.remove(taskToDelete)
-                filteredTasks = tasks.toList() // Update filtered tasks
+                filteredTasks = tasks.toList()
                 taskToDelete = null
             },
             onDismiss = {
