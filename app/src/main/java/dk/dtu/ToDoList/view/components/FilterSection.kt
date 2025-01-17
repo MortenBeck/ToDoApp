@@ -1,5 +1,7 @@
 package dk.dtu.ToDoList.view.components
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -24,43 +26,161 @@ import dk.dtu.ToDoList.model.data.Task
 import dk.dtu.ToDoList.model.data.TaskPriority
 import dk.dtu.ToDoList.model.data.TaskTag
 import dk.dtu.ToDoList.model.data.TaskTag.*
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.YearMonth
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
+import java.util.Locale
 
-@OptIn(ExperimentalLayoutApi::class)
+@RequiresApi(Build.VERSION_CODES.O)
+@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun FilterSection(
     onFilterChange: (List<Task>) -> Unit,
     tasks: List<Task>
 ) {
     var isExpanded by remember { mutableStateOf(false) }
-    var selectedDate by remember { mutableStateOf<Date?>(null) }
+    var dateRange by remember { mutableStateOf<Pair<Date?, Date?>>(null to null) }
     var selectedTags by remember { mutableStateOf<Set<TaskTag>>(emptySet()) }
     var selectedPriorities by remember { mutableStateOf<Set<TaskPriority>>(emptySet()) }
     var hideCompletedTasks by remember { mutableStateOf(false) }
+    var showCalendarPicker by remember { mutableStateOf(false) }
+
+    // Calendar states
+    var selectedStartDate by remember { mutableStateOf<LocalDate?>(null) }
+    var selectedEndDate by remember { mutableStateOf<LocalDate?>(null) }
+    var currentMonth by remember { mutableStateOf(YearMonth.now()) }
+    var isSelectingStartDate by remember { mutableStateOf(true) }
 
     val rotationState by animateFloatAsState(
         targetValue = if (isExpanded) 180f else 0f,
         label = "rotation"
     )
 
+    val dateFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy")
+
     fun resetFilters() {
-        selectedDate = null
+        dateRange = null to null
+        selectedStartDate = null
+        selectedEndDate = null
         selectedTags = emptySet()
         selectedPriorities = emptySet()
         hideCompletedTasks = false
-        applyFilters(tasks, null, emptySet(), emptySet(), false, onFilterChange)
+        applyFilters(tasks, dateRange, selectedTags, selectedPriorities, false, onFilterChange)
     }
 
-    fun toggleDateSelection(date: Date) {
-        selectedDate = if (selectedDate == date) null else date
-        applyFilters(
-            tasks,
-            selectedDate,
-            selectedTags,
-            selectedPriorities,
-            hideCompletedTasks,
-            onFilterChange
+    // Quick date selection helper function
+    fun selectQuickDate(daysOffset: Int) {
+        val date = LocalDate.now().plusDays(daysOffset.toLong())
+        selectedStartDate = date
+        selectedEndDate = date
+        val selectedDate = Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant())
+        dateRange = selectedDate to selectedDate
+        applyFilters(tasks, dateRange, selectedTags, selectedPriorities, hideCompletedTasks, onFilterChange)
+    }
+
+    if (showCalendarPicker) {
+        AlertDialog(
+            onDismissRequest = { showCalendarPicker = false },
+            title = { Text("Select Date Range") },
+            text = {
+                Column {
+                    // Toggle buttons for start/end date selection
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Button(
+                            onClick = { isSelectingStartDate = true },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (isSelectingStartDate)
+                                    MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.secondary
+                            )
+                        ) {
+                            Text("Start Date")
+                        }
+                        Button(
+                            onClick = { isSelectingStartDate = false },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (!isSelectingStartDate)
+                                    MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.secondary
+                            )
+                        ) {
+                            Text("End Date")
+                        }
+                    }
+
+                    // Show selected dates
+                    Text(
+                        text = "Start: ${selectedStartDate?.format(dateFormatter) ?: "Not set"}",
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                    Text(
+                        text = "End: ${selectedEndDate?.format(dateFormatter) ?: "Not set"}",
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+
+                    // Calendar
+                    Calendar(
+                        selectedDate = if (isSelectingStartDate)
+                            selectedStartDate ?: LocalDate.now()
+                        else
+                            selectedEndDate ?: LocalDate.now(),
+                        currentMonth = currentMonth,
+                        onDateSelected = { date ->
+                            if (isSelectingStartDate) {
+                                selectedStartDate = date
+                                isSelectingStartDate = false
+                            } else {
+                                selectedEndDate = date
+                            }
+                        },
+                        onMonthChanged = { month ->
+                            currentMonth = month
+                        },
+                        tasks = tasks
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        if (selectedStartDate != null && selectedEndDate != null) {
+                            // Convert LocalDate to Date
+                            val startDate = Date.from(
+                                selectedStartDate!!.atStartOfDay(ZoneId.systemDefault()).toInstant()
+                            )
+                            val endDate = Date.from(
+                                selectedEndDate!!.atStartOfDay(ZoneId.systemDefault()).toInstant()
+                            )
+                            dateRange = startDate to endDate
+                            applyFilters(
+                                tasks,
+                                dateRange,
+                                selectedTags,
+                                selectedPriorities,
+                                hideCompletedTasks,
+                                onFilterChange
+                            )
+                        }
+                        showCalendarPicker = false
+                    }
+                ) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showCalendarPicker = false }) {
+                    Text("Cancel")
+                }
+            }
         )
     }
 
@@ -88,7 +208,7 @@ fun FilterSection(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        "Today's Tasks",
+                        "Tasks Filter",
                         color = MaterialTheme.colorScheme.onPrimary,
                         style = MaterialTheme.typography.titleMedium
                     )
@@ -102,8 +222,10 @@ fun FilterSection(
             }
 
             // Reset button
-            if (isExpanded && (selectedDate != null || selectedTags.isNotEmpty() ||
-                        selectedPriorities.isNotEmpty() || hideCompletedTasks)) {
+            if (isExpanded && (dateRange.first != null || dateRange.second != null ||
+                        selectedTags.isNotEmpty() || selectedPriorities.isNotEmpty() ||
+                        hideCompletedTasks)
+            ) {
                 IconButton(
                     onClick = { resetFilters() },
                     modifier = Modifier.padding(start = 8.dp)
@@ -118,37 +240,63 @@ fun FilterSection(
         }
 
         if (isExpanded) {
+            // Date Range Selection
             Text(
-                text = "Deadline Date:",
+                text = "Date Range:",
                 style = MaterialTheme.typography.titleSmall,
                 modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
             )
+
+            // Quick date selection buttons
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                val yesterday = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -1) }.time
-                val today = Calendar.getInstance().time
-                val tomorrow = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, 1) }.time
-
                 FilterChip(
-                    selected = selectedDate == yesterday,
-                    onClick = { toggleDateSelection(yesterday) },
+                    selected = selectedStartDate?.equals(LocalDate.now().minusDays(1)) == true,
+                    onClick = { selectQuickDate(-1) },
                     label = { Text("Yesterday") }
                 )
                 FilterChip(
-                    selected = selectedDate == today,
-                    onClick = { toggleDateSelection(today) },
+                    selected = selectedStartDate?.equals(LocalDate.now()) == true,
+                    onClick = { selectQuickDate(0) },
                     label = { Text("Today") }
                 )
                 FilterChip(
-                    selected = selectedDate == tomorrow,
-                    onClick = { toggleDateSelection(tomorrow) },
+                    selected = selectedStartDate?.equals(LocalDate.now().plusDays(1)) == true,
+                    onClick = { selectQuickDate(1) },
                     label = { Text("Tomorrow") }
                 )
             }
 
-            // Tags
+            // Date picker button
+            Button(
+                onClick = { showCalendarPicker = true },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                )
+            ) {
+                Text(
+                    when {
+                        selectedStartDate != null && selectedEndDate != null -> {
+                            "${selectedStartDate!!.format(dateFormatter)} - ${selectedEndDate!!.format(dateFormatter)}"
+                        }
+                        selectedStartDate != null -> {
+                            "From ${selectedStartDate!!.format(dateFormatter)}"
+                        }
+                        selectedEndDate != null -> {
+                            "Until ${selectedEndDate!!.format(dateFormatter)}"
+                        }
+                        else -> "Select Date Range"
+                    },
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+            }
+
+            // Tags Section
             Text(
                 text = "Tags:",
                 style = MaterialTheme.typography.titleSmall,
@@ -171,16 +319,6 @@ fun FilterSection(
                         TaskTag.PRIVATE -> Color(0xFFff6D6D)
                         TaskTag.SOCIAL -> Color(0xFF80DEEA)
                     }
-                    val iconResource = when (tag) {
-                        TaskTag.WORK -> R.drawable.work
-                        TaskTag.SCHOOL -> R.drawable.school
-                        TaskTag.PET -> R.drawable.pet
-                        TaskTag.SPORT -> R.drawable.sport
-                        TaskTag.HOME -> R.drawable.home_black
-                        TaskTag.TRANSPORT -> R.drawable.transport
-                        TaskTag.PRIVATE -> R.drawable.lock
-                        TaskTag.SOCIAL -> R.drawable.social
-                    }
 
                     FilterChip(
                         selected = isSelected,
@@ -192,27 +330,14 @@ fun FilterSection(
                             }
                             applyFilters(
                                 tasks,
-                                selectedDate,
+                                dateRange,
                                 selectedTags,
                                 selectedPriorities,
                                 hideCompletedTasks,
                                 onFilterChange
                             )
                         },
-                        label = {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = iconResource),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(16.dp),
-                                    tint = Color.Black
-                                )
-                                Text(tag.name)
-                            }
-                        },
+                        label = { Text(tag.name) },
                         colors = FilterChipDefaults.filterChipColors(
                             containerColor = if (isSelected) tagColor else tagColor.copy(alpha = 0.3f),
                             labelColor = Color.Black
@@ -221,7 +346,7 @@ fun FilterSection(
                 }
             }
 
-            // Priority
+            // Priority Section
             Text(
                 text = "Priority:",
                 style = MaterialTheme.typography.titleSmall,
@@ -249,7 +374,7 @@ fun FilterSection(
                             }
                             applyFilters(
                                 tasks,
-                                selectedDate,
+                                dateRange,
                                 selectedTags,
                                 selectedPriorities,
                                 hideCompletedTasks,
@@ -261,9 +386,7 @@ fun FilterSection(
                             containerColor = if (isSelected) priorityColor else priorityColor.copy(alpha = 0.3f),
                             labelColor = Color.Black
                         ),
-                        modifier = Modifier
-                            .weight(1f)
-
+                        modifier = Modifier.weight(1f)
                     )
                 }
             }
@@ -281,7 +404,14 @@ fun FilterSection(
                     checked = hideCompletedTasks,
                     onCheckedChange = { checked ->
                         hideCompletedTasks = checked
-                        applyFilters(tasks, selectedDate, selectedTags, selectedPriorities, hideCompletedTasks, onFilterChange)
+                        applyFilters(
+                            tasks,
+                            dateRange,
+                            selectedTags,
+                            selectedPriorities,
+                            hideCompletedTasks,
+                            onFilterChange
+                        )
                     }
                 )
             }
@@ -289,29 +419,34 @@ fun FilterSection(
     }
 }
 
-// Filter function with date comparison
 private fun applyFilters(
     tasks: List<Task>,
-    selectedDate: Date?,
+    dateRange: Pair<Date?, Date?>,
     selectedTags: Set<TaskTag>,
     selectedPriorities: Set<TaskPriority>,
     hideCompletedTasks: Boolean,
     onFilterChange: (List<Task>) -> Unit
 ) {
     val filteredList = tasks.filter { task ->
-        val dateMatches = selectedDate?.let { date ->
+        val dateMatches = if (dateRange.first != null && dateRange.second != null) {
             val taskCal = Calendar.getInstance().apply { time = task.deadline }
-            val selectedCal = Calendar.getInstance().apply { time = date }
+            val startCal = Calendar.getInstance().apply { time = dateRange.first!! }
+            val endCal = Calendar.getInstance().apply { time = dateRange.second!! }
 
-            taskCal.get(Calendar.YEAR) == selectedCal.get(Calendar.YEAR) &&
-                    taskCal.get(Calendar.MONTH) == selectedCal.get(Calendar.MONTH) &&
-                    taskCal.get(Calendar.DAY_OF_MONTH) == selectedCal.get(Calendar.DAY_OF_MONTH)
-        } ?: true
+            // Reset time components to compare only dates
+            listOf(taskCal, startCal, endCal).forEach { cal ->
+                cal.set(Calendar.HOUR_OF_DAY, 0)
+                cal.set(Calendar.MINUTE, 0)
+                cal.set(Calendar.SECOND, 0)
+                cal.set(Calendar.MILLISECOND, 0)
+            }
+
+            // Check if task date is within range (inclusive)
+            !taskCal.before(startCal) && !taskCal.after(endCal)
+        } else true
 
         val tagMatches = selectedTags.isEmpty() || task.tag in selectedTags
-
         val priorityMatches = selectedPriorities.isEmpty() || task.priority in selectedPriorities
-
         val completionMatches = !hideCompletedTasks || !task.completed
 
         dateMatches && tagMatches && priorityMatches && completionMatches
