@@ -22,6 +22,10 @@ object UserIdManager {
         }
     }
 
+    fun getCurrentUserEmail(): String? {
+        return auth.currentUser?.email
+    }
+
     fun isUserSignedIn(): Boolean {
         return auth.currentUser != null
     }

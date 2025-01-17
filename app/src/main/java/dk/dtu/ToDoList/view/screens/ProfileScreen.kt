@@ -1,54 +1,71 @@
 package dk.dtu.ToDoList.view.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.VerticalDivider
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import dk.dtu.ToDoList.model.data.Task
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import dk.dtu.ToDoList.R
+import dk.dtu.ToDoList.model.repository.TaskCRUD
 import dk.dtu.ToDoList.util.UserIdManager
 import dk.dtu.ToDoList.view.components.SettingsItem
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
+import java.util.*
+import kotlinx.coroutines.launch
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun ProfileScreen(navController: NavController) {
-    Button(
-        onClick = {
-            UserIdManager.signOut()
-            // Navigate to login or restart app
+    val context = LocalContext.current
+    val taskCRUD = remember { TaskCRUD(context) }
+    val scope = rememberCoroutineScope()
+
+    // State for task statistics
+    var todayTasksCount by remember { mutableStateOf(0) }
+    var completedTodayCount by remember { mutableStateOf(0) }
+    var upcomingTasksCount by remember { mutableStateOf(0) }
+
+    // Get user email
+    val userEmail = UserIdManager.getCurrentUserEmail() ?: "Anonymous User"
+
+    // Load task statistics
+    LaunchedEffect(key1 = true) {
+        scope.launch {
+            // Get today's date range
+            val today = Calendar.getInstance().apply {
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+            }
+            val tomorrow = Calendar.getInstance().apply {
+                add(Calendar.DAY_OF_YEAR, 1)
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+            }
+
+            // Get tasks for today
+            val todayTasks = taskCRUD.getTasksByDeadlineRange(today.time, tomorrow.time)
+            todayTasksCount = todayTasks.size
+            completedTodayCount = todayTasks.count { it.completed }
+
+            // Get upcoming tasks (tasks after today)
+            val upcomingTasks = taskCRUD.getTasksByDeadlineRange(
+                tomorrow.time,
+                Calendar.getInstance().apply { add(Calendar.YEAR, 1) }.time
+            )
+            upcomingTasksCount = upcomingTasks.size
         }
-    ) {
-        Text("Sign Out")
     }
 
     Column(
@@ -83,15 +100,21 @@ fun ProfileScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Username",
+                text = userEmail,
                 style = MaterialTheme.typography.headlineSmall
             )
 
-            Text(
-                text = "Username1@gmail.com",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Button(
+                onClick = {
+                    UserIdManager.signOut()
+                    // Navigate to login screen or restart app
+                    // You might want to add navigation logic here
+                }
+            ) {
+                Text("Sign Out")
+            }
         }
 
         // Stats card
@@ -109,15 +132,15 @@ fun ProfileScreen(navController: NavController) {
                     .padding(16.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                StatColumn("Tasks\nToday", "0")
+                StatColumn("Tasks\nToday", todayTasksCount.toString())
                 VerticalDivider()
-                StatColumn("Tasks Completed\nToday", "0")
+                StatColumn("Tasks Completed\nToday", completedTodayCount.toString())
                 VerticalDivider()
-                StatColumn("Upcoming\nTasks", "0")
+                StatColumn("Upcoming\nTasks", upcomingTasksCount.toString())
             }
         }
 
-        // Settings section
+        // Settings
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -181,27 +204,4 @@ private fun VerticalDivider() {
             .width(1.dp),
         color = MaterialTheme.colorScheme.outlineVariant
     )
-}
-
-@Composable
-private fun SettingsItem(
-    icon: ImageVector,
-    text: String,
-    onClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(modifier = Modifier.width(16.dp))
-        Text(text = text)
-    }
 }
