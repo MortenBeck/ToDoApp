@@ -20,7 +20,9 @@ import dk.dtu.ToDoList.model.data.Task
 import dk.dtu.ToDoList.model.repository.TasksRepository
 import dk.dtu.ToDoList.view.components.BottomNavBar
 import dk.dtu.ToDoList.view.components.BottomNavItem
+import dk.dtu.ToDoList.view.screens.AccountSettingsScreen
 import dk.dtu.ToDoList.view.screens.AddToCalendarPage
+import dk.dtu.ToDoList.view.screens.AppSettingsScreen
 import dk.dtu.ToDoList.view.screens.CalendarScreen
 import dk.dtu.ToDoList.view.screens.FavouritesScreen
 import dk.dtu.ToDoList.view.screens.HomeScreen
@@ -94,6 +96,16 @@ fun ToDoApp() {
             }
             composable("Profile") {
                 ProfileScreen(
+                    navController = navController
+                )
+            }
+            composable("account_settings") {
+                AccountSettingsScreen(
+                    navController = navController
+                )
+            }
+            composable("app_settings") {
+                AppSettingsScreen(
                     navController = navController
                 )
             }
