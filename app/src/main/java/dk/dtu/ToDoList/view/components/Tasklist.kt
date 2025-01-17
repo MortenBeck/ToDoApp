@@ -93,6 +93,7 @@ fun TaskItem(
 
     val isToday = isTaskToday(task)
     val isExpired = isTaskExpired(task)
+    val isTomorrow = isTaskTomorrow(task)
 
     Row(
         modifier = modifier
@@ -169,15 +170,17 @@ fun TaskItem(
                 BadgeItem(
                     badgeText = when {
                         isToday -> "Today"
+                        isTomorrow -> "Tomorrow"
                         else -> SimpleDateFormat("dd-MM-yyyy", Locale.US).format(task.deadline)
                     },
                     badgeColor = when {
                         isToday -> Color(0xFFFF6d6d)
-                        isTaskExpired(task) -> Color.Red
+                        isTomorrow -> Color(0xFF03A9F4)
+                        isExpired -> Color.Red
                         else -> Color.White
                     },
                     badgeTextColor = when {
-                        isToday || isTaskExpired(task) -> Color.White
+                        isToday || isExpired -> Color.White
                         else -> Color.Black
                     },
                     badgeIcon = R.drawable.calender_black
@@ -267,6 +270,17 @@ fun isTaskExpired(task: Task): Boolean {
 
     return taskCalendar.before(todayCalendar) &&
             !isTaskToday(task) // Ensure it's not also marked as "Today"
+}
+
+@Composable
+fun isTaskTomorrow(task: Task): Boolean {
+    val todayCalendar = Calendar.getInstance()
+    val taskCalendar = Calendar.getInstance()
+    taskCalendar.time = task.deadline
+
+    todayCalendar.add(Calendar.DAY_OF_YEAR, 1) // Move today to tomorrow
+    return todayCalendar.get(Calendar.YEAR) == taskCalendar.get(Calendar.YEAR) &&
+            todayCalendar.get(Calendar.DAY_OF_YEAR) == taskCalendar.get(Calendar.DAY_OF_YEAR)
 }
 
 
