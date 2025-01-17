@@ -19,8 +19,13 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun CalendarScreen(tasks: MutableList<Task>, navController: NavController) {
-    var taskUpdateTrigger by remember { mutableStateOf(0) }
+fun CalendarScreen(
+    tasks: List<Task>,
+    navController: NavController,
+    onAddTask: (Task) -> Unit,
+    onUpdateTask: (Task) -> Unit,
+    onDeleteTask: (String) -> Unit
+) {
     var selectedDate by remember {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             mutableStateOf(LocalDate.now())
@@ -30,7 +35,6 @@ fun CalendarScreen(tasks: MutableList<Task>, navController: NavController) {
     }
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
     var showDeleteDialog by remember { mutableStateOf(false) }
-    var showAddTaskDialog by remember { mutableStateOf(false) }
     var taskToDelete by remember { mutableStateOf<Task?>(null) }
     var showDialog by remember { mutableStateOf(false) }
 
@@ -52,25 +56,12 @@ fun CalendarScreen(tasks: MutableList<Task>, navController: NavController) {
         TasksForDate(
             tasks = tasks,
             selectedDate = selectedDate,
-            taskUpdateTrigger = taskUpdateTrigger,
             onDelete = { task ->
                 taskToDelete = task
                 showDeleteDialog = true
             },
-            onFavoriteToggle = { taskToToggle ->
-                val index = tasks.indexOfFirst { it == taskToToggle }
-                if (index != -1) {
-                    tasks[index] = tasks[index].copy(favorite = !tasks[index].favorite)
-                    taskUpdateTrigger += 1
-                }
-            },
-            onCompleteToggle = { taskToComplete ->
-                val index = tasks.indexOfFirst { it == taskToComplete }
-                if (index != -1) {
-                    val updatedTask = tasks[index].copy(completed = !tasks[index].completed)
-                    tasks[index] = updatedTask
-                    taskUpdateTrigger += 1
-                }
+            onCompleteToggle = { task ->
+                onUpdateTask(task.copy(completed = !task.completed))
             }
         )
     }
@@ -108,7 +99,7 @@ fun CalendarScreen(tasks: MutableList<Task>, navController: NavController) {
             navController = navController,
             onDismiss = { showDialog = false },
             onTaskAdded = { newTask ->
-                tasks.add(newTask)
+                onAddTask(newTask)
                 showDialog = false
             }
         )
@@ -118,7 +109,7 @@ fun CalendarScreen(tasks: MutableList<Task>, navController: NavController) {
         DeleteConfirmation(
             task = taskToDelete!!,
             onConfirm = {
-                tasks.remove(taskToDelete)
+                onDeleteTask(taskToDelete!!.id)
                 taskToDelete = null
                 showDeleteDialog = false
             },
@@ -134,12 +125,10 @@ fun CalendarScreen(tasks: MutableList<Task>, navController: NavController) {
 fun TasksForDate(
     tasks: List<Task>,
     selectedDate: LocalDate,
-    taskUpdateTrigger: Int = 0,
     onDelete: (Task) -> Unit,
-    onFavoriteToggle: (Task) -> Unit,
     onCompleteToggle: (Task) -> Unit
 ) {
-    val tasksForDate = remember(selectedDate, tasks, taskUpdateTrigger) {
+    val tasksForDate = remember(selectedDate, tasks) {
         tasks.filter { task ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 task.deadline.toInstant().atZone(ZoneId.systemDefault()).toLocalDate() == selectedDate
@@ -161,7 +150,6 @@ fun TasksForDate(
                 Tasks = tasksForDate,
                 modifier = Modifier.fillMaxWidth(),
                 onDelete = onDelete,
-                onFavoriteToggle = onFavoriteToggle,
                 onCompleteToggle = onCompleteToggle
             )
         } else {

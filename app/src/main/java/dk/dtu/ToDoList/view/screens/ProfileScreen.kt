@@ -22,6 +22,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,15 +35,11 @@ import dk.dtu.ToDoList.model.data.Task
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import dk.dtu.ToDoList.R
-import dk.dtu.ToDoList.model.repository.TasksRepository
+import dk.dtu.ToDoList.view.components.SettingsItem
 
 
 @Composable
 fun ProfileScreen(navController: NavController) {
-    val todayTasks = TasksRepository.todayTasks
-    val allTasks = TasksRepository.Tasks
-    val completedTodayCount = todayTasks.count { it.completed }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -101,11 +98,11 @@ fun ProfileScreen(navController: NavController) {
                     .padding(16.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                StatColumn("Tasks\nToday", todayTasks.size.toString())
+                StatColumn("Tasks\nToday", "0")
                 VerticalDivider()
-                StatColumn("Tasks Completed\nToday", completedTodayCount.toString())
+                StatColumn("Tasks Completed\nToday", "0")
                 VerticalDivider()
-                StatColumn("Upcoming\nTasks", TasksRepository.futureTasks.size.toString())
+                StatColumn("Upcoming\nTasks", "0")
             }
         }
 
@@ -131,13 +128,13 @@ fun ProfileScreen(navController: NavController) {
                     SettingsItem(
                         icon = Icons.Default.Person,
                         text = "Account settings",
-                        onClick = { navController.navigate("account_settings") }  // Update navigation
+                        onClick = { navController.navigate("account_settings") }
                     )
                     HorizontalDivider()
                     SettingsItem(
                         icon = Icons.Default.Settings,
                         text = "App settings",
-                        onClick = { navController.navigate("app_settings") }  // Update navigation
+                        onClick = { navController.navigate("app_settings") }
                     )
                 }
             }

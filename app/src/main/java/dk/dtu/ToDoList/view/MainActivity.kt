@@ -12,68 +12,62 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dk.dtu.ToDoList.R
 import dk.dtu.ToDoList.model.data.Task
-import dk.dtu.ToDoList.model.repository.TasksRepository
 import dk.dtu.ToDoList.view.components.BottomNavBar
 import dk.dtu.ToDoList.view.components.BottomNavItem
 import dk.dtu.ToDoList.view.screens.AccountSettingsScreen
 import dk.dtu.ToDoList.view.screens.AddToCalendarPage
 import dk.dtu.ToDoList.view.screens.AppSettingsScreen
 import dk.dtu.ToDoList.view.screens.CalendarScreen
-import dk.dtu.ToDoList.view.screens.FavouritesScreen
 import dk.dtu.ToDoList.view.screens.HomeScreen
 import dk.dtu.ToDoList.view.screens.ProfileScreen
 import dk.dtu.ToDoList.view.theme.ToDoListTheme
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import dk.dtu.ToDoList.model.repository.TaskCRUD
 import dk.dtu.ToDoList.util.UserIdManager.getUserId
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
+    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         FirebaseApp.initializeApp(this)
 
-        val firebaseAuth = FirebaseAuth.getInstance()
-        val firestore = FirebaseFirestore.getInstance()
-
-
         setContent {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                ToDoListTheme {
-                    ToDoApp()
-                }
+            ToDoListTheme {
+                ToDoApp()
             }
         }
     }
 }
 
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ToDoApp() {
     val navController = rememberNavController()
-
-    // Create mutableTasks from TasksRepository.Tasks
-    val mutableTasks = remember { mutableStateListOf<Task>() }
-
-
-
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val taskCRUD = remember { TaskCRUD(context) }
+    val tasks = taskCRUD.getTasksFlow().collectAsState(initial = emptyList())
 
     Scaffold(
         bottomBar = {
             BottomNavBar(
                 items = listOf(
-                    BottomNavItem("Tasks", R.drawable.home_grey,R.drawable.home_black),
-                    BottomNavItem("Calendar", R.drawable.calender_grey,R.drawable.calender_black),
-                    BottomNavItem("Profile", R.drawable.profile_grey, R.drawable.profile_black),
+                    BottomNavItem("Tasks", R.drawable.home_grey, R.drawable.home_black),
+                    BottomNavItem("Calendar", R.drawable.calender_grey, R.drawable.calender_black),
+                    BottomNavItem("Profile", R.drawable.profile_grey, R.drawable.profile_black)
                 ),
-                currentScreen = navController.currentBackStackEntryFlow.collectAsState(initial = navController.currentBackStackEntry).value?.destination?.route ?: "Tasks", // Get current screen
+                currentScreen = navController.currentBackStackEntryFlow.collectAsState(initial = navController.currentBackStackEntry).value?.destination?.route ?: "Tasks",
                 onItemClick = { item ->
                     navController.navigate(item.label) {
                         popUpTo(navController.graph.startDestinationId) { saveState = true }
@@ -93,20 +87,44 @@ fun ToDoApp() {
         ) {
             composable("Tasks") {
                 HomeScreen(
-                    tasks = mutableTasks,
-                    navController = navController
-                )
-            }
-            composable("Favourites") {
-                FavouritesScreen(
-                    tasks = mutableTasks,
+                    tasks = tasks.value,
+                    onAddTask = { task ->
+                        scope.launch {
+                            taskCRUD.addTask(task)
+                        }
+                    },
+                    onUpdateTask = { task ->
+                        scope.launch {
+                            taskCRUD.updateTask(task)
+                        }
+                    },
+                    onDeleteTask = { taskId ->
+                        scope.launch {
+                            taskCRUD.deleteTask(taskId)
+                        }
+                    },
                     navController = navController
                 )
             }
             composable("Calendar") {
                 CalendarScreen(
-                    tasks = mutableTasks,
-                    navController = navController
+                    tasks = tasks.value,
+                    navController = navController,
+                    onAddTask = { task ->
+                        scope.launch {
+                            taskCRUD.addTask(task)
+                        }
+                    },
+                    onUpdateTask = { task ->
+                        scope.launch {
+                            taskCRUD.updateTask(task)
+                        }
+                    },
+                    onDeleteTask = { taskId ->
+                        scope.launch {
+                            taskCRUD.deleteTask(taskId)
+                        }
+                    }
                 )
             }
             composable("Profile") {
@@ -131,11 +149,12 @@ fun ToDoApp() {
                     navController = navController,
                     taskName = taskName,
                     onTaskAdded = { newTask ->
-                        mutableTasks.add(newTask)
+                        scope.launch {
+                            taskCRUD.addTask(newTask)
+                        }
                     }
                 )
             }
         }
     }
 }
-

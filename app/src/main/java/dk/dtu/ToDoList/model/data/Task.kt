@@ -19,7 +19,6 @@ data class Task(
     val priority: TaskPriority,
     val tag: TaskTag,
     val completed: Boolean = false,
-    val favorite: Boolean = false,
     val createdAt: Date = Date(),
     val modifiedAt: Date = Date(),
     val subtasks: List<SubTask> = emptyList(),
