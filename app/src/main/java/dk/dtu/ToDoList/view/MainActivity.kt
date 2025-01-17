@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
@@ -28,10 +29,21 @@ import dk.dtu.ToDoList.view.screens.FavouritesScreen
 import dk.dtu.ToDoList.view.screens.HomeScreen
 import dk.dtu.ToDoList.view.screens.ProfileScreen
 import dk.dtu.ToDoList.view.theme.ToDoListTheme
+import com.google.firebase.FirebaseApp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import dk.dtu.ToDoList.util.UserIdManager.getUserId
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        FirebaseApp.initializeApp(this)
+
+        val firebaseAuth = FirebaseAuth.getInstance()
+        val firestore = FirebaseFirestore.getInstance()
+
+
         setContent {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 ToDoListTheme {
@@ -48,7 +60,10 @@ fun ToDoApp() {
     val navController = rememberNavController()
 
     // Create mutableTasks from TasksRepository.Tasks
-    val mutableTasks = remember { mutableStateListOf<Task>().apply { addAll(TasksRepository.Tasks) } }
+    val mutableTasks = remember { mutableStateListOf<Task>() }
+
+
+
 
     Scaffold(
         bottomBar = {

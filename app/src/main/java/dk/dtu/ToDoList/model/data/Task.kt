@@ -12,6 +12,7 @@ enum class TaskTag {
 }
 
 data class Task(
+    val id: String = "",
     val name: String,
     val description: String = "",
     val deadline: Date,
@@ -23,7 +24,8 @@ data class Task(
     val modifiedAt: Date = Date(),
     val subtasks: List<SubTask> = emptyList(),
     val reminderTime: Date? = null,
-    val recurrence: RecurrencePattern? = null
+    val recurrence: RecurrencePattern? = null,
+    val userId: String = ""
 ) {
     val dueDate: Date get() = deadline
 }
