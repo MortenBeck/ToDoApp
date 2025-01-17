@@ -45,6 +45,7 @@ import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.runtime.*
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.clickable
 
 @Composable
 fun TaskList(
@@ -95,10 +96,13 @@ fun TaskItem(
     val isExpired = isTaskExpired(task)
     val isTomorrow = isTaskTomorrow(task)
 
+    var showDetails by remember { mutableStateOf(false)}
+
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp, horizontal = 16.dp),
+            .padding(vertical = 8.dp, horizontal = 16.dp)
+            .clickable { showDetails=true },
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconButton(
@@ -215,6 +219,12 @@ fun TaskItem(
                     }
                 )
             }
+        }
+        if (showDetails) {
+            TaskDetails(
+                task = task,
+                onDismiss = { showDetails = false }
+            )
         }
     }
 }
