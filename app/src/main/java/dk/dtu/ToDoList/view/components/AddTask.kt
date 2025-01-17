@@ -16,6 +16,8 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import java.util.Date
 import androidx.navigation.NavController
 import dk.dtu.ToDoList.model.data.RecurrencePattern
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 
 
 @Composable
@@ -23,6 +25,7 @@ fun AddTaskDialog(
     showDialog: Boolean,
     navController: NavController,
     onDismiss: () -> Unit,
+    onTaskAdded: (Task) -> Unit
 ) {
     if (showDialog) {
         var taskName by remember { mutableStateOf("") }
@@ -185,7 +188,26 @@ fun AddTaskDialog(
     }
 }
 
+fun addTaskToFirebase(
+    task: Task,
+    onSuccess: () -> Unit,
+    onFailure: (Exception) -> Unit
+) {
+    // Get Firestore instance
+    val db = Firebase.firestore
 
+    // Reference to the tasks collection (replace "tasks" with your collection name)
+    val tasksCollection = db.collection("tasks")
+
+    // Add the task to Firestore
+    tasksCollection.add(task)
+        .addOnSuccessListener {
+            onSuccess() // Notify the caller that the task was added successfully
+        }
+        .addOnFailureListener { exception ->
+            onFailure(exception) // Pass the exception to the caller for error handling
+        }
+}
 
 
 @Composable
@@ -237,7 +259,7 @@ fun DropdownTagSelector(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            TaskTag.values().forEach { tag -> // Ensure this iterates over all TaskTag values
+            TaskTag.entries.forEach { tag -> // Ensure this iterates over all TaskTag values
                 DropdownMenuItem(
                     onClick = {
                         onTagSelected(tag) // Correctly updates the tag

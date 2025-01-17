@@ -14,34 +14,37 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import java.util.Date
 
+
 class TasksRepository(private val context: Context) {
     private val firestore = FirebaseFirestore.getInstance()
     private val tasksCollection = firestore.collection("tasks")
-    private val userId = UserIdManager.getUserId(context)
+    private val userId: String
+        get() = UserIdManager.getUserId(context) ?: throw IllegalStateException("User ID is not available")
 
-    suspend fun addTask(task: Task): Boolean {
-        return try {
-            val taskWithUserId = task.copy(
-                id = generateTaskId(),
-                userId = userId,
-                createdAt = Date(),
-                modifiedAt = Date()
-            )
-            tasksCollection.document(taskWithUserId.id).set(taskWithUserId).await()
-            true
-        } catch (e: Exception) {
-            e.printStackTrace()
-            false
-        }
-    }
 
-    suspend fun getTasks(
+//    suspend fun addTask(task: Task): Boolean {
+//        return try {
+//            val taskWithUserId = task.copy(
+//                id = generateTaskId(),
+//                userId = userId,
+//                createdAt = Date(),
+//                modifiedAt = Date()
+//            )
+//            tasksCollection.document(taskWithUserId.id).set(taskWithUserId).await()
+//            true
+//        } catch (e: Exception) {
+//            e.printStackTrace()
+//            false
+//        }
+//    }
+
+    fun getTasksFlow(
         tag: TaskTag? = null,
         priority: TaskPriority? = null,
         completed: Boolean? = null,
         favorite: Boolean? = null
-    ): List<Task> {
-        return try {
+    ): Flow<List<Task>> = callbackFlow {
+        try {
             var query = tasksCollection.whereEqualTo("userId", userId)
 
             // Apply filters if provided
@@ -54,19 +57,34 @@ class TasksRepository(private val context: Context) {
             query = query.orderBy("deadline", Query.Direction.ASCENDING)
                 .orderBy("createdAt", Query.Direction.DESCENDING)
 
-            val querySnapshot: QuerySnapshot = query.get().await()
-            querySnapshot.toObjects(Task::class.java)
+            // Add a snapshot listener to get real-time updates
+            val registration = query.addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    return@addSnapshotListener
+                }
+
+                snapshot?.let {
+                    val tasks = it.toObjects(Task::class.java)
+                    trySend(tasks)
+                }
+            }
+
+            // Close the flow when the listener is removed
+            awaitClose { registration.remove() }
         } catch (e: Exception) {
             e.printStackTrace()
-            emptyList()
+            trySend(emptyList()) // Send an empty list in case of error
         }
     }
+
 
     suspend fun updateTask(task: Task): Boolean {
         return try {
             // Verify the task belongs to the current user
             val existingTask = tasksCollection.document(task.id).get().await()
-            if (existingTask.exists() && existingTask.getString("userId") == userId) {
+
+            val existingUserId = existingTask.getString("userId")
+            if (existingTask.exists() && existingUserId == userId) {
                 val taskWithUpdates = task.copy(
                     userId = userId,
                     modifiedAt = Date()

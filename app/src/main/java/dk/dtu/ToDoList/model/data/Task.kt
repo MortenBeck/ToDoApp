@@ -24,7 +24,8 @@ data class Task(
     val modifiedAt: Date = Date(),
     val subtasks: List<SubTask> = emptyList(),
     val reminderTime: Date? = null,
-    val recurrence: RecurrencePattern? = null
+    val recurrence: RecurrencePattern? = null,
+    val userId: String = ""
 )
 //Possibility for future SubTask element
 data class SubTask(
