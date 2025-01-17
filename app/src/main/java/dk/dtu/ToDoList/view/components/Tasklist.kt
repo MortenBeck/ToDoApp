@@ -169,7 +169,6 @@ fun TaskItem(
                 BadgeItem(
                     badgeText = when {
                         isToday -> "Today"
-                        isTaskExpired(task) -> "Expired"
                         else -> SimpleDateFormat("dd-MM-yyyy", Locale.US).format(task.deadline)
                     },
                     badgeColor = when {
