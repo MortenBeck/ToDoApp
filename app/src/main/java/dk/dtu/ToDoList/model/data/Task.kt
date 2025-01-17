@@ -1,6 +1,5 @@
 package dk.dtu.ToDoList.model.data
 
-
 import java.util.Date
 
 enum class TaskPriority {
@@ -13,11 +12,11 @@ enum class TaskTag {
 
 data class Task(
     val id: String = "",
-    val name: String,
+    val name: String = "",  // Add default value
     val description: String = "",
-    val deadline: Date,
-    val priority: TaskPriority,
-    val tag: TaskTag,
+    val deadline: Date = Date(),  // Add default value
+    val priority: TaskPriority = TaskPriority.LOW,  // Add default value
+    val tag: TaskTag = TaskTag.WORK,  // Add default value
     val completed: Boolean = false,
     val createdAt: Date = Date(),
     val modifiedAt: Date = Date(),
@@ -26,14 +25,22 @@ data class Task(
     val recurrence: RecurrencePattern? = null,
     val userId: String = ""
 ) {
+    // Required empty constructor for Firestore
+    constructor() : this(
+        name = "",
+        deadline = Date()
+    )
+
     val dueDate: Date get() = deadline
 }
 
-//Possibility for future SubTask element
 data class SubTask(
-    val name: String,
+    val name: String = "",  // Add default value
     val completed: Boolean = false
-)
+) {
+    // Required empty constructor for Firestore
+    constructor() : this("")
+}
 
 enum class RecurrencePattern {
     DAILY, WEEKLY, MONTHLY, YEARLY

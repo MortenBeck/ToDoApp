@@ -20,6 +20,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ToDoList"
         tools:targetApi="26">
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
         <activity
             android:name="dk.dtu.ToDoList.view.MainActivity"
             android:exported="true"

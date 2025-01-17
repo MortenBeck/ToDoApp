@@ -1,6 +1,7 @@
 [versions]
 # Android & Kotlin
 agp = "8.7.2"
+googleServices = "4.4.2"
 kotlin = "2.0.0"
 
 # AndroidX & Core
@@ -38,6 +39,8 @@ firebaseAuthKtx = "23.1.0"
 # Networking
 playServicesAuth = "21.0.0"
 playServicesBase = "18.3.0"
+playServicesBasement = "18.3.0"
+playServicesTasks = "18.1.0"
 retrofit = "2.9.0"
 okhttp = "4.10.0"
 
@@ -54,6 +57,7 @@ espressoCore = "3.6.1"
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+google-services = { module = "com.google.gms:google-services", version.ref = "googleServices" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 
 # Compose
@@ -98,6 +102,8 @@ firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx",
 # Networking
 play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
 play-services-base = { module = "com.google.android.gms:play-services-base", version.ref = "playServicesBase" }
+play-services-basement = { module = "com.google.android.gms:play-services-basement", version.ref = "playServicesBasement" }
+play-services-tasks = { module = "com.google.android.gms:play-services-tasks", version.ref = "playServicesTasks" }
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version = "2.9.0" }
 retrofit-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version = "2.9.0" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version = "4.11.0" }

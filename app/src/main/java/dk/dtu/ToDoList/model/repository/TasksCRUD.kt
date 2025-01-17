@@ -1,6 +1,7 @@
 package dk.dtu.ToDoList.model.repository
 
 import android.content.Context
+import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
@@ -13,6 +14,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import java.util.Date
+
 
 class TaskCRUD(private val context: Context) {
     private val firestore = FirebaseFirestore.getInstance()
@@ -71,9 +73,14 @@ class TaskCRUD(private val context: Context) {
                 createdAt = Date(),
                 modifiedAt = Date()
             )
+            Log.d("TaskCRUD", "Attempting to add task with userId: ${taskWithUserId.userId}")
+            Log.d("TaskCRUD", "Current auth userId: $userId")
+
             tasksCollection.document(taskWithUserId.id).set(taskWithUserId).await()
+            Log.d("TaskCRUD", "Task added successfully")
             true
         } catch (e: Exception) {
+            Log.e("TaskCRUD", "Error adding task", e)
             e.printStackTrace()
             false
         }

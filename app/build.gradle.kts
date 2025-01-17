@@ -17,6 +17,7 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        manifestPlaceholders["android:enableOnBackInvokedCallback"] = "true"
     }
 
     buildTypes {
@@ -47,8 +48,12 @@ dependencies {
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.firebase.auth.ktx)
     implementation(libs.firebase.analytics)
+
+    // Google Play Services
     implementation(libs.play.services.base)
     implementation(libs.play.services.auth)
+    implementation(libs.play.services.basement)
+    implementation(libs.play.services.tasks)
 
     // Compose
     implementation(platform(libs.androidx.compose.bom))
