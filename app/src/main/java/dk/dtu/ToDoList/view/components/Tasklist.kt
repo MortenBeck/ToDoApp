@@ -92,6 +92,7 @@ fun TaskItem(
     val vibrator = context.getSystemService(Vibrator::class.java)
 
     val isToday = isTaskToday(task)
+    val isExpired = isTaskExpired(task)
 
     Row(
         modifier = modifier
@@ -166,14 +167,23 @@ fun TaskItem(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 BadgeItem(
-                    badgeText = if (isToday) "Today" else SimpleDateFormat(
-                        "dd-MM-yyyy",
-                        Locale.US
-                    ).format(task.deadline),
-                    badgeColor = if (isToday) Color.Red else Color.White,
-                    badgeTextColor = if (isToday) Color.White else Color.Black,
+                    badgeText = when {
+                        isToday -> "Today"
+                        isTaskExpired(task) -> "Expired"
+                        else -> SimpleDateFormat("dd-MM-yyyy", Locale.US).format(task.deadline)
+                    },
+                    badgeColor = when {
+                        isToday -> Color(0xFFFF6d6d)
+                        isTaskExpired(task) -> Color.Red
+                        else -> Color.White
+                    },
+                    badgeTextColor = when {
+                        isToday || isTaskExpired(task) -> Color.White
+                        else -> Color.Black
+                    },
                     badgeIcon = R.drawable.calender_black
                 )
+
 
                 BadgeItem(
                     badgeText = task.tag.name,
@@ -249,6 +259,17 @@ fun isTaskToday(task: Task): Boolean {
     return todayCalendar.get(Calendar.YEAR) == taskCalendar.get(Calendar.YEAR) &&
             todayCalendar.get(Calendar.DAY_OF_YEAR) == taskCalendar.get(Calendar.DAY_OF_YEAR)
 }
+
+@Composable
+fun isTaskExpired(task: Task): Boolean {
+    val todayCalendar = Calendar.getInstance()
+    val taskCalendar = Calendar.getInstance()
+    taskCalendar.time = task.deadline
+
+    return taskCalendar.before(todayCalendar) &&
+            !isTaskToday(task) // Ensure it's not also marked as "Today"
+}
+
 
 @SuppressLint("UseOfNonLambdaOffsetOverload")
 @Composable
