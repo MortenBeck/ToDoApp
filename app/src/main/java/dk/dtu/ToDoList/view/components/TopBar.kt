@@ -68,7 +68,7 @@ fun TopBar(
                             .height(48.dp)
                             .padding(horizontal = 8.dp)
                             .pointerInput(Unit) {
-                                detectTapGestures(onTap = { /* Do nothing, prevent tap from bubbling */ })
+                                detectTapGestures(onTap = {})
                             },
                         shape = MaterialTheme.shapes.medium,
                         color = MaterialTheme.colorScheme.surfaceVariant

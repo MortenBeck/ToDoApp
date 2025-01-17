@@ -53,6 +53,7 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Display the list of tasks
             TaskListScreen(
                 tasks = searchFilteredTasks,
                 onDelete = { task ->
@@ -64,7 +65,7 @@ fun HomeScreen(
             )
         }
 
-        // FAB for adding tasks
+        // Floating Add Task Button
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -93,6 +94,7 @@ fun HomeScreen(
         }
     }
 
+    // Dialogs
     if (showDialog) {
         AddTaskDialog(
             showDialog = showDialog,

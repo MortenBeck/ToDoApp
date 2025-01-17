@@ -122,11 +122,16 @@ fun TaskItem(
     val vibrator = context.getSystemService(Vibrator::class.java)
 
     val isToday = isTaskToday(task)
+    val isExpired = isTaskExpired(task)
+    val isTomorrow = isTaskTomorrow(task)
+
+    var showDetails by remember { mutableStateOf(false)}
 
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp, horizontal = 16.dp),
+            .padding(vertical = 8.dp, horizontal = 16.dp)
+            .clickable { showDetails=true },
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconButton(
@@ -196,12 +201,21 @@ fun TaskItem(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 BadgeItem(
-                    badgeText = if (isToday) "Today" else SimpleDateFormat(
-                        "dd-MM-yyyy",
-                        Locale.US
-                    ).format(task.deadline),
-                    badgeColor = if (isToday) Color.Red else Color.White,
-                    badgeTextColor = if (isToday) Color.White else Color.Black,
+                    badgeText = when {
+                        isToday -> "Today"
+                        isTomorrow -> "Tomorrow"
+                        else -> SimpleDateFormat("dd-MM-yyyy", Locale.US).format(task.deadline)
+                    },
+                    badgeColor = when {
+                        isToday -> Color(0xFFFF6d6d)
+                        isTomorrow -> Color(0xFF03A9F4)
+                        isExpired -> Color.Red
+                        else -> Color.White
+                    },
+                    badgeTextColor = when {
+                        isToday || isExpired -> Color.White
+                        else -> Color.Black
+                    },
                     badgeIcon = R.drawable.calender_black
                 )
 
@@ -231,8 +245,36 @@ fun TaskItem(
                 )
             }
         }
+        if (showDetails) {
+            TaskDetails(
+                task = task,
+                onDismiss = { showDetails = false }
+            )
+        }
     }
 }
+
+@Composable
+fun isTaskExpired(task: Task): Boolean {
+    val todayCalendar = Calendar.getInstance()
+    val taskCalendar = Calendar.getInstance()
+    taskCalendar.time = task.deadline
+
+    return taskCalendar.before(todayCalendar) &&
+            !isTaskToday(task) // Ensure it's not also marked as "Today"
+}
+
+@Composable
+fun isTaskTomorrow(task: Task): Boolean {
+    val todayCalendar = Calendar.getInstance()
+    val taskCalendar = Calendar.getInstance()
+    taskCalendar.time = task.deadline
+
+    todayCalendar.add(Calendar.DAY_OF_YEAR, 1) // Move today to tomorrow
+    return todayCalendar.get(Calendar.YEAR) == taskCalendar.get(Calendar.YEAR) &&
+            todayCalendar.get(Calendar.DAY_OF_YEAR) == taskCalendar.get(Calendar.DAY_OF_YEAR)
+}
+
 
 @SuppressLint("UseOfNonLambdaOffsetOverload")
 @Composable
