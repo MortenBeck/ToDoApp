@@ -213,9 +213,10 @@ fun FilterSection(
                                 Text(tag.name)
                             }
                         },
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(if (isSelected) tagColor else tagColor.copy(alpha = 0.3f))
+                        colors = FilterChipDefaults.filterChipColors(
+                            containerColor = if (isSelected) tagColor else tagColor.copy(alpha = 0.3f),
+                            labelColor = Color.Black
+                        )
                     )
                 }
             }
@@ -256,10 +257,13 @@ fun FilterSection(
                             )
                         },
                         label = { Text(priority.name) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            containerColor = if (isSelected) priorityColor else priorityColor.copy(alpha = 0.3f),
+                            labelColor = Color.Black
+                        ),
                         modifier = Modifier
                             .weight(1f)
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(if (isSelected) priorityColor else priorityColor.copy(alpha = 0.3f))
+
                     )
                 }
             }
