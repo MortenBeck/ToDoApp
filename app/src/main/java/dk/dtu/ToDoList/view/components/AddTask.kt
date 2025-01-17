@@ -202,7 +202,7 @@ fun PriorityChip(
 ) {
     OutlinedButton(
         onClick = onClick,
-        modifier = Modifier.widthIn(min = 80.dp),
+        modifier = Modifier.widthIn(min = 70.dp),
         colors = ButtonDefaults.outlinedButtonColors(
             containerColor = when(text) {
                 "Low" -> if (selectedPriority == text) Color(0xFF6D8FFF) else Color.White
