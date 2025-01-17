@@ -1,5 +1,6 @@
 package dk.dtu.ToDoList.view.components
 
+import android.content.Context
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -13,11 +14,13 @@ import dk.dtu.ToDoList.model.data.TaskTag
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.ui.platform.LocalContext
 import java.util.Date
 import androidx.navigation.NavController
 import dk.dtu.ToDoList.model.data.RecurrencePattern
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import dk.dtu.ToDoList.util.UserIdManager
 
 
 @Composable
@@ -34,6 +37,8 @@ fun AddTaskDialog(
         var selectedTag by remember { mutableStateOf(TaskTag.WORK) }
         var selectedRecurrence by remember { mutableStateOf<RecurrencePattern?>(null) }
         var showError by remember { mutableStateOf(false) }
+
+        val context = LocalContext.current
 
         Dialog(onDismissRequest = onDismiss) {
             Surface(
@@ -166,6 +171,7 @@ fun AddTaskDialog(
 
                                     addTaskToFirebase(
                                         task = newTask,
+                                        context,
                                         onSuccess = {
                                             onDismiss()
                                         },
@@ -190,17 +196,24 @@ fun AddTaskDialog(
 
 fun addTaskToFirebase(
     task: Task,
+    context: Context,
     onSuccess: () -> Unit,
     onFailure: (Exception) -> Unit
 ) {
     // Get Firestore instance
     val db = Firebase.firestore
 
-    // Reference to the tasks collection (replace "tasks" with your collection name)
+    // Get the current userId from UserIdManager
+    val userId = UserIdManager.getUserId(context)
+
+    // Add userId to the task
+    val taskWithUserId = task.copy(userId = userId)
+
+    // Reference to the tasks collection
     val tasksCollection = db.collection("tasks")
 
     // Add the task to Firestore
-    tasksCollection.add(task)
+    tasksCollection.add(taskWithUserId)
         .addOnSuccessListener {
             onSuccess() // Notify the caller that the task was added successfully
         }
@@ -208,6 +221,7 @@ fun addTaskToFirebase(
             onFailure(exception) // Pass the exception to the caller for error handling
         }
 }
+
 
 
 @Composable

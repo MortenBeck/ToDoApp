@@ -1,6 +1,7 @@
 package dk.dtu.ToDoList.model.repository
 
 import android.content.Context
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.QuerySnapshot
@@ -20,7 +21,9 @@ class TasksRepository(private val context: Context) {
     private val tasksCollection = firestore.collection("tasks")
     private val userId: String
         get() = UserIdManager.getUserId(context) ?: throw IllegalStateException("User ID is not available")
-
+    private fun documentToTask(document: DocumentSnapshot): Task? {
+        return document.toObject(Task::class.java)
+    }
 
 //    suspend fun addTask(task: Task): Boolean {
 //        return try {
@@ -39,13 +42,17 @@ class TasksRepository(private val context: Context) {
 //    }
 
     fun getTasksFlow(
+        context: Context,
         tag: TaskTag? = null,
         priority: TaskPriority? = null,
         completed: Boolean? = null,
         favorite: Boolean? = null
     ): Flow<List<Task>> = callbackFlow {
         try {
-            var query = tasksCollection.whereEqualTo("userId", userId)
+            // Get the current userId from UserIdManager
+            val userId = UserIdManager.getUserId(context)
+
+            var query = tasksCollection.whereEqualTo("userId", userId) // Filter by userId
 
             // Apply filters if provided
             tag?.let { query = query.whereEqualTo("tag", it) }
@@ -76,6 +83,7 @@ class TasksRepository(private val context: Context) {
             trySend(emptyList()) // Send an empty list in case of error
         }
     }
+
 
 
     suspend fun updateTask(task: Task): Boolean {
