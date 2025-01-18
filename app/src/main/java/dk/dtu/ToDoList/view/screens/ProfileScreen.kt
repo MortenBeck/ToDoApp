@@ -1,47 +1,64 @@
 package dk.dtu.ToDoList.view.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import dk.dtu.ToDoList.model.data.Task
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import dk.dtu.ToDoList.R
-import dk.dtu.ToDoList.model.repository.TasksRepository
-
+import dk.dtu.ToDoList.model.repository.TaskCRUD
+import dk.dtu.ToDoList.util.UserIdManager
+import dk.dtu.ToDoList.view.components.SettingsItem
+import java.util.*
+import kotlinx.coroutines.launch
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun ProfileScreen(navController: NavController) {
-    val todayTasks = TasksRepository.todayTasks
-    val allTasks = TasksRepository.Tasks
-    val completedTodayCount = todayTasks.count { it.completed }
+    val context = LocalContext.current
+    val taskCRUD = remember { TaskCRUD(context) }
+    val scope = rememberCoroutineScope()
+
+    // State for task statistics
+    var todayTasksCount by remember { mutableStateOf(0) }
+    var completedTodayCount by remember { mutableStateOf(0) }
+    var daysCompleted by remember { mutableStateOf(24) } // Placeholder for now
+
+    // Get user email
+    val userEmail = "Username1@gmail.com" // Hardcoded for now, replace with actual user email later
+
+    // Load task statistics
+    LaunchedEffect(key1 = true) {
+        scope.launch {
+            val today = Calendar.getInstance().apply {
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+            }
+            val tomorrow = Calendar.getInstance().apply {
+                add(Calendar.DAY_OF_YEAR, 1)
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+            }
+
+            val todayTasks = taskCRUD.getTasksByDeadlineRange(today.time, tomorrow.time)
+            todayTasksCount = todayTasks.size
+            completedTodayCount = todayTasks.count { it.completed }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -61,13 +78,13 @@ fun ProfileScreen(navController: NavController) {
             Box(
                 modifier = Modifier
                     .size(80.dp)
-                    .background(color = MaterialTheme.colorScheme.surface, shape = CircleShape)
+                    .background(color = Color.White, shape = CircleShape)
                     .padding(16.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Person,
                     contentDescription = "Profile",
-                    tint = MaterialTheme.colorScheme.primary,
+                    tint = Color.Black,
                     modifier = Modifier.fillMaxSize()
                 )
             }
@@ -80,7 +97,7 @@ fun ProfileScreen(navController: NavController) {
             )
 
             Text(
-                text = "Username1@gmail.com",
+                text = userEmail,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -101,11 +118,11 @@ fun ProfileScreen(navController: NavController) {
                     .padding(16.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                StatColumn("Tasks\nToday", todayTasks.size.toString())
+                StatColumn("Tasks\nToday", todayTasksCount.toString())
                 VerticalDivider()
                 StatColumn("Tasks Completed\nToday", completedTodayCount.toString())
                 VerticalDivider()
-                StatColumn("Upcoming\nTasks", TasksRepository.futureTasks.size.toString())
+                StatColumn("Days\nCompleted", daysCompleted.toString())
             }
         }
 
@@ -117,8 +134,8 @@ fun ProfileScreen(navController: NavController) {
         ) {
             Text(
                 text = "Settings",
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(vertical = 16.dp)
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 8.dp)
             )
 
             Surface(
@@ -173,27 +190,4 @@ private fun VerticalDivider() {
             .width(1.dp),
         color = MaterialTheme.colorScheme.outlineVariant
     )
-}
-
-@Composable
-private fun SettingsItem(
-    icon: ImageVector,
-    text: String,
-    onClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(modifier = Modifier.width(16.dp))
-        Text(text = text)
-    }
 }

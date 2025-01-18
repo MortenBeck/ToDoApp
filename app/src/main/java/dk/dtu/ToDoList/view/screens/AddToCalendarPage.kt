@@ -67,7 +67,6 @@ fun AddToCalendarPage(
                 val newTask = Task(
                     name = taskName,
                     priority = TaskPriority.LOW,
-                    favorite = false,
                     deadline = Date.from(selectedDate.atStartOfDay(ZoneId.systemDefault()).toInstant()),
                     tag = TaskTag.WORK,
                     completed = false

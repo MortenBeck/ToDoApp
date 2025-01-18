@@ -4,43 +4,37 @@ import android.annotation.SuppressLint
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.ui.Alignment
-import dk.dtu.ToDoList.model.data.Task
-import dk.dtu.ToDoList.model.data.TaskTag
-import dk.dtu.ToDoList.model.data.TaskPriority
-import java.text.SimpleDateFormat
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.Spring
-import java.util.Locale
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import dk.dtu.ToDoList.R
-import androidx.compose.material3.Icon
 import androidx.compose.material3.*
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
-import java.util.Calendar
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import dk.dtu.ToDoList.R
+import dk.dtu.ToDoList.model.data.Task
+import dk.dtu.ToDoList.model.data.TaskPriority
+import dk.dtu.ToDoList.model.data.TaskTag
+import java.text.SimpleDateFormat
+import java.util.*
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.runtime.*
 import androidx.compose.ui.input.pointer.pointerInput
@@ -52,7 +46,6 @@ fun TaskList(
     Tasks: List<Task>,
     modifier: Modifier = Modifier,
     onDelete: (Task) -> Unit,
-    onFavoriteToggle: (Task) -> Unit,
     onCompleteToggle: (Task) -> Unit
 ) {
     val scrollState = rememberLazyListState()
@@ -71,7 +64,6 @@ fun TaskList(
             SwipeableTaskItem(
                 task = task,
                 onDelete = onDelete,
-                onFavoriteToggle = onFavoriteToggle,
                 onCompleteToggle = onCompleteToggle
             )
         }
@@ -79,10 +71,52 @@ fun TaskList(
 }
 
 @Composable
+private fun isTaskToday(task: Task): Boolean {
+    val todayCalendar = Calendar.getInstance()
+    val taskCalendar = Calendar.getInstance()
+    taskCalendar.time = task.deadline
+
+    return todayCalendar.get(Calendar.YEAR) == taskCalendar.get(Calendar.YEAR) &&
+            todayCalendar.get(Calendar.DAY_OF_YEAR) == taskCalendar.get(Calendar.DAY_OF_YEAR)
+}
+
+@Composable
+private fun BadgeItem(
+    badgeText: String,
+    badgeColor: Color,
+    badgeTextColor: Color = Color.White,
+    badgeIcon: Int
+) {
+    Row(
+        modifier = Modifier
+            .background(color = badgeColor, shape = MaterialTheme.shapes.medium)
+            .border(width = 1.dp, color = Color.Black, shape = MaterialTheme.shapes.medium)
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            painter = painterResource(id = badgeIcon),
+            contentDescription = null,
+            tint = badgeTextColor,
+            modifier = Modifier
+                .size(16.dp)
+                .padding(end = 4.dp)
+        )
+
+        Text(
+            text = badgeText,
+            color = badgeTextColor,
+            style = MaterialTheme.typography.labelMedium,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+@Composable
 fun TaskItem(
     task: Task,
     onDelete: (Task) -> Unit,
-    onFavoriteToggle: (Task) -> Unit,
     onCompleteToggle: (Task) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -190,7 +224,6 @@ fun TaskItem(
                     badgeIcon = R.drawable.calender_black
                 )
 
-
                 BadgeItem(
                     badgeText = task.tag.name,
                     badgeColor = when (task.tag) {
@@ -202,8 +235,6 @@ fun TaskItem(
                         TaskTag.TRANSPORT -> Color(0xFFFFF86d)
                         TaskTag.PRIVATE -> Color(0xFFff6D6D)
                         TaskTag.SOCIAL -> Color(0xFF6d6dFF)
-                        else -> Color.Gray // Fallback color
-
                     },
                     badgeTextColor = Color.Black,
                     badgeIcon = when (task.tag) {
@@ -215,7 +246,6 @@ fun TaskItem(
                         TaskTag.TRANSPORT -> R.drawable.transport
                         TaskTag.PRIVATE -> R.drawable.lock
                         TaskTag.SOCIAL -> R.drawable.social
-                        else -> R.drawable.folder // Fallback icon
                     }
                 )
             }
@@ -227,49 +257,6 @@ fun TaskItem(
             )
         }
     }
-}
-
-@Composable
-fun BadgeItem(
-    badgeText: String,
-    badgeColor: Color,
-    badgeTextColor: Color = Color.White,
-    badgeIcon: Int
-) {
-    Row(
-        modifier = Modifier
-            .background(color = badgeColor, shape = MaterialTheme.shapes.medium)
-            .border(width = 1.dp, color = Color.Black, shape = MaterialTheme.shapes.medium)
-            .padding(horizontal = 8.dp, vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            painter = painterResource(id = badgeIcon),
-            contentDescription = null,
-            tint = badgeTextColor,
-            modifier = Modifier
-                .size(16.dp)
-                .padding(end = 4.dp)
-        )
-
-        Text(
-            text = badgeText,
-            color = badgeTextColor,
-            style = MaterialTheme.typography.labelMedium,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-    }
-}
-
-@Composable
-fun isTaskToday(task: Task): Boolean {
-    val todayCalendar = Calendar.getInstance()
-    val taskCalendar = Calendar.getInstance()
-    taskCalendar.time = task.deadline
-
-    return todayCalendar.get(Calendar.YEAR) == taskCalendar.get(Calendar.YEAR) &&
-            todayCalendar.get(Calendar.DAY_OF_YEAR) == taskCalendar.get(Calendar.DAY_OF_YEAR)
 }
 
 @Composable
@@ -299,7 +286,6 @@ fun isTaskTomorrow(task: Task): Boolean {
 fun SwipeableTaskItem(
     task: Task,
     onDelete: (Task) -> Unit,
-    onFavoriteToggle: (Task) -> Unit,
     onCompleteToggle: (Task) -> Unit
 ) {
     var offsetX by remember { mutableStateOf(0f) }
@@ -336,7 +322,6 @@ fun SwipeableTaskItem(
         TaskItem(
             task = task,
             onDelete = onDelete,
-            onFavoriteToggle = onFavoriteToggle,
             onCompleteToggle = onCompleteToggle,
             modifier = Modifier.offset(x = animatedOffsetX.dp)
         )

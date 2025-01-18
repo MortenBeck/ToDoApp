@@ -15,14 +15,21 @@ import dk.dtu.ToDoList.view.components.AddTaskDialog
 import dk.dtu.ToDoList.view.components.DeleteConfirmation
 import dk.dtu.ToDoList.view.components.FilterSection
 import dk.dtu.ToDoList.view.components.TopBar
+import dk.dtu.ToDoList.view.screens.TaskListScreen
+import dk.dtu.ToDoList.view.components.TaskList
 
 @Composable
-fun HomeScreen(tasks: MutableList<Task>, navController: NavController) {
+fun HomeScreen(
+    tasks: List<Task>,
+    onAddTask: (Task) -> Unit,
+    onUpdateTask: (Task) -> Unit,
+    onDeleteTask: (String) -> Unit,
+    navController: NavController
+) {
     var showDialog by remember { mutableStateOf(false) }
     var taskToDelete by remember { mutableStateOf<Task?>(null) }
     var searchText by remember { mutableStateOf("") }
-
-    var filteredTasks by remember { mutableStateOf(tasks.toList()) }
+    var filteredTasks by remember(tasks) { mutableStateOf(tasks) }
 
     // Search filter
     val searchFilteredTasks = filteredTasks.filter {
@@ -50,23 +57,12 @@ fun HomeScreen(tasks: MutableList<Task>, navController: NavController) {
 
             // Tasklist display
             TaskListScreen(
-                tasks = searchFilteredTasks.toMutableList(),
+                tasks = searchFilteredTasks,
                 onDelete = { task ->
                     taskToDelete = task
                 },
-                onFavoriteToggle = { taskToToggle ->
-                    val index = tasks.indexOfFirst { it == taskToToggle }
-                    if (index != -1) {
-                        tasks[index] = tasks[index].copy(favorite = !tasks[index].favorite)
-                        filteredTasks = tasks.toList()
-                    }
-                },
-                onCompleteToggle = { taskToComplete ->
-                    val index = tasks.indexOfFirst { it == taskToComplete }
-                    if (index != -1) {
-                        tasks[index] = tasks[index].copy(completed = !tasks[index].completed)
-                        filteredTasks = tasks.toList()
-                    }
+                onCompleteToggle = { task ->
+                    onUpdateTask(task.copy(completed = !task.completed))
                 }
             )
         }
@@ -100,15 +96,13 @@ fun HomeScreen(tasks: MutableList<Task>, navController: NavController) {
         }
     }
 
-    // Dialogs
     if (showDialog) {
         AddTaskDialog(
             showDialog = showDialog,
             navController = navController,
             onDismiss = { showDialog = false },
             onTaskAdded = { newTask ->
-                tasks.add(newTask)
-                filteredTasks = tasks.toList()
+                onAddTask(newTask)
                 showDialog = false
             }
         )
@@ -118,8 +112,7 @@ fun HomeScreen(tasks: MutableList<Task>, navController: NavController) {
         DeleteConfirmation(
             task = taskToDelete!!,
             onConfirm = {
-                tasks.remove(taskToDelete)
-                filteredTasks = tasks.toList()
+                onDeleteTask(taskToDelete!!.id)
                 taskToDelete = null
             },
             onDismiss = {

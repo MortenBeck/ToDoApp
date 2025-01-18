@@ -173,7 +173,6 @@ fun AddTaskDialog(
                                     val newTask = Task(
                                         name = taskName,
                                         priority = TaskPriority.valueOf(priorityLevel.uppercase()),
-                                        favorite = false,
                                         deadline = Date.from(selectedDate.atStartOfDay(ZoneId.systemDefault()).toInstant()),
                                         tag = selectedTag,
                                         completed = false,
