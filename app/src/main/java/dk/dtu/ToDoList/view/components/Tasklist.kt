@@ -215,13 +215,13 @@ fun TaskItem(
                         else -> SimpleDateFormat("dd-MM-yyyy", Locale.US).format(task.deadline)
                     },
                     badgeColor = when {
-                        isToday -> Color(0xFFFF6d6d)
-                        isTomorrow -> Color(0xFF03A9F4)
-                        isExpired -> Color.Red
+                        isToday -> Color(0xFFFF6D6D)
+                        isTomorrow -> Color(0xFF6D8FFF)
+                        isExpired -> Color(0xFFFF3E3E)
                         else -> Color.White
                     },
                     badgeTextColor = when {
-                        isToday || isExpired -> Color.White
+                        isToday || isExpired -> Color.Black
                         else -> Color.Black
                     },
                     badgeIcon = R.drawable.calender_black
