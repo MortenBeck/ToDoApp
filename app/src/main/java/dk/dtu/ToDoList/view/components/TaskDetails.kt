@@ -2,6 +2,7 @@ package dk.dtu.ToDoList.view.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,20 +30,28 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Switch
-
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.Icon
+import java.time.YearMonth
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 
 @Composable
 fun TaskDetails(
     task: Task,
     onDismiss: () -> Unit,
-    onUpdateTask: (Task) -> Unit // Callback to save updates to Firebase
+    onUpdateTask: (Task) -> Unit
 ) {
     // State for editable fields
     var taskName by remember { mutableStateOf(task.name) }
     var selectedPriority by remember { mutableStateOf(task.priority.name) }
     var selectedTag by remember { mutableStateOf(task.tag) }
     var isCompleted by remember { mutableStateOf(task.completed) }
+    var deadline by remember { mutableStateOf(task.deadline.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()) }
+    var showDatePicker by remember { mutableStateOf(false) }
+    var currentMonth by remember { mutableStateOf(YearMonth.now()) }
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(
@@ -69,10 +78,11 @@ fun TaskDetails(
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // Priority Selector
                 Text("Priority", style = MaterialTheme.typography.bodyMedium)
+                Spacer(modifier = Modifier.height(8.dp))
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxWidth()
@@ -81,14 +91,56 @@ fun TaskDetails(
                     PriorityChip("Medium", selectedPriority) { selectedPriority = "Medium" }
                     PriorityChip("High", selectedPriority) { selectedPriority = "High" }
                 }
-                Spacer(modifier = Modifier.height(8.dp))
+
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // Tag Selector
                 ModernDropdownTagSelector(
                     selectedTag = selectedTag,
                     onTagSelected = { selectedTag = it }
                 )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Deadline Selector
+                Text(
+                    text = "Deadline",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 Spacer(modifier = Modifier.height(8.dp))
+
+                OutlinedButton(
+                    onClick = { showDatePicker = true },
+                    modifier = Modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(16.dp),
+                    shape = MaterialTheme.shapes.medium
+                ) {
+                    Text(deadline.format(DateTimeFormatter.ofPattern("MMM dd, yyyy")))
+                }
+
+                if (showDatePicker) {
+                    Dialog(onDismissRequest = { showDatePicker = false }) {
+                        Surface(
+                            shape = MaterialTheme.shapes.large,
+                            color = MaterialTheme.colorScheme.surface,
+                        ) {
+                            Calendar(
+                                selectedDate = deadline,
+                                currentMonth = currentMonth,
+                                onDateSelected = { date ->
+                                    deadline = date
+                                    showDatePicker = false
+                                },
+                                onMonthChanged = { month ->
+                                    currentMonth = month
+                                },
+                                tasks = emptyList()
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // Completion Status Toggle
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -120,9 +172,10 @@ fun TaskDetails(
                                 priority = TaskPriority.valueOf(selectedPriority.uppercase()),
                                 tag = selectedTag,
                                 completed = isCompleted,
-                                modifiedAt = Date() // Update the timestamp
+                                deadline = Date.from(deadline.atStartOfDay(ZoneId.systemDefault()).toInstant()),
+                                modifiedAt = Date() // Save the timestamp
                             )
-                            onUpdateTask(updatedTask) // Trigger Firebase update
+                            onUpdateTask(updatedTask)
                             onDismiss()
                         },
                         modifier = Modifier.weight(1f)
@@ -134,3 +187,4 @@ fun TaskDetails(
         }
     }
 }
+
