@@ -35,10 +35,6 @@ import dk.dtu.ToDoList.model.data.TaskPriority
 import dk.dtu.ToDoList.model.data.TaskTag
 import java.text.SimpleDateFormat
 import java.util.*
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
-import androidx.compose.runtime.*
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 
 @Composable
@@ -73,16 +69,6 @@ fun TaskList(
 }
 
 @Composable
-private fun isTaskToday(task: Task): Boolean {
-    val todayCalendar = Calendar.getInstance()
-    val taskCalendar = Calendar.getInstance()
-    taskCalendar.time = task.deadline
-
-    return todayCalendar.get(Calendar.YEAR) == taskCalendar.get(Calendar.YEAR) &&
-            todayCalendar.get(Calendar.DAY_OF_YEAR) == taskCalendar.get(Calendar.DAY_OF_YEAR)
-}
-
-@Composable
 private fun BadgeItem(
     badgeText: String,
     badgeColor: Color,
@@ -92,7 +78,7 @@ private fun BadgeItem(
     Row(
         modifier = Modifier
             .background(color = badgeColor, shape = MaterialTheme.shapes.medium)
-            .border(width = 1.dp, color = Color.Black, shape = MaterialTheme.shapes.medium)
+            .border(width = 0.5.dp, color = Color.Black, shape = MaterialTheme.shapes.medium)
             .padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -139,32 +125,39 @@ fun TaskItem(
         modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp, horizontal = 16.dp)
+            .background(
+                color = Color(0xFFE2EFF5),
+                shape = MaterialTheme.shapes.medium
+            )
+            .padding(8.dp)
             .clickable { showDetails=true },
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(
-            onClick = {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    vibrator?.vibrate(
-                        VibrationEffect.createOneShot(
-                            200,
-                            VibrationEffect.DEFAULT_AMPLITUDE
-                        )
-                    )
-                }
-                onCompleteToggle(task)
-            },
-            modifier = Modifier.size(24.dp)
+        Box(
+            modifier = Modifier.size(48.dp),
+            contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = if (task.completed) Icons.Default.CheckCircle else Icons.Default.RadioButtonUnchecked,
-                contentDescription = if (task.completed) "Mark as Incomplete" else "Mark as Complete",
-                tint = if (task.completed) Color.Green else Color.Gray,
-                modifier = if (task.completed) Modifier.border(0.5.dp, Color.Black, CircleShape) else Modifier
-            )
+            IconButton(
+                onClick = {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        vibrator?.vibrate(
+                            VibrationEffect.createOneShot(
+                                200,
+                                VibrationEffect.DEFAULT_AMPLITUDE
+                            )
+                        )
+                    }
+                    onCompleteToggle(task)
+                }
+            ) {
+                Icon(
+                    imageVector = if (task.completed) Icons.Default.CheckCircle else Icons.Default.RadioButtonUnchecked,
+                    contentDescription = if (task.completed) "Mark as Incomplete" else "Mark as Complete",
+                    tint = if (task.completed) Color(0xFF2AB72A) else Color.Gray,
+                    modifier = if (task.completed) Modifier.border(0.5.dp, Color.Black, CircleShape) else Modifier
+                )
+            }
         }
-
-        Spacer(modifier = Modifier.width(8.dp))
 
         Column(
             modifier = Modifier.weight(1f)
@@ -175,14 +168,14 @@ fun TaskItem(
                         .size(12.dp)
                         .background(
                             color = when (task.priority) {
-                                TaskPriority.HIGH -> Color.Red
-                                TaskPriority.MEDIUM -> Color.Yellow
-                                TaskPriority.LOW -> Color.Blue
+                                TaskPriority.HIGH -> Color(0xFFFF6D6D)
+                                TaskPriority.MEDIUM -> Color(0xFFFFD16D)
+                                TaskPriority.LOW -> Color(0xFF6D8FFF)
                             },
                             shape = CircleShape
                         )
                         .border(
-                            width = 1.dp,
+                            width = 0.5.dp,
                             color = Color.Black,
                             shape = CircleShape
                         )
@@ -264,6 +257,16 @@ fun TaskItem(
 }
 
 @Composable
+private fun isTaskToday(task: Task): Boolean {
+    val todayCalendar = Calendar.getInstance()
+    val taskCalendar = Calendar.getInstance()
+    taskCalendar.time = task.deadline
+
+    return todayCalendar.get(Calendar.YEAR) == taskCalendar.get(Calendar.YEAR) &&
+            todayCalendar.get(Calendar.DAY_OF_YEAR) == taskCalendar.get(Calendar.DAY_OF_YEAR)
+}
+
+@Composable
 fun isTaskExpired(task: Task): Boolean {
     val todayCalendar = Calendar.getInstance()
     val taskCalendar = Calendar.getInstance()
@@ -284,14 +287,13 @@ fun isTaskTomorrow(task: Task): Boolean {
             todayCalendar.get(Calendar.DAY_OF_YEAR) == taskCalendar.get(Calendar.DAY_OF_YEAR)
 }
 
-
 @SuppressLint("UseOfNonLambdaOffsetOverload")
 @Composable
 fun SwipeableTaskItem(
     task: Task,
     onDelete: (Task) -> Unit,
     onCompleteToggle: (Task) -> Unit,
-    onUpdateTask: (Task) -> Unit // Add this parameter
+    onUpdateTask: (Task) -> Unit
 ) {
     var offsetX by remember { mutableStateOf(0f) }
     val swipeThreshold = 200f
@@ -328,7 +330,7 @@ fun SwipeableTaskItem(
             task = task,
             onDelete = onDelete,
             onCompleteToggle = onCompleteToggle,
-            onUpdateTask = onUpdateTask, // Pass the parameter
+            onUpdateTask = onUpdateTask,
             modifier = Modifier.offset(x = animatedOffsetX.dp)
         )
     }

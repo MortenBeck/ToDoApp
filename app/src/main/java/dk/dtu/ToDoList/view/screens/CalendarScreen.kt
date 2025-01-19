@@ -43,7 +43,6 @@ fun CalendarScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFE9F2F5))
             .padding(16.dp)
     ) {
         Calendar(
