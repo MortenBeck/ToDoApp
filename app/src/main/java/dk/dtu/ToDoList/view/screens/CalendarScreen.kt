@@ -62,7 +62,8 @@ fun CalendarScreen(
             },
             onCompleteToggle = { task ->
                 onUpdateTask(task.copy(completed = !task.completed))
-            }
+            },
+            onUpdateTask = onUpdateTask
         )
     }
 
@@ -126,7 +127,8 @@ fun TasksForDate(
     tasks: List<Task>,
     selectedDate: LocalDate,
     onDelete: (Task) -> Unit,
-    onCompleteToggle: (Task) -> Unit
+    onCompleteToggle: (Task) -> Unit,
+    onUpdateTask: (Task) -> Unit
 ) {
     val tasksForDate = remember(selectedDate, tasks) {
         tasks.filter { task ->
@@ -150,7 +152,8 @@ fun TasksForDate(
                 Tasks = tasksForDate,
                 modifier = Modifier.fillMaxWidth(),
                 onDelete = onDelete,
-                onCompleteToggle = onCompleteToggle
+                onCompleteToggle = onCompleteToggle,
+                onUpdateTask = onUpdateTask
             )
         } else {
             Text(

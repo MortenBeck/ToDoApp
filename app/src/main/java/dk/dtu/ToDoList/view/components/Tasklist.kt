@@ -46,7 +46,8 @@ fun TaskList(
     Tasks: List<Task>,
     modifier: Modifier = Modifier,
     onDelete: (Task) -> Unit,
-    onCompleteToggle: (Task) -> Unit
+    onCompleteToggle: (Task) -> Unit,
+    onUpdateTask: (Task) -> Unit
 ) {
     val scrollState = rememberLazyListState()
 
@@ -64,7 +65,8 @@ fun TaskList(
             SwipeableTaskItem(
                 task = task,
                 onDelete = onDelete,
-                onCompleteToggle = onCompleteToggle
+                onCompleteToggle = onCompleteToggle,
+                onUpdateTask = onUpdateTask
             )
         }
     }
@@ -118,6 +120,7 @@ fun TaskItem(
     task: Task,
     onDelete: (Task) -> Unit,
     onCompleteToggle: (Task) -> Unit,
+    onUpdateTask: (Task) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val taskColor = if (task.completed) Color.Gray else Color.Black
@@ -253,7 +256,8 @@ fun TaskItem(
         if (showDetails) {
             TaskDetails(
                 task = task,
-                onDismiss = { showDetails = false }
+                onDismiss = { showDetails = false },
+                onUpdateTask = onUpdateTask
             )
         }
     }
@@ -286,7 +290,8 @@ fun isTaskTomorrow(task: Task): Boolean {
 fun SwipeableTaskItem(
     task: Task,
     onDelete: (Task) -> Unit,
-    onCompleteToggle: (Task) -> Unit
+    onCompleteToggle: (Task) -> Unit,
+    onUpdateTask: (Task) -> Unit // Add this parameter
 ) {
     var offsetX by remember { mutableStateOf(0f) }
     val swipeThreshold = 200f
@@ -323,6 +328,7 @@ fun SwipeableTaskItem(
             task = task,
             onDelete = onDelete,
             onCompleteToggle = onCompleteToggle,
+            onUpdateTask = onUpdateTask, // Pass the parameter
             modifier = Modifier.offset(x = animatedOffsetX.dp)
         )
     }

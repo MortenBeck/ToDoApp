@@ -23,7 +23,8 @@ import java.util.Calendar
 fun TaskListScreen(
     tasks: List<Task>,
     onDelete: (Task) -> Unit,
-    onCompleteToggle: (Task) -> Unit
+    onCompleteToggle: (Task) -> Unit,
+    onUpdateTask: (Task) -> Unit
 ) {
     val todayStart = Calendar.getInstance().apply {
         set(Calendar.HOUR_OF_DAY, 0)
@@ -101,7 +102,8 @@ fun TaskListScreen(
                             SwipeableTaskItem(
                                 task = task,
                                 onDelete = { onDelete(task) },
-                                onCompleteToggle = { onCompleteToggle(task) }
+                                onCompleteToggle = { onCompleteToggle(task) },
+                                onUpdateTask = onUpdateTask
                             )
                         }
                         item {
