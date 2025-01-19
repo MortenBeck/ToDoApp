@@ -2,9 +2,13 @@ package dk.dtu.ToDoList.view.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -44,6 +48,12 @@ fun TaskListScreen(
     val expiredTasks = tasks.filter { it.deadline < todayStart && !it.completed }.sortedBy { it.deadline }
     val completedTasks = tasks.filter { it.deadline < todayStart && it.completed }.sortedBy { it.deadline }
 
+    // State for section expansion
+    val isExpiredExpanded = remember { mutableStateOf(true) }
+    val isTodayExpanded = remember { mutableStateOf(true) }
+    val isFutureExpanded = remember { mutableStateOf(true) }
+    val isCompletedExpanded = remember { mutableStateOf(false) }
+
     val isEmpty = tasks.isEmpty()
 
     if (isEmpty) {
@@ -75,36 +85,38 @@ fun TaskListScreen(
             // Function to handle rendering of sections
             fun renderSection(
                 title: String,
-                tasks: List<Task>
+                tasks: List<Task>,
+                isExpanded: MutableState<Boolean>
             ) {
                 if (tasks.isNotEmpty()) {
                     item {
                         SectionHeader(
                             title = title,
-                            count = tasks.size
+                            count = tasks.size,
+                            isExpanded = isExpanded.value,
+                            onToggle = { isExpanded.value = !isExpanded.value }
                         )
                     }
-                    itemsIndexed(
-                        items = tasks,
-                        key = { _, task -> "${task.name}_${task.deadline.time}" }
-                    ) { _, task ->
-                        SwipeableTaskItem(
-                            task = task,
-                            onDelete = { onDelete(task) },
-                            onCompleteToggle = { onCompleteToggle(task) },
-                            onUpdateTask = onUpdateTask
-                        )
-                    }
-                    item {
-                        Spacer(modifier = Modifier.height(16.dp))
+                    if (isExpanded.value) {
+                        itemsIndexed(
+                            items = tasks,
+                            key = { _, task -> "${task.name}_${task.deadline.time}" }
+                        ) { _, task ->
+                            SwipeableTaskItem(
+                                task = task,
+                                onDelete = { onDelete(task) },
+                                onCompleteToggle = { onCompleteToggle(task) },
+                                onUpdateTask = onUpdateTask
+                            )
+                        }
                     }
                 }
             }
 
-            renderSection("Expired", expiredTasks)
-            renderSection("Today", todayTasks)
-            renderSection("Future", futureTasks)
-            renderSection("Past Completions", completedTasks)
+            renderSection("Expired", expiredTasks, isExpiredExpanded)
+            renderSection("Today", todayTasks, isTodayExpanded)
+            renderSection("Future", futureTasks, isFutureExpanded)
+            renderSection("Past Completions", completedTasks, isCompletedExpanded)
         }
     }
 }
@@ -112,12 +124,15 @@ fun TaskListScreen(
 @Composable
 fun SectionHeader(
     title: String,
-    count: Int
+    count: Int,
+    isExpanded: Boolean,
+    onToggle: () -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp, horizontal = 16.dp),
+            .padding(vertical = 8.dp, horizontal = 16.dp)
+            .clickable { onToggle() },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
@@ -147,5 +162,10 @@ fun SectionHeader(
             )
         }
         Spacer(modifier = Modifier.weight(1f))
+        Icon(
+            imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+            contentDescription = if (isExpanded) "Collapse" else "Expand",
+            tint = Color.Black
+        )
     }
 }

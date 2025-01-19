@@ -104,7 +104,7 @@ fun TopBar(
                     Icon(
                         imageVector = Icons.Filled.Search,
                         contentDescription = "Toggle search",
-                        tint = Color.Black
+                        tint = Color.White
                     )
                 }
             }
