@@ -9,7 +9,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
-
+import androidx.compose.material3.NavigationBarItemDefaults
 
 
 @Composable
@@ -37,9 +37,14 @@ fun BottomNavBar(
                 label = {
                     Text(
                         text = item.label,
-                        color = if (item.label == currentScreen) MaterialTheme.colorScheme.primary else Color.Gray
+                        color = if (item.label == currentScreen) Color(0xFF2A4174) else Color.Gray
                     )
-                }
+                },
+                colors = NavigationBarItemDefaults.colors(
+                    indicatorColor = Color(0xFF2A4174),
+                    selectedIconColor = Color.White,  // Make the icon white when selected
+                    selectedTextColor = Color(0xFF2A4174)
+                )
             )
         }
     }

@@ -1,5 +1,8 @@
 package dk.dtu.ToDoList.view.screens
 
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
@@ -10,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import dk.dtu.ToDoList.model.data.Task
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.Icons
+import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavController
 import dk.dtu.ToDoList.view.components.AddTaskDialog
 import dk.dtu.ToDoList.view.components.DeleteConfirmation
@@ -18,6 +22,7 @@ import dk.dtu.ToDoList.view.components.TopBar
 import dk.dtu.ToDoList.view.screens.TaskListScreen
 import dk.dtu.ToDoList.view.components.TaskList
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreen(
     tasks: List<Task>,
@@ -36,7 +41,10 @@ fun HomeScreen(
         it.name.contains(searchText, ignoreCase = true)
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier
+        .fillMaxSize()
+
+    ) {
         Column {
             // Top Bar for search
             TopBar(

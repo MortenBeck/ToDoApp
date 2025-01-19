@@ -1,6 +1,7 @@
 package dk.dtu.ToDoList.view.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -21,6 +22,9 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedTextFieldDefaults
 
 @Composable
 fun AddTaskDialog(
@@ -41,7 +45,7 @@ fun AddTaskDialog(
         Dialog(onDismissRequest = onDismiss) {
             Surface(
                 shape = MaterialTheme.shapes.large,
-                color = MaterialTheme.colorScheme.surface,
+                color = Color(0xFFE2EFF5),
                 tonalElevation = 2.dp,
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -63,7 +67,11 @@ fun AddTaskDialog(
                         label = { Text("Task name") },
                         modifier = Modifier.fillMaxWidth(),
                         shape = MaterialTheme.shapes.medium,
-                        singleLine = true
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            unfocusedContainerColor = Color.White,
+                            focusedContainerColor = Color.White
+                        )
                     )
 
                     Spacer(modifier = Modifier.height(20.dp))
@@ -97,7 +105,10 @@ fun AddTaskDialog(
 
                     OutlinedButton(
                         onClick = { showDatePicker = true },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            containerColor = Color.White
+                        )
                     ) {
                         Text(selectedDate.format(DateTimeFormatter.ofPattern("MMM dd, yyyy")))
                     }
@@ -106,7 +117,7 @@ fun AddTaskDialog(
                         Dialog(onDismissRequest = { showDatePicker = false }) {
                             Surface(
                                 shape = MaterialTheme.shapes.large,
-                                color = MaterialTheme.colorScheme.surface,
+                                color = Color(0xFFE9F2F5),
                                 tonalElevation = 3.dp
                             ) {
                                 Calendar(
@@ -136,6 +147,7 @@ fun AddTaskDialog(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     ModernDropdownTagSelector(
+                        color = Color.White,
                         selectedTag = selectedTag,
                         onTagSelected = { selectedTag = it }
                     )
@@ -222,7 +234,8 @@ fun PriorityChip(
 @Composable
 fun ModernDropdownTagSelector(
     selectedTag: TaskTag,
-    onTagSelected: (TaskTag) -> Unit
+    onTagSelected: (TaskTag) -> Unit,
+    color: Color
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -230,7 +243,10 @@ fun ModernDropdownTagSelector(
         onClick = { expanded = !expanded },
         modifier = Modifier.fillMaxWidth(),
         contentPadding = PaddingValues(16.dp),
-        shape = MaterialTheme.shapes.medium
+        shape = MaterialTheme.shapes.medium,
+        colors = ButtonDefaults.outlinedButtonColors(
+            containerColor = color
+        )
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -240,7 +256,8 @@ fun ModernDropdownTagSelector(
             Text(selectedTag.name)
             Icon(
                 imageVector = Icons.Default.ArrowDropDown,
-                contentDescription = null
+                contentDescription = null,
+                modifier = Modifier.size(24.dp)
             )
         }
     }
@@ -248,7 +265,12 @@ fun ModernDropdownTagSelector(
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = { expanded = false },
-        modifier = Modifier.fillMaxWidth(0.9f)
+        modifier = Modifier
+            .fillMaxWidth(0.9f)
+            .background(
+                color = Color.White,
+                shape = MaterialTheme.shapes.medium
+            )
     ) {
         TaskTag.values().forEach { tag ->
             DropdownMenuItem(
@@ -256,7 +278,16 @@ fun ModernDropdownTagSelector(
                     onTagSelected(tag)
                     expanded = false
                 },
-                text = { Text(tag.name) }
+                text = {
+                    Text(
+                        text = tag.name,
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(8.dp)
+                    )
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp)
             )
         }
     }
@@ -273,7 +304,10 @@ fun ModernDropdownRecurrenceSelector(
         onClick = { expanded = !expanded },
         modifier = Modifier.fillMaxWidth(),
         contentPadding = PaddingValues(16.dp),
-        shape = MaterialTheme.shapes.medium
+        shape = MaterialTheme.shapes.medium,
+        colors = ButtonDefaults.outlinedButtonColors(
+            containerColor = Color.White
+        )
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -283,7 +317,8 @@ fun ModernDropdownRecurrenceSelector(
             Text(selectedRecurrence?.name ?: "Don't repeat")
             Icon(
                 imageVector = Icons.Default.ArrowDropDown,
-                contentDescription = null
+                contentDescription = null,
+                modifier = Modifier.size(24.dp)
             )
         }
     }
@@ -291,22 +326,46 @@ fun ModernDropdownRecurrenceSelector(
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = { expanded = false },
-        modifier = Modifier.fillMaxWidth(0.9f)
+        modifier = Modifier
+            .fillMaxWidth(0.9f)
+            .background(
+                color = Color.White,
+                shape = MaterialTheme.shapes.medium
+            )
     ) {
         DropdownMenuItem(
             onClick = {
                 onRecurrenceSelected(null)
                 expanded = false
             },
-            text = { Text("Don't repeat") }
+            text = {
+                Text(
+                    text = "Don't repeat",
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(8.dp)
+                )
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp)
         )
+
         RecurrencePattern.values().forEach { pattern ->
             DropdownMenuItem(
                 onClick = {
                     onRecurrenceSelected(pattern)
                     expanded = false
                 },
-                text = { Text(pattern.name) }
+                text = {
+                    Text(
+                        text = pattern.name,
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(8.dp)
+                    )
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp)
             )
         }
     }

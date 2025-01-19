@@ -31,7 +31,7 @@ fun TopBar(
     var isSearchActive by remember { mutableStateOf(false) }
 
     Surface(
-        color = MaterialTheme.colorScheme.primary,
+        color = Color(0xFF2A4174),
         modifier = Modifier.fillMaxWidth()
     ) {
         Box(

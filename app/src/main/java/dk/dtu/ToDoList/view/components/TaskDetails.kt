@@ -22,17 +22,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import dk.dtu.ToDoList.model.data.Task
 import dk.dtu.ToDoList.model.data.TaskPriority
-import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.Locale
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Switch
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material3.Icon
+import androidx.compose.ui.graphics.Color
 import java.time.YearMonth
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -97,7 +93,8 @@ fun TaskDetails(
                 // Tag Selector
                 ModernDropdownTagSelector(
                     selectedTag = selectedTag,
-                    onTagSelected = { selectedTag = it }
+                    onTagSelected = { selectedTag = it },
+                    color = Color(0xFFE2EFF5)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
