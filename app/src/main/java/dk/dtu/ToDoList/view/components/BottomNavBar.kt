@@ -1,16 +1,9 @@
 package dk.dtu.ToDoList.view.components
 
-
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
-
+import androidx.compose.ui.unit.dp
 
 @Composable
 fun BottomNavBar(
@@ -19,17 +12,19 @@ fun BottomNavBar(
     onItemClick: (BottomNavItem) -> Unit
 ) {
     NavigationBar(
-        containerColor = Color.White,
-        contentColor = Color.Black
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface,
+        tonalElevation = 8.dp
     ) {
         items.forEach { item ->
+            val selected = item.label == currentScreen
             NavigationBarItem(
-                selected = item.label == currentScreen,
+                selected = selected,
                 onClick = { onItemClick(item) },
                 icon = {
                     Icon(
                         painter = painterResource(
-                            id = if (item.label == currentScreen) item.activeIcon else item.icon
+                            id = if (selected) item.activeIcon else item.icon
                         ),
                         contentDescription = item.label
                     )
@@ -37,19 +32,20 @@ fun BottomNavBar(
                 label = {
                     Text(
                         text = item.label,
-                        color = if (item.label == currentScreen) Color(0xFF2A4174) else Color.Gray
+                        style = MaterialTheme.typography.labelMedium
                     )
                 },
                 colors = NavigationBarItemDefaults.colors(
-                    indicatorColor = Color(0xFF2A4174),
-                    selectedIconColor = Color.White,  // Make the icon white when selected
-                    selectedTextColor = Color(0xFF2A4174)
+                    selectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    selectedTextColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    indicatorColor = MaterialTheme.colorScheme.secondaryContainer,
+                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             )
         }
     }
 }
-
 
 data class BottomNavItem(
     val label: String,

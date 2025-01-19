@@ -1,38 +1,18 @@
 package dk.dtu.ToDoList.view.components
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.material.Button
-import androidx.compose.material.OutlinedButton
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import dk.dtu.ToDoList.model.data.Task
 import dk.dtu.ToDoList.model.data.TaskPriority
-import java.util.Date
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.Switch
-import androidx.compose.ui.graphics.Color
 import java.time.YearMonth
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-
+import java.util.Date
 
 @Composable
 fun TaskDetails(
@@ -40,7 +20,6 @@ fun TaskDetails(
     onDismiss: () -> Unit,
     onUpdateTask: (Task) -> Unit
 ) {
-    // State for editable fields
     var taskName by remember { mutableStateOf(task.name) }
     var selectedPriority by remember { mutableStateOf(task.priority.name) }
     var selectedTag by remember { mutableStateOf(task.tag) }
@@ -50,10 +29,13 @@ fun TaskDetails(
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
 
     Dialog(onDismissRequest = onDismiss) {
-        Surface(
-            shape = MaterialTheme.shapes.large,
-            color = MaterialTheme.colorScheme.surface,
-            modifier = Modifier.fillMaxWidth()
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            )
         ) {
             Column(
                 modifier = Modifier
@@ -62,23 +44,32 @@ fun TaskDetails(
             ) {
                 Text(
                     text = "Edit Task",
-                    style = MaterialTheme.typography.headlineMedium
+                    style = MaterialTheme.typography.headlineSmall
                 )
+
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Task Name Input
                 OutlinedTextField(
                     value = taskName,
                     onValueChange = { taskName = it },
                     label = { Text("Task Name") },
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                    )
                 )
+
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Priority Selector
-                Text("Priority", style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    text = "Priority",
+                    style = MaterialTheme.typography.titleMedium
+                )
+
                 Spacer(modifier = Modifier.height(8.dp))
+
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxWidth()
@@ -90,36 +81,40 @@ fun TaskDetails(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Tag Selector
+                Text(
+                    text = "Category",
+                    style = MaterialTheme.typography.titleMedium
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
                 ModernDropdownTagSelector(
                     selectedTag = selectedTag,
-                    onTagSelected = { selectedTag = it },
-                    color = Color(0xFFE2EFF5)
+                    onTagSelected = { selectedTag = it }
                 )
+
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Deadline Selector
                 Text(
                     text = "Deadline",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    style = MaterialTheme.typography.titleMedium
                 )
+
                 Spacer(modifier = Modifier.height(8.dp))
 
                 OutlinedButton(
                     onClick = { showDatePicker = true },
-                    modifier = Modifier.fillMaxWidth(),
-                    contentPadding = PaddingValues(16.dp),
-                    shape = MaterialTheme.shapes.medium
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(deadline.format(DateTimeFormatter.ofPattern("MMM dd, yyyy")))
                 }
 
                 if (showDatePicker) {
                     Dialog(onDismissRequest = { showDatePicker = false }) {
-                        Surface(
-                            shape = MaterialTheme.shapes.large,
-                            color = MaterialTheme.colorScheme.surface,
+                        Card(
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surface
+                            )
                         ) {
                             Calendar(
                                 selectedDate = deadline,
@@ -139,19 +134,29 @@ fun TaskDetails(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Completion Status Toggle
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("Completed", style = MaterialTheme.typography.bodyMedium)
-                    Spacer(modifier = Modifier.width(16.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = "Completed",
+                        style = MaterialTheme.typography.bodyLarge
+                    )
                     Switch(
                         checked = isCompleted,
-                        onCheckedChange = { isCompleted = it }
+                        onCheckedChange = { isCompleted = it },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = MaterialTheme.colorScheme.primary,
+                            checkedTrackColor = MaterialTheme.colorScheme.primaryContainer,
+                            uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                            uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
                     )
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Action Buttons
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -170,7 +175,7 @@ fun TaskDetails(
                                 tag = selectedTag,
                                 completed = isCompleted,
                                 deadline = Date.from(deadline.atStartOfDay(ZoneId.systemDefault()).toInstant()),
-                                modifiedAt = Date() // Save the timestamp
+                                modifiedAt = Date()
                             )
                             onUpdateTask(updatedTask)
                             onDismiss()
@@ -184,4 +189,3 @@ fun TaskDetails(
         }
     }
 }
-

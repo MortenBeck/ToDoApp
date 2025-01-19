@@ -1,16 +1,13 @@
 package dk.dtu.ToDoList.view.screens
 
 import android.os.Build
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import dk.dtu.ToDoList.model.data.Task
@@ -20,6 +17,7 @@ import java.time.YearMonth
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarScreen(
     tasks: List<Task>,
@@ -38,94 +36,114 @@ fun CalendarScreen(
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var taskToDelete by remember { mutableStateOf<Task?>(null) }
-    var showDialog by remember { mutableStateOf(false) }
+    var showAddDialog by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        Calendar(
-            selectedDate = selectedDate,
-            currentMonth = currentMonth,
-            onDateSelected = { selectedDate = it },
-            onMonthChanged = { currentMonth = it },
-            tasks = tasks
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        TasksForDate(
-            tasks = tasks,
-            selectedDate = selectedDate,
-            onDelete = { task ->
-                taskToDelete = task
-                showDeleteDialog = true
-            },
-            onCompleteToggle = { task ->
-                onUpdateTask(task.copy(completed = !task.completed))
-            },
-            onUpdateTask = onUpdateTask
-        )
-    }
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        contentAlignment = Alignment.BottomEnd
-    ) {
-        IconButton(
-            onClick = { showDialog = true },
-            modifier = Modifier.size(64.dp)
-        ) {
-            Surface(
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.primary,
-                shadowElevation = 6.dp
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { showAddDialog = true },
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = "Add Task",
-                    tint = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier
-                        .padding(12.dp)
-                        .size(32.dp)
+                    modifier = Modifier.size(24.dp)
                 )
             }
         }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(horizontal = 16.dp)
+        ) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                ),
+                elevation = CardDefaults.cardElevation(
+                    defaultElevation = 2.dp
+                )
+            ) {
+                Calendar(
+                    selectedDate = selectedDate,
+                    currentMonth = currentMonth,
+                    onDateSelected = { selectedDate = it },
+                    onMonthChanged = { currentMonth = it },
+                    tasks = tasks
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            TasksForSelectedDate(
+                tasks = tasks,
+                selectedDate = selectedDate,
+                onDelete = { task ->
+                    taskToDelete = task
+                    showDeleteDialog = true
+                },
+                onCompleteToggle = { task ->
+                    onUpdateTask(task.copy(completed = !task.completed))
+                },
+                onUpdateTask = onUpdateTask
+            )
+        }
     }
 
-    if (showDialog) {
+    // Dialogs
+    if (showAddDialog) {
         AddTaskDialog(
-            showDialog = showDialog,
+            showDialog = showAddDialog,
             navController = navController,
-            onDismiss = { showDialog = false },
+            onDismiss = { showAddDialog = false },
             onTaskAdded = { newTask ->
                 onAddTask(newTask)
-                showDialog = false
+                showAddDialog = false
             }
         )
     }
 
     if (showDeleteDialog && taskToDelete != null) {
-        DeleteConfirmation(
-            task = taskToDelete!!,
-            onConfirm = {
-                onDeleteTask(taskToDelete!!.id)
+        AlertDialog(
+            onDismissRequest = {
                 taskToDelete = null
                 showDeleteDialog = false
             },
-            onDismiss = {
-                taskToDelete = null
-                showDeleteDialog = false
+            title = { Text("Delete Task") },
+            text = { Text("Are you sure you want to delete this task?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onDeleteTask(taskToDelete!!.id)
+                        taskToDelete = null
+                        showDeleteDialog = false
+                    }
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        taskToDelete = null
+                        showDeleteDialog = false
+                    }
+                ) {
+                    Text("Cancel")
+                }
             }
         )
     }
 }
 
 @Composable
-fun TasksForDate(
+private fun TasksForSelectedDate(
     tasks: List<Task>,
     selectedDate: LocalDate,
     onDelete: (Task) -> Unit,
@@ -142,9 +160,11 @@ fun TasksForDate(
         }
     }
 
-    Column {
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
         Text(
-            text = "Tasks for ${selectedDate.format(DateTimeFormatter.ofPattern("MMM d, yyyy"))}",
+            text = selectedDate.format(DateTimeFormatter.ofPattern("MMMM d, yyyy")),
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(bottom = 8.dp)
         )
@@ -159,9 +179,10 @@ fun TasksForDate(
             )
         } else {
             Text(
-                text = "No tasks for this day.",
+                text = "No tasks scheduled for this day",
                 style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(8.dp)
+                modifier = Modifier.padding(vertical = 8.dp),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

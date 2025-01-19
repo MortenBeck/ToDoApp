@@ -2,7 +2,6 @@ package dk.dtu.ToDoList.view.components
 
 import android.os.Build
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -18,7 +17,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import dk.dtu.ToDoList.model.data.Task
@@ -28,8 +26,6 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.temporal.WeekFields
 import java.util.*
-import androidx.compose.material.icons.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 
 @Composable
 fun Calendar(
@@ -51,82 +47,88 @@ fun Calendar(
         }.toSet()
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 1.dp
     ) {
-        Text(
-            text = "Your Calendar",
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(bottom = 24.dp)
-        )
-
-        // Month Navigation
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
         ) {
-            IconButton(onClick = { onMonthChanged(currentMonth.minusMonths(1)) }) {
-                Icon(
-                    imageVector = Icons.Default.KeyboardArrowLeft,
-                    contentDescription = "Previous month"
-                )
-            }
-
             Text(
-                text = currentMonth.format(DateTimeFormatter.ofPattern("MMMM yyyy")),
-                style = MaterialTheme.typography.titleLarge
+                text = "Your Calendar",
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(bottom = 24.dp)
             )
 
-            IconButton(onClick = { onMonthChanged(currentMonth.plusMonths(1)) }) {
-                Icon(
-                    imageVector = Icons.Default.KeyboardArrowRight,
-                    contentDescription = "Next month"
-                )
-            }
-        }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = { onMonthChanged(currentMonth.minusMonths(1)) }) {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowLeft,
+                        contentDescription = "Previous month",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Weekday Headers
-        Row(modifier = Modifier.fillMaxWidth()) {
-            val daysOfWeek = WeekFields.of(Locale.getDefault()).firstDayOfWeek.let { firstDay ->
-                (0..6).map { firstDay.plus(it.toLong()) }
-            }
-
-            daysOfWeek.forEach { dayOfWeek ->
                 Text(
-                    text = dayOfWeek.getDisplayName(java.time.format.TextStyle.SHORT, Locale.getDefault()),
-                    modifier = Modifier.weight(1f),
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.bodyMedium.copy(
+                    text = currentMonth.format(DateTimeFormatter.ofPattern("MMMM yyyy")),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                IconButton(onClick = { onMonthChanged(currentMonth.plusMonths(1)) }) {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowRight,
+                        contentDescription = "Next month",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(modifier = Modifier.fillMaxWidth()) {
+                val daysOfWeek = WeekFields.of(Locale.getDefault()).firstDayOfWeek.let { firstDay ->
+                    (0..6).map { firstDay.plus(it.toLong()) }
+                }
+
+                daysOfWeek.forEach { dayOfWeek ->
+                    Text(
+                        text = dayOfWeek.getDisplayName(java.time.format.TextStyle.SHORT, Locale.getDefault()),
+                        modifier = Modifier.weight(1f),
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                )
+                }
             }
-        }
 
-        Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-        // Calendar Grid
-        val days = calculateDaysInMonth(currentMonth)
+            val days = calculateDaysInMonth(currentMonth)
 
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(7),
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            items(days) { date ->
-                DayCell(
-                    date = date,
-                    isSelected = date == selectedDate,
-                    isCurrentMonth = date.month == currentMonth.month,
-                    hasTask = taskDates.contains(date),
-                    onDateSelected = onDateSelected
-                )
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(7),
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                items(days) { date ->
+                    DayCell(
+                        date = date,
+                        isSelected = date == selectedDate,
+                        isCurrentMonth = date.month == currentMonth.month,
+                        hasTask = taskDates.contains(date),
+                        onDateSelected = onDateSelected
+                    )
+                }
             }
         }
     }
@@ -141,18 +143,22 @@ fun DayCell(
     onDateSelected: (LocalDate) -> Unit
 ) {
     val isToday = date == LocalDate.now()
+    val cellColor = when {
+        isSelected -> MaterialTheme.colorScheme.primaryContainer
+        isToday -> MaterialTheme.colorScheme.secondaryContainer
+        else -> MaterialTheme.colorScheme.surface
+    }
+    val textColor = when {
+        isSelected -> MaterialTheme.colorScheme.onPrimaryContainer
+        !isCurrentMonth -> MaterialTheme.colorScheme.outline
+        else -> MaterialTheme.colorScheme.onSurface
+    }
 
     Box(
         modifier = Modifier
             .aspectRatio(1f)
             .clip(CircleShape)
-            .background(
-                when {
-                    isSelected -> MaterialTheme.colorScheme.primary
-                    isToday -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-                    else -> Color.Transparent
-                }
-            )
+            .background(cellColor)
             .clickable { onDateSelected(date) }
             .padding(4.dp),
         contentAlignment = Alignment.Center
@@ -163,12 +169,8 @@ fun DayCell(
         ) {
             Text(
                 text = date.dayOfMonth.toString(),
-                style = MaterialTheme.typography.bodyLarge,
-                color = when {
-                    isSelected -> MaterialTheme.colorScheme.onPrimary
-                    !isCurrentMonth -> MaterialTheme.colorScheme.outline
-                    else -> MaterialTheme.colorScheme.onSurface
-                }
+                style = MaterialTheme.typography.bodyMedium,
+                color = textColor
             )
             if (hasTask) {
                 Spacer(modifier = Modifier.height(2.dp))
@@ -177,7 +179,7 @@ fun DayCell(
                         .size(4.dp)
                         .clip(CircleShape)
                         .background(
-                            if (isSelected) MaterialTheme.colorScheme.onPrimary
+                            if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
                             else MaterialTheme.colorScheme.primary
                         )
                 )

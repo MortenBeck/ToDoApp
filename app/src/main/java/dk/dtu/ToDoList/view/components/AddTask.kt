@@ -1,30 +1,25 @@
 package dk.dtu.ToDoList.view.components
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.navigation.NavController
 import dk.dtu.ToDoList.model.data.Task
 import dk.dtu.ToDoList.model.data.TaskPriority
 import dk.dtu.ToDoList.model.data.TaskTag
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
-import java.util.Date
-import androidx.navigation.NavController
 import dk.dtu.ToDoList.model.data.RecurrencePattern
-import androidx.compose.ui.graphics.Color
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.OutlinedTextFieldDefaults
+import java.util.Date
 
 @Composable
 fun AddTaskDialog(
@@ -43,11 +38,13 @@ fun AddTaskDialog(
         var currentMonth by remember { mutableStateOf(YearMonth.now()) }
 
         Dialog(onDismissRequest = onDismiss) {
-            Surface(
-                shape = MaterialTheme.shapes.large,
-                color = Color(0xFFE2EFF5),
-                tonalElevation = 2.dp,
-                modifier = Modifier.fillMaxWidth()
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
             ) {
                 Column(
                     modifier = Modifier
@@ -56,7 +53,7 @@ fun AddTaskDialog(
                 ) {
                     Text(
                         text = "New Task",
-                        style = MaterialTheme.typography.headlineMedium
+                        style = MaterialTheme.typography.headlineSmall
                     )
 
                     Spacer(modifier = Modifier.height(24.dp))
@@ -69,8 +66,8 @@ fun AddTaskDialog(
                         shape = MaterialTheme.shapes.medium,
                         singleLine = true,
                         colors = OutlinedTextFieldDefaults.colors(
-                            unfocusedContainerColor = Color.White,
-                            focusedContainerColor = Color.White
+                            focusedContainerColor = MaterialTheme.colorScheme.surface,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surface
                         )
                     )
 
@@ -78,8 +75,7 @@ fun AddTaskDialog(
 
                     Text(
                         text = "Priority",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        style = MaterialTheme.typography.titleMedium
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -97,28 +93,25 @@ fun AddTaskDialog(
 
                     Text(
                         text = "Deadline",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        style = MaterialTheme.typography.titleMedium
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
 
                     OutlinedButton(
                         onClick = { showDatePicker = true },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            containerColor = Color.White
-                        )
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(selectedDate.format(DateTimeFormatter.ofPattern("MMM dd, yyyy")))
                     }
 
                     if (showDatePicker) {
                         Dialog(onDismissRequest = { showDatePicker = false }) {
-                            Surface(
-                                shape = MaterialTheme.shapes.large,
-                                color = Color(0xFFE9F2F5),
-                                tonalElevation = 3.dp
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                shape = RoundedCornerShape(16.dp)
                             ) {
                                 Calendar(
                                     selectedDate = selectedDate,
@@ -140,14 +133,12 @@ fun AddTaskDialog(
 
                     Text(
                         text = "Category",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        style = MaterialTheme.typography.titleMedium
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
 
                     ModernDropdownTagSelector(
-                        color = Color.White,
                         selectedTag = selectedTag,
                         onTagSelected = { selectedTag = it }
                     )
@@ -156,8 +147,7 @@ fun AddTaskDialog(
 
                     Text(
                         text = "Repeat",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        style = MaterialTheme.typography.titleMedium
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -211,84 +201,77 @@ fun PriorityChip(
     selectedPriority: String,
     onClick: () -> Unit
 ) {
+    val isSelected = text == selectedPriority
+    val backgroundColor = when {
+        isSelected -> when(text) {
+            "Low" -> MaterialTheme.colorScheme.primaryContainer
+            "Medium" -> MaterialTheme.colorScheme.secondaryContainer
+            else -> MaterialTheme.colorScheme.errorContainer
+        }
+        else -> MaterialTheme.colorScheme.surface
+    }
+    val textColor = when {
+        isSelected -> when(text) {
+            "Low" -> MaterialTheme.colorScheme.onPrimaryContainer
+            "Medium" -> MaterialTheme.colorScheme.onSecondaryContainer
+            else -> MaterialTheme.colorScheme.onErrorContainer
+        }
+        else -> MaterialTheme.colorScheme.onSurface
+    }
+
     OutlinedButton(
         onClick = onClick,
-        modifier = Modifier.widthIn(min = 70.dp),
         colors = ButtonDefaults.outlinedButtonColors(
-            containerColor = when(text) {
-                "Low" -> if (selectedPriority == text) Color(0xFF6D8FFF) else Color.White
-                "Medium" -> if (selectedPriority == text) Color(0xFFFFD16D) else Color.White
-                else -> if (selectedPriority == text) Color(0xFFFF6D6D) else Color.White
-            }
+            containerColor = backgroundColor,
+            contentColor = textColor
         ),
-        border = BorderStroke(1.dp, Color.Gray)
+        modifier = Modifier.widthIn(min = 70.dp)
     ) {
-        Text(
-            text = text,
-            color = if (selectedPriority == text) Color.Black else Color(0xFF616161),
-            style = MaterialTheme.typography.labelLarge
-        )
+        Text(text)
     }
 }
 
 @Composable
 fun ModernDropdownTagSelector(
     selectedTag: TaskTag,
-    onTagSelected: (TaskTag) -> Unit,
-    color: Color
+    onTagSelected: (TaskTag) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    OutlinedButton(
-        onClick = { expanded = !expanded },
-        modifier = Modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(16.dp),
-        shape = MaterialTheme.shapes.medium,
-        colors = ButtonDefaults.outlinedButtonColors(
-            containerColor = color
-        )
+    Box(
+        modifier = Modifier.fillMaxWidth()
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        OutlinedButton(
+            onClick = { expanded = true },
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Text(selectedTag.name)
-            Icon(
-                imageVector = Icons.Default.ArrowDropDown,
-                contentDescription = null,
-                modifier = Modifier.size(24.dp)
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(selectedTag.name)
+                Icon(
+                    imageVector = Icons.Default.ArrowDropDown,
+                    contentDescription = null
+                )
+            }
         }
-    }
 
-    DropdownMenu(
-        expanded = expanded,
-        onDismissRequest = { expanded = false },
-        modifier = Modifier
-            .fillMaxWidth(0.9f)
-            .background(
-                color = Color.White,
-                shape = MaterialTheme.shapes.medium
-            )
-    ) {
-        TaskTag.values().forEach { tag ->
-            DropdownMenuItem(
-                onClick = {
-                    onTagSelected(tag)
-                    expanded = false
-                },
-                text = {
-                    Text(
-                        text = tag.name,
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(8.dp)
-                    )
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp)
-            )
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.fillMaxWidth(0.9f)
+        ) {
+            TaskTag.values().forEach { tag ->
+                DropdownMenuItem(
+                    text = { Text(tag.name) },
+                    onClick = {
+                        onTagSelected(tag)
+                        expanded = false
+                    }
+                )
+            }
         }
     }
 }
@@ -300,73 +283,48 @@ fun ModernDropdownRecurrenceSelector(
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    OutlinedButton(
-        onClick = { expanded = !expanded },
-        modifier = Modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(16.dp),
-        shape = MaterialTheme.shapes.medium,
-        colors = ButtonDefaults.outlinedButtonColors(
-            containerColor = Color.White
-        )
+    Box(
+        modifier = Modifier.fillMaxWidth()
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        OutlinedButton(
+            onClick = { expanded = true },
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Text(selectedRecurrence?.name ?: "Don't repeat")
-            Icon(
-                imageVector = Icons.Default.ArrowDropDown,
-                contentDescription = null,
-                modifier = Modifier.size(24.dp)
-            )
-        }
-    }
-
-    DropdownMenu(
-        expanded = expanded,
-        onDismissRequest = { expanded = false },
-        modifier = Modifier
-            .fillMaxWidth(0.9f)
-            .background(
-                color = Color.White,
-                shape = MaterialTheme.shapes.medium
-            )
-    ) {
-        DropdownMenuItem(
-            onClick = {
-                onRecurrenceSelected(null)
-                expanded = false
-            },
-            text = {
-                Text(
-                    text = "Don't repeat",
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(8.dp)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(selectedRecurrence?.name ?: "Don't repeat")
+                Icon(
+                    imageVector = Icons.Default.ArrowDropDown,
+                    contentDescription = null
                 )
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp)
-        )
+            }
+        }
 
-        RecurrencePattern.values().forEach { pattern ->
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.fillMaxWidth(0.9f)
+        ) {
             DropdownMenuItem(
+                text = { Text("Don't repeat") },
                 onClick = {
-                    onRecurrenceSelected(pattern)
+                    onRecurrenceSelected(null)
                     expanded = false
-                },
-                text = {
-                    Text(
-                        text = pattern.name,
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.padding(8.dp)
-                    )
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp)
+                }
             )
+
+            RecurrencePattern.values().forEach { pattern ->
+                DropdownMenuItem(
+                    text = { Text(pattern.name) },
+                    onClick = {
+                        onRecurrenceSelected(pattern)
+                        expanded = false
+                    }
+                )
+            }
         }
     }
 }

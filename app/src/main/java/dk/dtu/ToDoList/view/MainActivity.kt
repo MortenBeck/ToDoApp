@@ -6,18 +6,22 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.common.ConnectionResult
@@ -36,10 +40,12 @@ import kotlinx.coroutines.launch
 class MainActivity : ComponentActivity() {
     private val RC_PLAY_SERVICES = 123
 
-    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         FirebaseApp.initializeApp(this)
+
+        // Enable edge-to-edge
+        enableEdgeToEdge()
 
         // Check Google Play Services
         checkGooglePlayServices()
@@ -61,7 +67,6 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun initializeApp() {
-        // Check authentication state
         val auth = FirebaseAuth.getInstance()
         if (auth.currentUser == null) {
             lifecycleScope.launch {
@@ -96,7 +101,6 @@ class MainActivity : ComponentActivity() {
                 initializeApp()
             } else {
                 Log.e("MainActivity", "Google Play Services resolution failed")
-                // Handle the failure - maybe show an error message to the user
             }
         }
     }
@@ -111,23 +115,69 @@ fun ToDoApp() {
     val taskCRUD = remember { TaskCRUD(context) }
     val tasks = taskCRUD.getTasksFlow().collectAsState(initial = emptyList())
 
+    // Navigation state
+    val currentBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = currentBackStackEntry?.destination?.route ?: "Tasks"
+
+    // Scaffold state for snackbar
+    val snackbarHostState = remember { SnackbarHostState() }
+
     Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.onBackground,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
-            BottomNavBar(
-                items = listOf(
-                    BottomNavItem("Tasks", R.drawable.home_grey, R.drawable.home_black),
-                    BottomNavItem("Calendar", R.drawable.calender_grey, R.drawable.calender_black),
-                    BottomNavItem("Profile", R.drawable.profile_grey, R.drawable.profile_black)
-                ),
-                currentScreen = navController.currentBackStackEntryFlow.collectAsState(initial = navController.currentBackStackEntry).value?.destination?.route ?: "Tasks",
-                onItemClick = { item ->
-                    navController.navigate(item.label) {
-                        popUpTo(navController.graph.startDestinationId) { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
+            NavigationBar(
+                containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                tonalElevation = 3.dp
+            ) {
+                val items = listOf(
+                    Triple("Tasks", R.drawable.home_grey, R.drawable.home_black),
+                    Triple("Calendar", R.drawable.calender_grey, R.drawable.calender_black),
+                    Triple("Profile", R.drawable.profile_grey, R.drawable.profile_black)
+                )
+
+                items.forEach { (route, unselectedIcon, selectedIcon) ->
+                    NavigationBarItem(
+                        selected = currentRoute == route,
+                        onClick = {
+                            navController.navigate(route) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        },
+                        icon = {
+                            Icon(
+                                painter = painterResource(
+                                    if (currentRoute == route) selectedIcon else unselectedIcon
+                                ),
+                                contentDescription = route,
+                                tint = if (currentRoute == route)
+                                    MaterialTheme.colorScheme.primary
+                                else
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        },
+                        label = {
+                            Text(
+                                text = route,
+                                style = MaterialTheme.typography.labelMedium
+                            )
+                        },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = MaterialTheme.colorScheme.primary,
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            selectedTextColor = MaterialTheme.colorScheme.primary,
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            indicatorColor = MaterialTheme.colorScheme.primaryContainer
+                        )
+                    )
                 }
-            )
+            }
         }
     ) { paddingValues ->
         NavHost(
@@ -143,16 +193,23 @@ fun ToDoApp() {
                     onAddTask = { task ->
                         scope.launch {
                             taskCRUD.addTask(task)
+                            snackbarHostState.showSnackbar("Task added successfully")
                         }
                     },
                     onUpdateTask = { task ->
                         scope.launch {
                             taskCRUD.updateTask(task)
+                            snackbarHostState.showSnackbar("Task updated successfully")
                         }
                     },
                     onDeleteTask = { taskId ->
                         scope.launch {
                             taskCRUD.deleteTask(taskId)
+                            snackbarHostState.showSnackbar(
+                                message = "Task deleted",
+                                actionLabel = "Undo",
+                                duration = SnackbarDuration.Long
+                            )
                         }
                     },
                     navController = navController
@@ -165,16 +222,19 @@ fun ToDoApp() {
                     onAddTask = { task ->
                         scope.launch {
                             taskCRUD.addTask(task)
+                            snackbarHostState.showSnackbar("Event added to calendar")
                         }
                     },
                     onUpdateTask = { task ->
                         scope.launch {
                             taskCRUD.updateTask(task)
+                            snackbarHostState.showSnackbar("Event updated")
                         }
                     },
                     onDeleteTask = { taskId ->
                         scope.launch {
                             taskCRUD.deleteTask(taskId)
+                            snackbarHostState.showSnackbar("Event deleted")
                         }
                     }
                 )
@@ -202,6 +262,7 @@ fun ToDoApp() {
                     onTaskAdded = { newTask ->
                         scope.launch {
                             taskCRUD.addTask(newTask)
+                            snackbarHostState.showSnackbar("Task added to calendar")
                         }
                     }
                 )

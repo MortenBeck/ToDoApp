@@ -2,26 +2,18 @@ package dk.dtu.ToDoList.view.screens
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import dk.dtu.ToDoList.model.data.Task
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.Icons
-import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavController
-import dk.dtu.ToDoList.view.components.AddTaskDialog
-import dk.dtu.ToDoList.view.components.DeleteConfirmation
-import dk.dtu.ToDoList.view.components.FilterSection
-import dk.dtu.ToDoList.view.components.TopBar
-import dk.dtu.ToDoList.view.screens.TaskListScreen
-import dk.dtu.ToDoList.view.components.TaskList
+import dk.dtu.ToDoList.model.data.Task
+import dk.dtu.ToDoList.view.components.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreen(
@@ -31,7 +23,7 @@ fun HomeScreen(
     onDeleteTask: (String) -> Unit,
     navController: NavController
 ) {
-    var showDialog by remember { mutableStateOf(false) }
+    var showAddDialog by remember { mutableStateOf(false) }
     var taskToDelete by remember { mutableStateOf<Task?>(null) }
     var searchText by remember { mutableStateOf("") }
     var filteredTasks by remember(tasks) { mutableStateOf(tasks) }
@@ -41,29 +33,47 @@ fun HomeScreen(
         it.name.contains(searchText, ignoreCase = true)
     }
 
-    Box(modifier = Modifier
-        .fillMaxSize()
-
-    ) {
-        Column {
-            // Top Bar for search
+    Scaffold(
+        topBar = {
             TopBar(
                 searchText = searchText,
                 onSearchTextChange = { searchText = it },
                 navController = navController
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { showAddDialog = true },
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Add Task",
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                FilterSection(
+                    tasks = tasks,
+                    onFilterChange = { newFilteredTasks ->
+                        filteredTasks = newFilteredTasks
+                    }
+                )
+            }
 
-            // Filter
-            FilterSection(
-                tasks = tasks,
-                onFilterChange = { newFilteredTasks ->
-                    filteredTasks = newFilteredTasks
-                }
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Tasklist display
+            // Task List
             TaskListScreen(
                 tasks = searchFilteredTasks,
                 onDelete = { task ->
@@ -75,57 +85,42 @@ fun HomeScreen(
                 onUpdateTask = onUpdateTask
             )
         }
-
-        // Add Task Button
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            contentAlignment = Alignment.BottomEnd
-        ) {
-            IconButton(
-                onClick = { showDialog = true },
-                modifier = Modifier.size(64.dp)
-            ) {
-                Surface(
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.primary,
-                    shadowElevation = 6.dp
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Add Task",
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier
-                            .padding(12.dp)
-                            .size(32.dp)
-                    )
-                }
-            }
-        }
     }
 
-    if (showDialog) {
+    // Dialogs
+    if (showAddDialog) {
         AddTaskDialog(
-            showDialog = showDialog,
+            showDialog = showAddDialog,
             navController = navController,
-            onDismiss = { showDialog = false },
+            onDismiss = { showAddDialog = false },
             onTaskAdded = { newTask ->
                 onAddTask(newTask)
-                showDialog = false
+                showAddDialog = false
             }
         )
     }
 
     if (taskToDelete != null) {
-        DeleteConfirmation(
-            task = taskToDelete!!,
-            onConfirm = {
-                onDeleteTask(taskToDelete!!.id)
-                taskToDelete = null
+        AlertDialog(
+            onDismissRequest = { taskToDelete = null },
+            title = { Text("Delete Task") },
+            text = { Text("Are you sure you want to delete '${taskToDelete!!.name}'?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onDeleteTask(taskToDelete!!.id)
+                        taskToDelete = null
+                    }
+                ) {
+                    Text("Delete")
+                }
             },
-            onDismiss = {
-                taskToDelete = null
+            dismissButton = {
+                TextButton(
+                    onClick = { taskToDelete = null }
+                ) {
+                    Text("Cancel")
+                }
             }
         )
     }

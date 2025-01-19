@@ -10,22 +10,26 @@ import dk.dtu.ToDoList.viewmodel.WeatherViewModel
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dk.dtu.ToDoList.viewmodel.WeatherViewModelFactory
 
 @Composable
-fun WeatherWidget(viewModel: WeatherViewModel = viewModel(
-    factory = WeatherViewModelFactory())
-    ) {
-        val weatherState by viewModel.weatherState.collectAsState()
+fun WeatherWidget(
+    viewModel: WeatherViewModel = viewModel(factory = WeatherViewModelFactory())
+) {
+    val weatherState by viewModel.weatherState.collectAsState()
 
     when (val state = weatherState) {
-        is WeatherUiState.Loading -> CircularProgressIndicator()
+        is WeatherUiState.Loading -> CircularProgressIndicator(
+            modifier = Modifier.size(24.dp),
+            color = MaterialTheme.colorScheme.primary
+        )
         is WeatherUiState.Error -> ErrorDisplay()
         is WeatherUiState.Success -> WeatherContent(
             temperature = state.temperature,
@@ -45,11 +49,13 @@ private fun WeatherContent(
     ) {
         Image(
             painter = painterResource(iconRes),
-            contentDescription = "Weather icon"
+            contentDescription = "Weather icon",
+            modifier = Modifier.size(24.dp)
         )
         Text(
             text = temperature,
-            style = MaterialTheme.typography.body1,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onPrimaryContainer,
             modifier = Modifier.padding(start = 8.dp)
         )
     }
@@ -63,11 +69,13 @@ private fun ErrorDisplay() {
     ) {
         Image(
             painter = painterResource(dk.dtu.ToDoList.R.drawable.priority),
-            contentDescription = "Error icon"
+            contentDescription = "Error icon",
+            modifier = Modifier.size(24.dp)
         )
         Text(
             text = "Error fetching weather",
-            style = MaterialTheme.typography.body1,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.error,
             modifier = Modifier.padding(start = 8.dp)
         )
     }

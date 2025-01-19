@@ -6,7 +6,7 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,22 +20,20 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import dk.dtu.ToDoList.R
 import dk.dtu.ToDoList.model.data.Task
 import dk.dtu.ToDoList.model.data.TaskPriority
 import dk.dtu.ToDoList.model.data.TaskTag
 import java.text.SimpleDateFormat
 import java.util.*
-import androidx.compose.foundation.clickable
 
 @Composable
 fun TaskList(
@@ -55,7 +53,8 @@ fun TaskList(
         state = scrollState,
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(max = 300.dp)
+            .heightIn(max = 300.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         itemsIndexed(Tasks) { _, task ->
             SwipeableTaskItem(
@@ -72,35 +71,37 @@ fun TaskList(
 private fun BadgeItem(
     badgeText: String,
     badgeColor: Color,
-    badgeTextColor: Color = Color.White,
     badgeIcon: Int
 ) {
-    Row(
-        modifier = Modifier
-            .background(color = badgeColor, shape = MaterialTheme.shapes.medium)
-            .border(width = 0.5.dp, color = Color.Black, shape = MaterialTheme.shapes.medium)
-            .padding(horizontal = 8.dp, vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically
+    Surface(
+        color = badgeColor,
+        shape = MaterialTheme.shapes.small,
+        tonalElevation = 1.dp
     ) {
-        Icon(
-            painter = painterResource(id = badgeIcon),
-            contentDescription = null,
-            tint = badgeTextColor,
-            modifier = Modifier
-                .size(16.dp)
-                .padding(end = 4.dp)
-        )
+        Row(
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Icon(
+                painter = painterResource(id = badgeIcon),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.size(16.dp)
+            )
 
-        Text(
-            text = badgeText,
-            color = badgeTextColor,
-            style = MaterialTheme.typography.labelMedium,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
+            Text(
+                text = badgeText,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskItem(
     task: Task,
@@ -109,33 +110,32 @@ fun TaskItem(
     onUpdateTask: (Task) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val taskColor = if (task.completed) Color.Gray else Color.Black
-    val taskDecor = if (task.completed) TextDecoration.LineThrough else TextDecoration.None
-
     val context = LocalContext.current
     val vibrator = context.getSystemService(Vibrator::class.java)
+    var showDetails by remember { mutableStateOf(false) }
 
     val isToday = isTaskToday(task)
     val isExpired = isTaskExpired(task)
     val isTomorrow = isTaskTomorrow(task)
 
-    var showDetails by remember { mutableStateOf(false)}
-
-    Row(
+    ElevatedCard(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp, horizontal = 16.dp)
-            .background(
-                color = Color(0xFFE2EFF5),
-                shape = MaterialTheme.shapes.medium
-            )
-            .padding(8.dp)
-            .clickable { showDetails=true },
-        verticalAlignment = Alignment.CenterVertically
+            .padding(horizontal = 16.dp)
+            .clickable { showDetails = true },
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface
+        ),
+        elevation = CardDefaults.elevatedCardElevation(
+            defaultElevation = 1.dp
+        )
     ) {
-        Box(
-            modifier = Modifier.size(48.dp),
-            contentAlignment = Alignment.Center
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(
                 onClick = {
@@ -151,140 +151,108 @@ fun TaskItem(
                 }
             ) {
                 Icon(
-                    imageVector = if (task.completed) Icons.Default.CheckCircle else Icons.Default.RadioButtonUnchecked,
-                    contentDescription = if (task.completed) "Mark as Incomplete" else "Mark as Complete",
-                    tint = if (task.completed) Color(0xFF2AB72A) else Color.Gray,
-                    modifier = if (task.completed) Modifier.border(0.5.dp, Color.Black, CircleShape) else Modifier
-                )
-            }
-        }
-
-        Column(
-            modifier = Modifier.weight(1f)
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(12.dp)
-                        .background(
-                            color = when (task.priority) {
-                                TaskPriority.HIGH -> Color(0xFFFF6D6D)
-                                TaskPriority.MEDIUM -> Color(0xFFFFD16D)
-                                TaskPriority.LOW -> Color(0xFF6D8FFF)
-                            },
-                            shape = CircleShape
-                        )
-                        .border(
-                            width = 0.5.dp,
-                            color = Color.Black,
-                            shape = CircleShape
-                        )
-                )
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                Text(
-                    text = task.name,
-                    modifier = Modifier.fillMaxWidth(),
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = taskColor,
-                    textDecoration = taskDecor,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    imageVector = if (task.completed) Icons.Default.CheckCircle
+                    else Icons.Default.RadioButtonUnchecked,
+                    contentDescription = if (task.completed) "Mark as Incomplete"
+                    else "Mark as Complete",
+                    tint = if (task.completed) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.outline
                 )
             }
 
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 8.dp)
             ) {
-                BadgeItem(
-                    badgeText = when {
-                        isToday -> "Today"
-                        isTomorrow -> "Tomorrow"
-                        else -> SimpleDateFormat("dd-MM-yyyy", Locale.US).format(task.deadline)
-                    },
-                    badgeColor = when {
-                        isToday -> Color(0xFFFF6D6D)
-                        isTomorrow -> Color(0xFF6D8FFF)
-                        isExpired -> Color(0xFFFF3E3E)
-                        else -> Color.White
-                    },
-                    badgeTextColor = when {
-                        isToday || isExpired -> Color.Black
-                        else -> Color.Black
-                    },
-                    badgeIcon = R.drawable.calender_black
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(12.dp)
+                            .clip(CircleShape)
+                            .background(
+                                when (task.priority) {
+                                    TaskPriority.HIGH -> MaterialTheme.colorScheme.error
+                                    TaskPriority.MEDIUM -> MaterialTheme.colorScheme.tertiary
+                                    TaskPriority.LOW -> MaterialTheme.colorScheme.primary
+                                }
+                            )
+                    )
 
-                BadgeItem(
-                    badgeText = task.tag.name,
-                    badgeColor = when (task.tag) {
-                        TaskTag.WORK -> Color(0xFF6d8FFF)
-                        TaskTag.SCHOOL -> Color(0xFFFF9c6d)
-                        TaskTag.PET -> Color(0xFF6dFF6d)
-                        TaskTag.SPORT -> Color(0xFFd631bb)
-                        TaskTag.HOME -> Color(0xFFd16dFF)
-                        TaskTag.TRANSPORT -> Color(0xFFFFF86d)
-                        TaskTag.PRIVATE -> Color(0xFFff6D6D)
-                        TaskTag.SOCIAL -> Color(0xFF6d6dFF)
-                    },
-                    badgeTextColor = Color.Black,
-                    badgeIcon = when (task.tag) {
-                        TaskTag.WORK -> R.drawable.work
-                        TaskTag.SCHOOL -> R.drawable.school
-                        TaskTag.PET -> R.drawable.pet
-                        TaskTag.SPORT -> R.drawable.sport
-                        TaskTag.HOME -> R.drawable.home_black
-                        TaskTag.TRANSPORT -> R.drawable.transport
-                        TaskTag.PRIVATE -> R.drawable.lock
-                        TaskTag.SOCIAL -> R.drawable.social
-                    }
-                )
+                    Text(
+                        text = task.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = if (task.completed)
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        else MaterialTheme.colorScheme.onSurface,
+                        textDecoration = if (task.completed)
+                            TextDecoration.LineThrough
+                        else TextDecoration.None,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    BadgeItem(
+                        badgeText = when {
+                            isToday -> "Today"
+                            isTomorrow -> "Tomorrow"
+                            else -> SimpleDateFormat("dd-MM-yyyy", Locale.US)
+                                .format(task.deadline)
+                        },
+                        badgeColor = when {
+                            isToday -> MaterialTheme.colorScheme.errorContainer
+                            isTomorrow -> MaterialTheme.colorScheme.primaryContainer
+                            isExpired -> MaterialTheme.colorScheme.error
+                            else -> MaterialTheme.colorScheme.surfaceVariant
+                        },
+                        badgeIcon = R.drawable.calender_black
+                    )
+
+                    BadgeItem(
+                        badgeText = task.tag.name,
+                        badgeColor = when (task.tag) {
+                            TaskTag.WORK -> MaterialTheme.colorScheme.primaryContainer
+                            TaskTag.SCHOOL -> MaterialTheme.colorScheme.secondaryContainer
+                            TaskTag.PET -> MaterialTheme.colorScheme.tertiaryContainer
+                            TaskTag.SPORT -> MaterialTheme.colorScheme.errorContainer
+                            TaskTag.HOME -> MaterialTheme.colorScheme.surfaceVariant
+                            TaskTag.TRANSPORT -> MaterialTheme.colorScheme.primaryContainer
+                            TaskTag.PRIVATE -> MaterialTheme.colorScheme.secondaryContainer
+                            TaskTag.SOCIAL -> MaterialTheme.colorScheme.tertiaryContainer
+                        },
+                        badgeIcon = when (task.tag) {
+                            TaskTag.WORK -> R.drawable.work
+                            TaskTag.SCHOOL -> R.drawable.school
+                            TaskTag.PET -> R.drawable.pet
+                            TaskTag.SPORT -> R.drawable.sport
+                            TaskTag.HOME -> R.drawable.home_black
+                            TaskTag.TRANSPORT -> R.drawable.transport
+                            TaskTag.PRIVATE -> R.drawable.lock
+                            TaskTag.SOCIAL -> R.drawable.social
+                        }
+                    )
+                }
             }
-        }
-        if (showDetails) {
-            TaskDetails(
-                task = task,
-                onDismiss = { showDetails = false },
-                onUpdateTask = onUpdateTask
-            )
         }
     }
-}
 
-@Composable
-private fun isTaskToday(task: Task): Boolean {
-    val todayCalendar = Calendar.getInstance()
-    val taskCalendar = Calendar.getInstance()
-    taskCalendar.time = task.deadline
-
-    return todayCalendar.get(Calendar.YEAR) == taskCalendar.get(Calendar.YEAR) &&
-            todayCalendar.get(Calendar.DAY_OF_YEAR) == taskCalendar.get(Calendar.DAY_OF_YEAR)
-}
-
-@Composable
-fun isTaskExpired(task: Task): Boolean {
-    val todayCalendar = Calendar.getInstance()
-    val taskCalendar = Calendar.getInstance()
-    taskCalendar.time = task.deadline
-
-    return taskCalendar.before(todayCalendar) &&
-            !isTaskToday(task) // Ensure it's not also marked as "Today"
-}
-
-@Composable
-fun isTaskTomorrow(task: Task): Boolean {
-    val todayCalendar = Calendar.getInstance()
-    val taskCalendar = Calendar.getInstance()
-    taskCalendar.time = task.deadline
-
-    todayCalendar.add(Calendar.DAY_OF_YEAR, 1) // Move today to tomorrow
-    return todayCalendar.get(Calendar.YEAR) == taskCalendar.get(Calendar.YEAR) &&
-            todayCalendar.get(Calendar.DAY_OF_YEAR) == taskCalendar.get(Calendar.DAY_OF_YEAR)
+    if (showDetails) {
+        TaskDetails(
+            task = task,
+            onDismiss = { showDetails = false },
+            onUpdateTask = onUpdateTask
+        )
+    }
 }
 
 @SuppressLint("UseOfNonLambdaOffsetOverload")
@@ -310,11 +278,12 @@ fun SwipeableTaskItem(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp, horizontal = 8.dp)
+            .padding(vertical = 4.dp)
             .pointerInput(Unit) {
                 detectHorizontalDragGestures(
                     onHorizontalDrag = { change, dragAmount ->
-                        offsetX = (offsetX + dragAmount * dragScaleFactor).coerceAtLeast(0f)
+                        offsetX = (offsetX + dragAmount * dragScaleFactor)
+                            .coerceAtLeast(0f)
                         change.consume()
                     },
                     onDragEnd = {
@@ -334,4 +303,34 @@ fun SwipeableTaskItem(
             modifier = Modifier.offset(x = animatedOffsetX.dp)
         )
     }
+}
+
+@Composable
+private fun isTaskToday(task: Task): Boolean {
+    val todayCalendar = Calendar.getInstance()
+    val taskCalendar = Calendar.getInstance()
+    taskCalendar.time = task.deadline
+
+    return todayCalendar.get(Calendar.YEAR) == taskCalendar.get(Calendar.YEAR) &&
+            todayCalendar.get(Calendar.DAY_OF_YEAR) == taskCalendar.get(Calendar.DAY_OF_YEAR)
+}
+
+@Composable
+private fun isTaskExpired(task: Task): Boolean {
+    val todayCalendar = Calendar.getInstance()
+    val taskCalendar = Calendar.getInstance()
+    taskCalendar.time = task.deadline
+
+    return taskCalendar.before(todayCalendar) && !isTaskToday(task)
+}
+
+@Composable
+private fun isTaskTomorrow(task: Task): Boolean {
+    val todayCalendar = Calendar.getInstance()
+    val taskCalendar = Calendar.getInstance()
+    taskCalendar.time = task.deadline
+
+    todayCalendar.add(Calendar.DAY_OF_YEAR, 1)
+    return todayCalendar.get(Calendar.YEAR) == taskCalendar.get(Calendar.YEAR) &&
+            todayCalendar.get(Calendar.DAY_OF_YEAR) == taskCalendar.get(Calendar.DAY_OF_YEAR)
 }
