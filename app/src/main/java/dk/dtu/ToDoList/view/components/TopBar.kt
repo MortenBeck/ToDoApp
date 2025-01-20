@@ -21,7 +21,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.compose.foundation.gestures.detectTapGestures
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopBar(
     searchText: String,
@@ -31,9 +30,9 @@ fun TopBar(
     var isSearchActive by remember { mutableStateOf(false) }
 
     Surface(
-        color = MaterialTheme.colorScheme.primaryContainer, // Material3 color scheme
+        color = MaterialTheme.colorScheme.primaryContainer,
         modifier = Modifier.fillMaxWidth(),
-        tonalElevation = 4.dp // Material3 elevation
+        tonalElevation = 4.dp
     ) {
         Box(
             modifier = Modifier
@@ -56,7 +55,6 @@ fun TopBar(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                // Placeholder for WeatherWidget
                 WeatherWidget()
 
                 AnimatedVisibility(
@@ -69,7 +67,7 @@ fun TopBar(
                             .weight(1f)
                             .height(48.dp)
                             .padding(horizontal = 8.dp),
-                        shape = MaterialTheme.shapes.medium, // Material3 shape
+                        shape = MaterialTheme.shapes.medium,
                         color = MaterialTheme.colorScheme.surfaceVariant
                     ) {
                         Box(
@@ -82,7 +80,7 @@ fun TopBar(
                                 value = searchText,
                                 onValueChange = onSearchTextChange,
                                 textStyle = TextStyle(
-                                    color = MaterialTheme.colorScheme.onSurface, // Material3 text color
+                                    color = MaterialTheme.colorScheme.onSurface,
                                     fontSize = 16.sp
                                 ),
                                 modifier = Modifier.fillMaxWidth(),
