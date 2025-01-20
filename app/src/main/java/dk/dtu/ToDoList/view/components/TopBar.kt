@@ -6,14 +6,18 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.compose.foundation.gestures.detectTapGestures
 
@@ -27,8 +31,9 @@ fun TopBar(
     var isSearchActive by remember { mutableStateOf(false) }
 
     Surface(
+        color = MaterialTheme.colorScheme.primaryContainer, // Material3 color scheme
         modifier = Modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.primaryContainer
+        tonalElevation = 4.dp // Material3 elevation
     ) {
         Box(
             modifier = Modifier
@@ -51,6 +56,7 @@ fun TopBar(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
+                // Placeholder for WeatherWidget
                 WeatherWidget()
 
                 AnimatedVisibility(
@@ -58,35 +64,42 @@ fun TopBar(
                     enter = slideInHorizontally(initialOffsetX = { it }) + fadeIn(),
                     exit = slideOutHorizontally(targetOffsetX = { it }) + fadeOut()
                 ) {
-                    SearchBar(
-                        query = searchText,
-                        onQueryChange = onSearchTextChange,
-                        onSearch = { /* Handle search submission if needed */ },
-                        active = isSearchActive,
-                        onActiveChange = { isSearchActive = it },
+                    Surface(
                         modifier = Modifier
                             .weight(1f)
+                            .height(48.dp)
                             .padding(horizontal = 8.dp),
-                        placeholder = {
-                            Text(
-                                text = "Search...",
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                        },
-                        tonalElevation = 0.dp
+                        shape = MaterialTheme.shapes.medium, // Material3 shape
+                        color = MaterialTheme.colorScheme.surfaceVariant
                     ) {
-                        // Search suggestions can be added here if needed
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 16.dp),
+                            contentAlignment = Alignment.CenterStart
+                        ) {
+                            BasicTextField(
+                                value = searchText,
+                                onValueChange = onSearchTextChange,
+                                textStyle = TextStyle(
+                                    color = MaterialTheme.colorScheme.onSurface, // Material3 text color
+                                    fontSize = 16.sp
+                                ),
+                                modifier = Modifier.fillMaxWidth(),
+                                singleLine = true
+                            )
+                        }
                     }
                 }
 
-                FilledIconButton(
+                IconButton(
                     onClick = {
                         isSearchActive = !isSearchActive
                         if (!isSearchActive) {
                             onSearchTextChange("")
                         }
                     },
-                    colors = IconButtonDefaults.filledIconButtonColors(
+                    colors = IconButtonDefaults.iconButtonColors(
                         containerColor = MaterialTheme.colorScheme.primary,
                         contentColor = MaterialTheme.colorScheme.onPrimary
                     )
