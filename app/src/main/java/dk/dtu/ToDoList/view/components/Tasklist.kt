@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -134,6 +135,8 @@ fun TaskItem(
     // Create highlighted task name
     val highlightedName = buildHighlightedText(task.name, searchText)
 
+    var showDetails by remember(mutableStateOf()
+
     ElevatedCard(
         modifier = modifier
             .fillMaxWidth()
@@ -241,6 +244,13 @@ fun TaskItem(
                         }
                     )
                 }
+            }
+            if (showDetails) {
+                TaskDetails(
+                    task = task,
+                    onDismiss = { showDetails = false },
+                    onUpdateTask = onUpdateTask
+                )
             }
         }
     }
