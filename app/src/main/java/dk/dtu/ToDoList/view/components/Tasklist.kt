@@ -116,6 +116,9 @@ fun TaskItem(
     onUpdateTask: (Task) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // State to control the dialog visibility
+    var showDetails by remember { mutableStateOf(false) }
+
     // Function to build the highlighted text
     fun buildHighlightedText(text: String, query: String): AnnotatedString {
         val builder = AnnotatedString.Builder()
@@ -132,16 +135,13 @@ fun TaskItem(
         return builder.toAnnotatedString()
     }
 
-    // Create highlighted task name
     val highlightedName = buildHighlightedText(task.name, searchText)
-
-    var showDetails by remember(mutableStateOf()
 
     ElevatedCard(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
-            .clickable { /* Handle showing details or editing */ },
+            .clickable { showDetails = true }, // Show TaskDetails dialog
         colors = CardDefaults.elevatedCardColors(
             containerColor = MaterialTheme.colorScheme.surface,
             contentColor = MaterialTheme.colorScheme.onSurface
@@ -188,7 +188,6 @@ fun TaskItem(
                             )
                     )
 
-                    // Use the AnnotatedString for highlighting
                     Text(
                         text = highlightedName,
                         style = MaterialTheme.typography.titleMedium,
@@ -245,16 +244,19 @@ fun TaskItem(
                     )
                 }
             }
-            if (showDetails) {
-                TaskDetails(
-                    task = task,
-                    onDismiss = { showDetails = false },
-                    onUpdateTask = onUpdateTask
-                )
-            }
         }
     }
+
+    // Show TaskDetails dialog
+    if (showDetails) {
+        TaskDetails(
+            task = task,
+            onDismiss = { showDetails = false },
+            onUpdateTask = onUpdateTask
+        )
+    }
 }
+
 
 
 
