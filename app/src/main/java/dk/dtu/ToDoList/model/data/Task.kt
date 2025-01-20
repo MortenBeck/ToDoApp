@@ -12,11 +12,11 @@ enum class TaskTag {
 
 data class Task(
     val id: String = "",
-    val name: String = "",  // Add default value
+    val name: String = "",
     val description: String = "",
-    val deadline: Date = Date(),  // Add default value
-    val priority: TaskPriority = TaskPriority.LOW,  // Add default value
-    val tag: TaskTag = TaskTag.WORK,  // Add default value
+    val deadline: Date = Date(),
+    val priority: TaskPriority = TaskPriority.LOW,
+    val tag: TaskTag = TaskTag.WORK,
     val completed: Boolean = false,
     val createdAt: Date = Date(),
     val modifiedAt: Date = Date(),
