@@ -10,10 +10,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import dk.dtu.ToDoList.R
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -21,6 +24,25 @@ fun AccountSettingsScreen(navController: NavController) {
     var showLogoutDialog by remember { mutableStateOf(false) }
     var showDeleteAccountDialog by remember { mutableStateOf(false) }
     var showNotImplementedDialog by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    val auth = FirebaseAuth.getInstance()
+
+    // Handle user information
+    val isAnonymous = remember { auth.currentUser?.isAnonymous ?: true }
+    val userEmail = remember {
+        if (isAnonymous) {
+            "anonymous@email.com"
+        } else {
+            auth.currentUser?.email ?: "anonymous@email.com"
+        }
+    }
+    val username = remember {
+        if (isAnonymous) {
+            "Anonymous"
+        } else {
+            auth.currentUser?.email?.substringBefore('@') ?: "Anonymous"
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -64,11 +86,11 @@ fun AccountSettingsScreen(navController: NavController) {
                         headlineContent = {
                             Column {
                                 Text(
-                                    "John Doe",
+                                    username,
                                     style = MaterialTheme.typography.titleMedium
                                 )
                                 Text(
-                                    "john.doe@example.com",
+                                    userEmail,
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -196,8 +218,14 @@ fun AccountSettingsScreen(navController: NavController) {
                     confirmButton = {
                         TextButton(
                             onClick = {
+                                scope.launch {
+                                    auth.signOut()
+                                    // Navigate to login or main screen
+                                    navController.navigate("login") {
+                                        popUpTo(0) { inclusive = true }
+                                    }
+                                }
                                 showLogoutDialog = false
-                                // Handle logout
                             }
                         ) {
                             Text("Logout")
@@ -229,8 +257,14 @@ fun AccountSettingsScreen(navController: NavController) {
                     confirmButton = {
                         TextButton(
                             onClick = {
+                                scope.launch {
+                                    auth.currentUser?.delete()
+                                    // Navigate to login screen
+                                    navController.navigate("login") {
+                                        popUpTo(0) { inclusive = true }
+                                    }
+                                }
                                 showDeleteAccountDialog = false
-                                // Handle account deletion
                             },
                             colors = ButtonDefaults.textButtonColors(
                                 contentColor = MaterialTheme.colorScheme.error

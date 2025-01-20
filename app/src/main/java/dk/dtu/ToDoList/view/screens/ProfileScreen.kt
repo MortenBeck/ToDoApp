@@ -18,8 +18,8 @@ import androidx.navigation.NavController
 import dk.dtu.ToDoList.R
 import dk.dtu.ToDoList.model.repository.TaskCRUD
 import dk.dtu.ToDoList.view.components.SettingsItem
+import com.google.firebase.auth.FirebaseAuth
 import java.util.*
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,32 +27,64 @@ fun ProfileScreen(navController: NavController) {
     val context = LocalContext.current
     val taskCRUD = remember { TaskCRUD(context) }
     val scope = rememberCoroutineScope()
+    val auth = FirebaseAuth.getInstance()
+
+    // Handle user information
+    val isAnonymous = remember { auth.currentUser?.isAnonymous ?: true }
+    val userEmail = remember {
+        if (isAnonymous) {
+            "anonymous@email.com"
+        } else {
+            auth.currentUser?.email ?: "anonymous@email.com"
+        }
+    }
+    val username = remember {
+        if (isAnonymous) {
+            "Anonymous"
+        } else {
+            auth.currentUser?.email?.substringBefore('@') ?: "Anonymous"
+        }
+    }
 
     // State for task statistics
     var todayTasksCount by remember { mutableStateOf(0) }
     var completedTodayCount by remember { mutableStateOf(0) }
-    var daysCompleted by remember { mutableStateOf(24) }
-    val userEmail = "john.doe@example.com" // Placeholder
+    var upcomingTasksCount by remember { mutableStateOf(0) }
 
-    // Load task statistics
+    // Use Flow to observe tasks
     LaunchedEffect(key1 = true) {
-        scope.launch {
-            val today = Calendar.getInstance().apply {
-                set(Calendar.HOUR_OF_DAY, 0)
-                set(Calendar.MINUTE, 0)
-                set(Calendar.SECOND, 0)
-            }
-            val tomorrow = Calendar.getInstance().apply {
-                add(Calendar.DAY_OF_YEAR, 1)
-                set(Calendar.HOUR_OF_DAY, 0)
-                set(Calendar.MINUTE, 0)
-                set(Calendar.SECOND, 0)
-            }
+        // Create a flow to observe all tasks
+        taskCRUD.observeTasks()
+            .collect { tasks ->
+                // Get today's start and end timestamps
+                val today = Calendar.getInstance().apply {
+                    set(Calendar.HOUR_OF_DAY, 0)
+                    set(Calendar.MINUTE, 0)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }
+                val tomorrow = Calendar.getInstance().apply {
+                    add(Calendar.DAY_OF_YEAR, 1)
+                    set(Calendar.HOUR_OF_DAY, 0)
+                    set(Calendar.MINUTE, 0)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }
 
-            val todayTasks = taskCRUD.getTasksByDeadlineRange(today.time, tomorrow.time)
-            todayTasksCount = todayTasks.size
-            completedTodayCount = todayTasks.count { it.completed }
-        }
+                // Filter tasks for today
+                val todayTasks = tasks.filter { task ->
+                    task.deadline >= today.time && task.deadline < tomorrow.time
+                }
+
+                // Update statistics
+                todayTasksCount = todayTasks.size
+                completedTodayCount = todayTasks.count { it.completed }
+
+                // Calculate upcoming tasks (excluding today's tasks and completed ones)
+                upcomingTasksCount = tasks.count { task ->
+                    !task.completed && task.deadline >= tomorrow.time
+                }
+            }
     }
 
     Column(
@@ -66,7 +98,7 @@ fun ProfileScreen(navController: NavController) {
     ) {
         // Profile Header
         ProfileHeader(
-            username = "John Doe",
+            username = username,
             email = userEmail
         )
 
@@ -74,7 +106,7 @@ fun ProfileScreen(navController: NavController) {
         StatsCard(
             todayTasksCount = todayTasksCount,
             completedTodayCount = completedTodayCount,
-            daysCompleted = daysCompleted
+            upcomingTasksCount = upcomingTasksCount
         )
 
         // Settings Section
@@ -128,7 +160,7 @@ private fun ProfileHeader(
 private fun StatsCard(
     todayTasksCount: Int,
     completedTodayCount: Int,
-    daysCompleted: Int
+    upcomingTasksCount: Int
 ) {
     Card(
         modifier = Modifier
@@ -149,11 +181,42 @@ private fun StatsCard(
         ) {
             StatColumn("Tasks\nToday", todayTasksCount.toString())
             StatDivider()
-            StatColumn("Tasks Completed\nToday", completedTodayCount.toString())
+            StatColumn("Completed\nToday", completedTodayCount.toString())
             StatDivider()
-            StatColumn("Days\nCompleted", daysCompleted.toString())
+            StatColumn("Upcoming\nTasks", upcomingTasksCount.toString())
         }
     }
+}
+
+@Composable
+private fun StatColumn(label: String, value: String) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.padding(horizontal = 8.dp)
+    ) {
+        Text(
+            text = value,
+            style = MaterialTheme.typography.headlineMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            textAlign = TextAlign.Center
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+@Composable
+private fun StatDivider() {
+    HorizontalDivider(
+        modifier = Modifier
+            .height(40.dp)
+            .width(1.dp),
+        color = MaterialTheme.colorScheme.outlineVariant
+    )
 }
 
 @Composable
@@ -197,35 +260,4 @@ private fun SettingsSection(navController: NavController) {
             }
         }
     }
-}
-
-@Composable
-private fun StatColumn(label: String, value: String) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.padding(horizontal = 8.dp)
-    ) {
-        Text(
-            text = value,
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-            textAlign = TextAlign.Center
-        )
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center
-        )
-    }
-}
-
-@Composable
-private fun StatDivider() {
-    HorizontalDivider(
-        modifier = Modifier
-            .height(40.dp)
-            .width(1.dp),
-        color = MaterialTheme.colorScheme.outlineVariant
-    )
 }
