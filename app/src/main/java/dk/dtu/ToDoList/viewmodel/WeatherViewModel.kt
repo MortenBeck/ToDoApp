@@ -54,6 +54,8 @@ class WeatherViewModel(
             _weatherState.value = WeatherUiState.Loading
             val response = weatherService.getWeatherForCity()
 
+            println("weather: $response") //testing by looking in log lmao
+
             if (response.main != null && response.weather.isNotEmpty()) {
                 val roundedTemp = round(response.main.temp).toInt()
                 val weatherCondition = response.weather.first()
@@ -74,13 +76,13 @@ class WeatherViewModel(
 
     fun getWeatherIconByCode(iconCode: String): Int {
         return when (iconCode) {
-            "01d" -> dk.dtu.ToDoList.R.drawable.weather_sun
-            "02d" -> dk.dtu.ToDoList.R.drawable.weather // Cloudy
-            "03d", "04d" -> dk.dtu.ToDoList.R.drawable.weather // Cloudy
-            "09d", "10d" -> dk.dtu.ToDoList.R.drawable.weather // Rain (placeholder)
-            "11d" -> dk.dtu.ToDoList.R.drawable.weather_thunderstorm
-            "13d" -> dk.dtu.ToDoList.R.drawable.weather_snow
-            "50d" -> dk.dtu.ToDoList.R.drawable.weather // Mist (placeholder)
+            "01d","01n" -> dk.dtu.ToDoList.R.drawable.weather_sun
+            "02d","02n" -> dk.dtu.ToDoList.R.drawable.weather // Cloudy
+            "03d", "04d","03n","04n" -> dk.dtu.ToDoList.R.drawable.weather // Cloudy
+            "09d", "10d","09n","10n" -> dk.dtu.ToDoList.R.drawable.weather // Rain (placeholder)
+            "11d","11n" -> dk.dtu.ToDoList.R.drawable.weather_thunderstorm
+            "13d","13n" -> dk.dtu.ToDoList.R.drawable.weather_snow
+            "50d","50n" -> dk.dtu.ToDoList.R.drawable.weather // Mist (placeholder)
             else -> dk.dtu.ToDoList.R.drawable.weather
         }
     }
