@@ -14,7 +14,10 @@ data class WeatherResponse(
     val name: String
 )
 
-data class WeatherInfo(val description: String)
+data class WeatherInfo(
+    val description: String,
+    val icon: String)
+
 data class MainInfo(val temp: Double)
 
 interface WeatherApi {

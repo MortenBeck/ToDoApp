@@ -16,6 +16,7 @@ import kotlinx.coroutines.isActive
 class WeatherViewModel(
     private val weatherService: WeatherService
 ) : ViewModel() {
+
     private val _weatherState = MutableStateFlow<WeatherUiState>(WeatherUiState.Loading)
     val weatherState: StateFlow<WeatherUiState> = _weatherState.asStateFlow()
 
@@ -27,7 +28,6 @@ class WeatherViewModel(
     }
 
     fun startWeatherUpdates() {
-        // Cancel any existing job before starting a new one
         updateJob?.cancel()
         updateJob = viewModelScope.launch {
             try {
@@ -36,10 +36,8 @@ class WeatherViewModel(
                     delay(updateInterval)
                 }
             } catch (e: CancellationException) {
-                // Handle coroutine cancellation gracefully
                 throw e
             } catch (e: Exception) {
-                // Log any unexpected errors
                 _weatherState.value = WeatherUiState.Error(e.message ?: "Unknown error occurred")
             }
         }
@@ -56,22 +54,34 @@ class WeatherViewModel(
             _weatherState.value = WeatherUiState.Loading
             val response = weatherService.getWeatherForCity()
 
-            if (response.main != null) {
+            if (response.main != null && response.weather.isNotEmpty()) {
                 val roundedTemp = round(response.main.temp).toInt()
+                val weatherCondition = response.weather.first()
+                val iconRes = getWeatherIconByCode(weatherCondition.icon)
+
                 _weatherState.value = WeatherUiState.Success(
                     temperature = "$roundedTemp°C",
-                    iconRes = dk.dtu.ToDoList.R.drawable.weather,
+                    iconRes = iconRes,
                     lastUpdated = System.currentTimeMillis()
                 )
             } else {
                 _weatherState.value = WeatherUiState.Error("Invalid weather data received")
             }
-        } catch (e: CancellationException) {
-            throw e
         } catch (e: Exception) {
-            _weatherState.value = WeatherUiState.Error(
-                e.message ?: "Failed to fetch weather data"
-            )
+            _weatherState.value = WeatherUiState.Error(e.message ?: "Failed to fetch weather data")
+        }
+    }
+
+    fun getWeatherIconByCode(iconCode: String): Int {
+        return when (iconCode) {
+            "01d" -> dk.dtu.ToDoList.R.drawable.weather_sun
+            "02d" -> dk.dtu.ToDoList.R.drawable.weather // Cloudy
+            "03d", "04d" -> dk.dtu.ToDoList.R.drawable.weather // Cloudy
+            "09d", "10d" -> dk.dtu.ToDoList.R.drawable.weather // Rain (placeholder)
+            "11d" -> dk.dtu.ToDoList.R.drawable.weather_thunderstorm
+            "13d" -> dk.dtu.ToDoList.R.drawable.weather_snow
+            "50d" -> dk.dtu.ToDoList.R.drawable.weather // Mist (placeholder)
+            else -> dk.dtu.ToDoList.R.drawable.weather
         }
     }
 
