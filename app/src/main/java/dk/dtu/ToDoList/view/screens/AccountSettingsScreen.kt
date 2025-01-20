@@ -1,13 +1,14 @@
 package dk.dtu.ToDoList.view.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -17,6 +18,10 @@ import dk.dtu.ToDoList.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AccountSettingsScreen(navController: NavController) {
+    var showLogoutDialog by remember { mutableStateOf(false) }
+    var showDeleteAccountDialog by remember { mutableStateOf(false) }
+    var showNotImplementedDialog by remember { mutableStateOf(false) }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -30,91 +35,217 @@ fun AccountSettingsScreen(navController: NavController) {
                     IconButton(onClick = { navController.navigateUp() }) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Back",
-                            tint = MaterialTheme.colorScheme.onSurface
+                            contentDescription = "Back"
                         )
                     }
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface
-                )
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors()
             )
         }
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .paint(
-                    painterResource(id = R.drawable.background_gradient),
-                    contentScale = ContentScale.FillBounds
-                )
-                .padding(paddingValues)
-        ) {
-            Card(
+        Box {
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                ),
-                elevation = CardDefaults.cardElevation(
-                    defaultElevation = 2.dp
-                )
+                    .fillMaxSize()
+                    .paint(
+                        painterResource(id = R.drawable.background_gradient),
+                        contentScale = ContentScale.FillBounds
+                    )
+                    .padding(paddingValues)
             ) {
-                SettingsListItem(
-                    icon = Icons.Default.Palette,
-                    title = "Theme",
-                    onItemClick = { /* Handle theme click */ }
-                )
-                HorizontalDivider(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    color = MaterialTheme.colorScheme.outlineVariant
-                )
-                SettingsListItem(
-                    icon = Icons.Default.Language,
-                    title = "Language",
-                    onItemClick = { /* Handle language click */ }
-                )
-                HorizontalDivider(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    color = MaterialTheme.colorScheme.outlineVariant
-                )
-                SettingsListItem(
-                    icon = Icons.Default.DataUsage,
-                    title = "Data Usage",
-                    onItemClick = { /* Handle data usage click */ }
+                // Profile Card
+                ElevatedCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    colors = CardDefaults.elevatedCardColors()
+                ) {
+                    ListItem(
+                        headlineContent = {
+                            Column {
+                                Text(
+                                    "John Doe",
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+                                Text(
+                                    "john.doe@example.com",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        },
+                        leadingContent = {
+                            Icon(
+                                Icons.Default.AccountCircle,
+                                contentDescription = "Profile",
+                                modifier = Modifier.size(40.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        },
+                        modifier = Modifier.clickable { showNotImplementedDialog = true }
+                    )
+                }
+
+                // Account Settings Card
+                ElevatedCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    colors = CardDefaults.elevatedCardColors()
+                ) {
+                    ListItem(
+                        headlineContent = { Text("Change Password") },
+                        leadingContent = {
+                            Icon(
+                                Icons.Default.Lock,
+                                contentDescription = "Change Password",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        },
+                        modifier = Modifier.clickable { showNotImplementedDialog = true }
+                    )
+                    HorizontalDivider()
+
+                    ListItem(
+                        headlineContent = { Text("Privacy Settings") },
+                        leadingContent = {
+                            Icon(
+                                Icons.Default.Security,
+                                contentDescription = "Privacy",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        },
+                        modifier = Modifier.clickable { showNotImplementedDialog = true }
+                    )
+                    HorizontalDivider()
+
+                    ListItem(
+                        headlineContent = { Text("Notification Preferences") },
+                        leadingContent = {
+                            Icon(
+                                Icons.Default.Notifications,
+                                contentDescription = "Notifications",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        },
+                        modifier = Modifier.clickable { showNotImplementedDialog = true }
+                    )
+                }
+
+                // Danger Zone Card
+                ElevatedCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    colors = CardDefaults.elevatedCardColors()
+                ) {
+                    ListItem(
+                        headlineContent = { Text("Logout") },
+                        leadingContent = {
+                            Icon(
+                                Icons.Default.Logout,
+                                contentDescription = "Logout",
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        },
+                        modifier = Modifier.clickable { showLogoutDialog = true }
+                    )
+                    HorizontalDivider()
+
+                    ListItem(
+                        headlineContent = {
+                            Text(
+                                "Delete Account",
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        },
+                        leadingContent = {
+                            Icon(
+                                Icons.Default.DeleteForever,
+                                contentDescription = "Delete Account",
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        },
+                        modifier = Modifier.clickable { showDeleteAccountDialog = true }
+                    )
+                }
+            }
+
+            // Not Implemented Dialog
+            if (showNotImplementedDialog) {
+                AlertDialog(
+                    onDismissRequest = { showNotImplementedDialog = false },
+                    icon = { Icon(Icons.Default.Info, contentDescription = null) },
+                    title = { Text("Feature Not Available") },
+                    text = { Text("This feature is not implemented yet.") },
+                    confirmButton = {
+                        TextButton(onClick = { showNotImplementedDialog = false }) {
+                            Text("OK")
+                        }
+                    }
                 )
             }
-        }
-    }
-}
 
-@Composable
-private fun SettingsListItem(
-    icon: ImageVector,
-    title: String,
-    onItemClick: () -> Unit
-) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        onClick = onItemClick
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = title,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(end = 16.dp)
-            )
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodyLarge
-            )
+            // Logout Dialog
+            if (showLogoutDialog) {
+                AlertDialog(
+                    onDismissRequest = { showLogoutDialog = false },
+                    icon = { Icon(Icons.Default.Logout, contentDescription = null) },
+                    title = { Text("Confirm Logout") },
+                    text = { Text("Are you sure you want to log out?") },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                showLogoutDialog = false
+                                // Handle logout
+                            }
+                        ) {
+                            Text("Logout")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showLogoutDialog = false }) {
+                            Text("Cancel")
+                        }
+                    }
+                )
+            }
+
+            // Delete Account Dialog
+            if (showDeleteAccountDialog) {
+                AlertDialog(
+                    onDismissRequest = { showDeleteAccountDialog = false },
+                    icon = {
+                        Icon(
+                            Icons.Default.DeleteForever,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    },
+                    title = { Text("Delete Account") },
+                    text = {
+                        Text("Are you sure you want to delete your account? This action cannot be undone.")
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                showDeleteAccountDialog = false
+                                // Handle account deletion
+                            },
+                            colors = ButtonDefaults.textButtonColors(
+                                contentColor = MaterialTheme.colorScheme.error
+                            )
+                        ) {
+                            Text("Delete")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showDeleteAccountDialog = false }) {
+                            Text("Cancel")
+                        }
+                    }
+                )
+            }
         }
     }
 }

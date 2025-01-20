@@ -32,7 +32,7 @@ fun ProfileScreen(navController: NavController) {
     var todayTasksCount by remember { mutableStateOf(0) }
     var completedTodayCount by remember { mutableStateOf(0) }
     var daysCompleted by remember { mutableStateOf(24) }
-    val userEmail = "Username1@gmail.com" // Placeholder
+    val userEmail = "john.doe@example.com" // Placeholder
 
     // Load task statistics
     LaunchedEffect(key1 = true) {
@@ -66,7 +66,7 @@ fun ProfileScreen(navController: NavController) {
     ) {
         // Profile Header
         ProfileHeader(
-            username = "Username",
+            username = "John Doe",
             email = userEmail
         )
 
