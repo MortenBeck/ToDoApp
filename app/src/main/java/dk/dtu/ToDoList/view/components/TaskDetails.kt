@@ -27,6 +27,7 @@ fun TaskDetails(
     var deadline by remember { mutableStateOf(task.deadline.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()) }
     var showDatePicker by remember { mutableStateOf(false) }
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
+    var priorityLevel by remember { mutableStateOf("Low") }
 
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -74,9 +75,21 @@ fun TaskDetails(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    PriorityChip("Low", selectedPriority) { selectedPriority = "Low" }
-                    PriorityChip("Medium", selectedPriority) { selectedPriority = "Medium" }
-                    PriorityChip("High", selectedPriority) { selectedPriority = "High" }
+                    PriorityChip(
+                        text = "Low",
+                        selectedPriority = priorityLevel,
+                        onClick = { priorityLevel = "Low" },
+                    )
+                    PriorityChip(
+                        text = "Medium",
+                        selectedPriority = priorityLevel,
+                        onClick = { priorityLevel = "Medium" },
+                    )
+                    PriorityChip(
+                        text = "High",
+                        selectedPriority = priorityLevel,
+                        onClick = { priorityLevel = "High" },
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))

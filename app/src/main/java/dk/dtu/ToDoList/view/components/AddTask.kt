@@ -8,7 +8,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import dk.dtu.ToDoList.model.data.Task
@@ -81,8 +83,8 @@ fun AddTaskDialog(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         PriorityChip("Low", priorityLevel) { priorityLevel = "Low" }
                         PriorityChip("Medium", priorityLevel) { priorityLevel = "Medium" }
@@ -199,7 +201,7 @@ fun AddTaskDialog(
 fun PriorityChip(
     text: String,
     selectedPriority: String,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     val isSelected = text == selectedPriority
     val backgroundColor = when {
@@ -225,9 +227,10 @@ fun PriorityChip(
             containerColor = backgroundColor,
             contentColor = textColor
         ),
-        modifier = Modifier.widthIn(min = 70.dp)
+        modifier = Modifier.width(80.dp),
+        contentPadding = PaddingValues(horizontal = 1.dp)
     ) {
-        Text(text)
+        Text(text=text,maxLines=1)
     }
 }
 
