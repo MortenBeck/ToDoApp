@@ -25,8 +25,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dk.dtu.ToDoList.R
 import dk.dtu.ToDoList.model.data.Task
@@ -38,27 +41,26 @@ import java.util.*
 @Composable
 fun TaskList(
     Tasks: List<Task>,
+    searchText: String,
     modifier: Modifier = Modifier,
     onDelete: (Task) -> Unit,
     onCompleteToggle: (Task) -> Unit,
     onUpdateTask: (Task) -> Unit
 ) {
-    val scrollState = rememberLazyListState()
-
-    LaunchedEffect(Tasks) {
-        scrollState.scrollToItem(0)
+    val filteredTasks = if (searchText.isNotEmpty()) {
+        Tasks.filter { it.name.contains(searchText, ignoreCase = true) }
+    } else {
+        Tasks
     }
 
     LazyColumn(
-        state = scrollState,
-        modifier = modifier
-            .fillMaxWidth()
-            .heightIn(max = 300.dp),
+        modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        itemsIndexed(Tasks) { _, task ->
+        itemsIndexed(filteredTasks) { _, task ->
             SwipeableTaskItem(
                 task = task,
+                searchText = searchText,
                 onDelete = onDelete,
                 onCompleteToggle = onCompleteToggle,
                 onUpdateTask = onUpdateTask
@@ -66,6 +68,8 @@ fun TaskList(
         }
     }
 }
+
+
 
 @Composable
 private fun BadgeItem(
@@ -105,31 +109,41 @@ private fun BadgeItem(
 @Composable
 fun TaskItem(
     task: Task,
+    searchText: String,
     onDelete: (Task) -> Unit,
     onCompleteToggle: (Task) -> Unit,
     onUpdateTask: (Task) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
-    val vibrator = context.getSystemService(Vibrator::class.java)
-    var showDetails by remember { mutableStateOf(false) }
+    // Function to build the highlighted text
+    fun buildHighlightedText(text: String, query: String): AnnotatedString {
+        val builder = AnnotatedString.Builder()
+        val startIndex = text.indexOf(query, ignoreCase = true)
+        if (startIndex != -1) {
+            builder.append(text.substring(0, startIndex))
+            builder.pushStyle(SpanStyle(background = Color.LightGray))
+            builder.append(text.substring(startIndex, startIndex + query.length))
+            builder.pop()
+            builder.append(text.substring(startIndex + query.length))
+        } else {
+            builder.append(text)
+        }
+        return builder.toAnnotatedString()
+    }
 
-    val isToday = isTaskToday(task)
-    val isExpired = isTaskExpired(task)
-    val isTomorrow = isTaskTomorrow(task)
+    // Create highlighted task name
+    val highlightedName = buildHighlightedText(task.name, searchText)
 
     ElevatedCard(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
-            .clickable { showDetails = true },
+            .clickable { /* Handle showing details or editing */ },
         colors = CardDefaults.elevatedCardColors(
             containerColor = MaterialTheme.colorScheme.surface,
             contentColor = MaterialTheme.colorScheme.onSurface
         ),
-        elevation = CardDefaults.elevatedCardElevation(
-            defaultElevation = 1.dp
-        )
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp)
     ) {
         Row(
             modifier = Modifier
@@ -138,23 +152,12 @@ fun TaskItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(
-                onClick = {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        vibrator?.vibrate(
-                            VibrationEffect.createOneShot(
-                                200,
-                                VibrationEffect.DEFAULT_AMPLITUDE
-                            )
-                        )
-                    }
-                    onCompleteToggle(task)
-                }
+                onClick = { onCompleteToggle(task) }
             ) {
                 Icon(
                     imageVector = if (task.completed) Icons.Default.CheckCircle
                     else Icons.Default.RadioButtonUnchecked,
-                    contentDescription = if (task.completed) "Mark as Incomplete"
-                    else "Mark as Complete",
+                    contentDescription = null,
                     tint = if (task.completed) MaterialTheme.colorScheme.primary
                     else MaterialTheme.colorScheme.outline
                 )
@@ -182,8 +185,9 @@ fun TaskItem(
                             )
                     )
 
+                    // Use the AnnotatedString for highlighting
                     Text(
-                        text = task.name,
+                        text = highlightedName,
                         style = MaterialTheme.typography.titleMedium,
                         color = if (task.completed)
                             MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
@@ -203,16 +207,11 @@ fun TaskItem(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     BadgeItem(
-                        badgeText = when {
-                            isToday -> "Today"
-                            isTomorrow -> "Tomorrow"
-                            else -> SimpleDateFormat("dd-MM-yyyy", Locale.US)
-                                .format(task.deadline)
-                        },
+                        badgeText = SimpleDateFormat("dd-MM-yyyy", Locale.US).format(task.deadline),
                         badgeColor = when {
-                            isToday -> MaterialTheme.colorScheme.errorContainer
-                            isTomorrow -> MaterialTheme.colorScheme.primaryContainer
-                            isExpired -> MaterialTheme.colorScheme.error
+                            isTaskToday(task) -> MaterialTheme.colorScheme.errorContainer
+                            isTaskTomorrow(task) -> MaterialTheme.colorScheme.primaryContainer
+                            isTaskExpired(task) -> MaterialTheme.colorScheme.error
                             else -> MaterialTheme.colorScheme.surfaceVariant
                         },
                         badgeIcon = R.drawable.calender_black
@@ -245,45 +244,29 @@ fun TaskItem(
             }
         }
     }
-
-    if (showDetails) {
-        TaskDetails(
-            task = task,
-            onDismiss = { showDetails = false },
-            onUpdateTask = onUpdateTask
-        )
-    }
 }
+
+
 
 @SuppressLint("UseOfNonLambdaOffsetOverload")
 @Composable
 fun SwipeableTaskItem(
     task: Task,
+    searchText: String,
     onDelete: (Task) -> Unit,
     onCompleteToggle: (Task) -> Unit,
     onUpdateTask: (Task) -> Unit
 ) {
     var offsetX by remember { mutableStateOf(0f) }
     val swipeThreshold = 200f
-    val dragScaleFactor = 0.5f
-
-    val animatedOffsetX by animateFloatAsState(
-        targetValue = offsetX,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
-        )
-    )
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
             .pointerInput(Unit) {
                 detectHorizontalDragGestures(
                     onHorizontalDrag = { change, dragAmount ->
-                        offsetX = (offsetX + dragAmount * dragScaleFactor)
-                            .coerceAtLeast(0f)
+                        offsetX = (offsetX + dragAmount).coerceAtLeast(0f)
                         change.consume()
                     },
                     onDragEnd = {
@@ -297,13 +280,16 @@ fun SwipeableTaskItem(
     ) {
         TaskItem(
             task = task,
+            searchText = searchText,
             onDelete = onDelete,
             onCompleteToggle = onCompleteToggle,
             onUpdateTask = onUpdateTask,
-            modifier = Modifier.offset(x = animatedOffsetX.dp)
+            modifier = Modifier.offset(x = offsetX.dp)
         )
     }
 }
+
+
 
 @Composable
 private fun isTaskToday(task: Task): Boolean {

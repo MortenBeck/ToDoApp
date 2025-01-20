@@ -82,7 +82,8 @@ fun HomeScreen(
                 onCompleteToggle = { task ->
                     onUpdateTask(task.copy(completed = !task.completed))
                 },
-                onUpdateTask = onUpdateTask
+                onUpdateTask = onUpdateTask,
+                searchText = searchText
             )
         }
     }

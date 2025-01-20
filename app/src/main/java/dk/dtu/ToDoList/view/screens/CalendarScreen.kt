@@ -148,7 +148,8 @@ private fun TasksForSelectedDate(
     selectedDate: LocalDate,
     onDelete: (Task) -> Unit,
     onCompleteToggle: (Task) -> Unit,
-    onUpdateTask: (Task) -> Unit
+    onUpdateTask: (Task) -> Unit,
+    searchText: String = ""
 ) {
     val tasksForDate = remember(selectedDate, tasks) {
         tasks.filter { task ->
@@ -175,7 +176,8 @@ private fun TasksForSelectedDate(
                 modifier = Modifier.fillMaxWidth(),
                 onDelete = onDelete,
                 onCompleteToggle = onCompleteToggle,
-                onUpdateTask = onUpdateTask
+                onUpdateTask = onUpdateTask,
+                searchText = searchText
             )
         } else {
             Text(
