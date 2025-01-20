@@ -68,7 +68,7 @@ fun TopBar(
                             .height(48.dp)
                             .padding(horizontal = 8.dp),
                         shape = MaterialTheme.shapes.medium,
-                        color = MaterialTheme.colorScheme.surfaceVariant
+                        color = Color.White
                     ) {
                         Box(
                             modifier = Modifier
