@@ -13,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import dk.dtu.ToDoList.model.data.Task
 import dk.dtu.ToDoList.view.components.*
@@ -22,6 +23,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import androidx.lifecycle.lifecycleScope
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarScreen(
     tasks: List<Task>,
@@ -30,7 +32,8 @@ fun CalendarScreen(
     onUpdateTask: (Task) -> Unit,
     onDeleteTask: (String) -> Unit
 ) {
-    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    val lifecycleOwner = LocalLifecycleOwner.current // Add this line
+
     var selectedDate by remember {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             mutableStateOf(LocalDate.now())
@@ -187,15 +190,15 @@ private fun TasksForSelectedDate(
                 .fillMaxWidth()
                 .padding(vertical = 8.dp),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer
+                containerColor = MaterialTheme.colorScheme.background // Use default background color
             ),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             Text(
                 text = selectedDate.format(DateTimeFormatter.ofPattern("MMMM d, yyyy")),
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                modifier = Modifier.padding(12.dp)
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface, // Use default onSurface color
+                modifier = Modifier.padding(8.dp)
             )
         }
 
@@ -214,7 +217,7 @@ private fun TasksForSelectedDate(
                 text = "No tasks scheduled for this day",
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(vertical = 8.dp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurface // Use default onSurface color
             )
         }
     }
