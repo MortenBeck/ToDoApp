@@ -29,7 +29,6 @@ fun HomeScreen(
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current
     var showAddDialog by remember { mutableStateOf(false) }
-    var taskToDelete by remember { mutableStateOf<Task?>(null) }
     var searchText by remember { mutableStateOf("") }
     var filteredTasks by remember(tasks) { mutableStateOf(tasks) }
 
@@ -81,7 +80,7 @@ fun HomeScreen(
                 tasks = searchFilteredTasks,
                 onDelete = { task ->
                     if (task.recurringGroupId != null) {
-                        taskToDelete = task
+                        onDeleteRecurringGroup(task.recurringGroupId)
                     } else {
                         onDeleteTask(task.id)
                     }
@@ -106,68 +105,5 @@ fun HomeScreen(
             },
             lifecycleScope = lifecycleOwner.lifecycleScope
         )
-    }
-
-    if (taskToDelete != null) {
-        if (taskToDelete!!.recurringGroupId != null) {
-            AlertDialog(
-                onDismissRequest = { taskToDelete = null },
-                title = { Text("Delete Recurring Task") },
-                text = {
-                    Text(
-                        if (taskToDelete!!.isRecurringParent) {
-                            "Do you want to delete all instances of '${taskToDelete!!.name}' or just this one?"
-                        } else {
-                            "This task is part of a recurring series. Do you want to delete all instances or just this one?"
-                        }
-                    )
-                },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            taskToDelete!!.recurringGroupId?.let { groupId ->
-                                onDeleteRecurringGroup(groupId)
-                            }
-                            taskToDelete = null
-                        }
-                    ) {
-                        Text("Delete All")
-                    }
-                },
-                dismissButton = {
-                    TextButton(
-                        onClick = {
-                            onDeleteTask(taskToDelete!!.id)
-                            taskToDelete = null
-                        }
-                    ) {
-                        Text("Delete This Only")
-                    }
-                }
-            )
-        } else {
-            AlertDialog(
-                onDismissRequest = { taskToDelete = null },
-                title = { Text("Delete Task") },
-                text = { Text("Are you sure you want to delete '${taskToDelete!!.name}'?") },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            onDeleteTask(taskToDelete!!.id)
-                            taskToDelete = null
-                        }
-                    ) {
-                        Text("Delete")
-                    }
-                },
-                dismissButton = {
-                    TextButton(
-                        onClick = { taskToDelete = null }
-                    ) {
-                        Text("Cancel")
-                    }
-                }
-            )
-        }
     }
 }
