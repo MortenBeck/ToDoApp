@@ -171,7 +171,6 @@ fun TaskListScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SectionHeader(
     title: String,

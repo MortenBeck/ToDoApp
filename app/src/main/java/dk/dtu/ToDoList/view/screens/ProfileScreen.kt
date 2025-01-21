@@ -21,7 +21,6 @@ import dk.dtu.ToDoList.view.components.SettingsItem
 import com.google.firebase.auth.FirebaseAuth
 import java.util.*
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(navController: NavController) {
     val context = LocalContext.current
@@ -47,9 +46,9 @@ fun ProfileScreen(navController: NavController) {
     }
 
     // State for task statistics
-    var todayTasksCount by remember { mutableStateOf(0) }
-    var completedTodayCount by remember { mutableStateOf(0) }
-    var upcomingTasksCount by remember { mutableStateOf(0) }
+    var todayTasksCount by remember { mutableIntStateOf(0) }
+    var completedTodayCount by remember { mutableIntStateOf(0) }
+    var upcomingTasksCount by remember { mutableIntStateOf(0) }
 
     // Use Flow to observe tasks
     LaunchedEffect(key1 = true) {

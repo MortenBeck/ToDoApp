@@ -3,14 +3,14 @@ package dk.dtu.ToDoList.view.screens
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -56,7 +56,7 @@ fun AccountSettingsScreen(navController: NavController) {
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
@@ -165,7 +165,7 @@ fun AccountSettingsScreen(navController: NavController) {
                         headlineContent = { Text("Logout") },
                         leadingContent = {
                             Icon(
-                                Icons.Default.Logout,
+                                Icons.AutoMirrored.Filled.Logout,
                                 contentDescription = "Logout",
                                 tint = MaterialTheme.colorScheme.error
                             )
@@ -212,7 +212,7 @@ fun AccountSettingsScreen(navController: NavController) {
             if (showLogoutDialog) {
                 AlertDialog(
                     onDismissRequest = { showLogoutDialog = false },
-                    icon = { Icon(Icons.Default.Logout, contentDescription = null) },
+                    icon = { Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null) },
                     title = { Text("Confirm Logout") },
                     text = { Text("Are you sure you want to log out?") },
                     confirmButton = {

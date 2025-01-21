@@ -1,17 +1,15 @@
 package dk.dtu.ToDoList.view.components
 
+import android.os.Build
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import dk.dtu.ToDoList.model.data.Task
 import dk.dtu.ToDoList.model.data.TaskPriority
-import java.time.YearMonth
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import java.util.Date
 
 @Composable
@@ -26,9 +24,13 @@ fun TaskDetails(
     var taskName by remember { mutableStateOf(task.name) }
     var priorityLevel by remember { mutableStateOf(task.priority.name.lowercase().replaceFirstChar { it.uppercase() }) }
     var selectedTag by remember { mutableStateOf(task.tag) }
-    var isCompleted by remember { mutableStateOf(task.completed) }
-    var deadline by remember {
-        mutableStateOf(task.deadline.toInstant().atZone(ZoneId.systemDefault()).toLocalDate())
+    val isCompleted by remember { mutableStateOf(task.completed) }
+    val deadline by remember {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            mutableStateOf(task.deadline.toInstant().atZone(ZoneId.systemDefault()).toLocalDate())
+        } else {
+            TODO("VERSION.SDK_INT < O")
+        }
     }
     var showDeleteDialog by remember { mutableStateOf(false) }
 

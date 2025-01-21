@@ -11,7 +11,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -21,11 +20,8 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.res.painterResource
 import androidx.lifecycle.lifecycleScope
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarScreen(
     tasks: List<Task>,
@@ -34,8 +30,7 @@ fun CalendarScreen(
     onUpdateTask: (Task) -> Unit,
     onDeleteTask: (String) -> Unit
 ) {
-    val lifecycleOwner = LocalLifecycleOwner.current // Add this line
-
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     var selectedDate by remember {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             mutableStateOf(LocalDate.now())

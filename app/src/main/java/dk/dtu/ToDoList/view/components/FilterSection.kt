@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -211,7 +213,7 @@ fun FilterSection(
                 }
 
                 if (isExpanded) {
-                    Divider(modifier = Modifier.padding(horizontal = 16.dp))
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
 
                     Column(
                         modifier = Modifier
@@ -293,9 +295,17 @@ fun FilterSection(
                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
                                 listOf(
-                                    Triple("Yesterday", Icons.Outlined.KeyboardArrowLeft, -1),
+                                    Triple(
+                                        "Yesterday",
+                                        Icons.AutoMirrored.Outlined.KeyboardArrowLeft,
+                                        -1
+                                    ),
                                     Triple("Today", Icons.Default.CalendarToday, 0),
-                                    Triple("Tomorrow", Icons.Outlined.KeyboardArrowRight, 1)
+                                    Triple(
+                                        "Tomorrow",
+                                        Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                                        1
+                                    )
                                 ).forEach { (label, icon, offset) ->
                                     val isSelected = when (offset) {
                                         -1 -> selectedStartDate?.equals(LocalDate.now().minusDays(1)) == true
