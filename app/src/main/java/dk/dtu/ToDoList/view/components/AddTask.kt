@@ -20,6 +20,7 @@ import dk.dtu.ToDoList.model.data.TaskTag
 import dk.dtu.ToDoList.model.data.RecurrencePattern
 import dk.dtu.ToDoList.model.repository.TaskCRUD
 import dk.dtu.ToDoList.view.components.Calendar
+import dk.dtu.ToDoList.view.theme.getPrioColor
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.YearMonth
@@ -212,21 +213,15 @@ fun PriorityChip(
     onClick: () -> Unit,
 ) {
     val isSelected = text == selectedPriority
-    val backgroundColor = when {
-        isSelected -> when(text) {
-            "Low" -> MaterialTheme.colorScheme.primaryContainer
-            "Medium" -> MaterialTheme.colorScheme.secondaryContainer
-            else -> MaterialTheme.colorScheme.errorContainer
-        }
-        else -> MaterialTheme.colorScheme.surface
+    val backgroundColor = if (isSelected) {
+        getPrioColor(TaskPriority.valueOf(text.uppercase()))
+    } else {
+        MaterialTheme.colorScheme.surface
     }
-    val textColor = when {
-        isSelected -> when(text) {
-            "Low" -> MaterialTheme.colorScheme.onPrimaryContainer
-            "Medium" -> MaterialTheme.colorScheme.onSecondaryContainer
-            else -> MaterialTheme.colorScheme.onErrorContainer
-        }
-        else -> MaterialTheme.colorScheme.onSurface
+    val textColor = if (isSelected) {
+        MaterialTheme.colorScheme.onSurface
+    } else {
+        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
     }
 
     OutlinedButton(
