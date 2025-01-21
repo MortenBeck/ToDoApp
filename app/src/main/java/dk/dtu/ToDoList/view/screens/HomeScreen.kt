@@ -1,20 +1,29 @@
 package dk.dtu.ToDoList.view.screens
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.res.painterResource
 import dk.dtu.ToDoList.view.components.AddTaskDialog
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
+import dk.dtu.ToDoList.R
 import dk.dtu.ToDoList.model.data.Task
 import dk.dtu.ToDoList.view.components.*
+import androidx.compose.foundation.Image
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
@@ -58,39 +67,50 @@ fun HomeScreen(
             }
         }
     ) { paddingValues ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = paddingValues.calculateTopPadding(), bottom = 22.dp)
         ) {
-            Box(
+            Image(
+                painter = painterResource(id = R.drawable.background_gradient),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.FillBounds
+            )
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 4.dp)
+                    .fillMaxSize()
+                    .padding(top = paddingValues.calculateTopPadding(), bottom = 22.dp)
             ) {
-                FilterSection(
-                    tasks = tasks,
-                    onFilterChange = { newFilteredTasks ->
-                        filteredTasks = newFilteredTasks
-                    }
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                ) {
+                    FilterSection(
+                        tasks = tasks,
+                        onFilterChange = { newFilteredTasks ->
+                            filteredTasks = newFilteredTasks
+                        }
+                    )
+                }
+
+                TaskListScreen(
+                    tasks = searchFilteredTasks,
+                    onDelete = { task ->
+                        if (task.recurringGroupId != null) {
+                            onDeleteRecurringGroup(task.recurringGroupId)
+                        } else {
+                            onDeleteTask(task.id)
+                        }
+                    },
+                    onCompleteToggle = { task ->
+                        onUpdateTask(task.copy(completed = !task.completed))
+                    },
+                    onUpdateTask = onUpdateTask,
+                    searchText = searchText
                 )
             }
-
-            TaskListScreen(
-                tasks = searchFilteredTasks,
-                onDelete = { task ->
-                    if (task.recurringGroupId != null) {
-                        onDeleteRecurringGroup(task.recurringGroupId)
-                    } else {
-                        onDeleteTask(task.id)
-                    }
-                },
-                onCompleteToggle = { task ->
-                    onUpdateTask(task.copy(completed = !task.completed))
-                },
-                onUpdateTask = onUpdateTask,
-                searchText = searchText
-            )
         }
     }
 

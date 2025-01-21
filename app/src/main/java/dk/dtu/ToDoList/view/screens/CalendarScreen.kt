@@ -1,5 +1,10 @@
 package dk.dtu.ToDoList.view.screens
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import dk.dtu.ToDoList.R
 import android.os.Build
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -17,6 +22,7 @@ import java.time.YearMonth
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.painterResource
 import androidx.lifecycle.lifecycleScope
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -57,46 +63,58 @@ fun CalendarScreen(
             }
         }
     ) { paddingValues ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp)
         ) {
-            Card(
+            Image(
+                painter = painterResource(id = R.drawable.background_gradient),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.FillBounds
+            )
+
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                ),
-                elevation = CardDefaults.cardElevation(
-                    defaultElevation = 2.dp
-                )
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(horizontal = 16.dp)
             ) {
-                Calendar(
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    elevation = CardDefaults.cardElevation(
+                        defaultElevation = 2.dp
+                    )
+                ) {
+                    Calendar(
+                        selectedDate = selectedDate,
+                        currentMonth = currentMonth,
+                        onDateSelected = { selectedDate = it },
+                        onMonthChanged = { currentMonth = it },
+                        tasks = tasks
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                TasksForSelectedDate(
+                    tasks = tasks,
                     selectedDate = selectedDate,
-                    currentMonth = currentMonth,
-                    onDateSelected = { selectedDate = it },
-                    onMonthChanged = { currentMonth = it },
-                    tasks = tasks
+                    onDelete = { task ->
+                        taskToDelete = task
+                        showDeleteDialog = true
+                    },
+                    onCompleteToggle = { task ->
+                        onUpdateTask(task.copy(completed = !task.completed))
+                    },
+                    onUpdateTask = onUpdateTask
                 )
             }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            TasksForSelectedDate(
-                tasks = tasks,
-                selectedDate = selectedDate,
-                onDelete = { task ->
-                    taskToDelete = task
-                    showDeleteDialog = true
-                },
-                onCompleteToggle = { task ->
-                    onUpdateTask(task.copy(completed = !task.completed))
-                },
-                onUpdateTask = onUpdateTask
-            )
         }
     }
 
