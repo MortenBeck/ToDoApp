@@ -19,35 +19,54 @@ fun TaskDetails(
     task: Task,
     onDismiss: () -> Unit,
     onUpdateTask: (Task) -> Unit,
-    onDeleteTask: (Task) -> Unit,  // Add this parameter
-    onDeleteRecurringGroup: (String) -> Unit  // Add this parameter
+    onDeleteTask: (Task) -> Unit,
+    onDeleteRecurringGroup: (String) -> Unit
 ) {
     var taskName by remember { mutableStateOf(task.name) }
     var selectedPriority by remember { mutableStateOf(task.priority.name) }
     var selectedTag by remember { mutableStateOf(task.tag) }
     var isCompleted by remember { mutableStateOf(task.completed) }
     var deadline by remember { mutableStateOf(task.deadline.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()) }
-    var showDatePicker by remember { mutableStateOf(false) }
-    var currentMonth by remember { mutableStateOf(YearMonth.now()) }
     var priorityLevel by remember { mutableStateOf(task.priority.name) }
-
-    // Add state for delete dialog
     var showDeleteDialog by remember { mutableStateOf(false) }
 
-    // Show delete dialog if needed
     if (showDeleteDialog) {
-        DeleteRecurringTaskDialog(
-            task = task,
-            onDismiss = { showDeleteDialog = false },
-            onDeleteSingle = {
-                onDeleteTask(task)
-                onDismiss()
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Delete Recurring Task") },
+            text = {
+                Text(
+                    if (task.isRecurringParent) {
+                        "This is the first task in a recurring series. Would you like to delete just this instance or all recurring instances of this task?"
+                    } else {
+                        "This is part of a recurring series. Would you like to delete just this instance or all recurring instances of this task?"
+                    }
+                )
             },
-            onDeleteGroup = {
-                task.recurringGroupId?.let { groupId ->
-                    onDeleteRecurringGroup(groupId)
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        task.recurringGroupId?.let { groupId ->
+                            onDeleteRecurringGroup(groupId)
+                        }
+                        onDismiss()
+                    },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text("Delete All")
                 }
-                onDismiss()
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        onDeleteTask(task)
+                        onDismiss()
+                    }
+                ) {
+                    Text("Delete This Only")
+                }
             }
         )
     }
@@ -138,9 +157,15 @@ fun TaskDetails(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Add Delete button
                 OutlinedButton(
-                    onClick = { showDeleteDialog = true },
+                    onClick = {
+                        if (task.recurringGroupId != null) {
+                            showDeleteDialog = true
+                        } else {
+                            onDeleteTask(task)
+                            onDismiss()
+                        }
+                    },
                     colors = ButtonDefaults.outlinedButtonColors(
                         contentColor = MaterialTheme.colorScheme.error
                     ),
@@ -151,7 +176,6 @@ fun TaskDetails(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Update the existing buttons row
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -192,11 +216,6 @@ fun DeleteRecurringTaskDialog(
     onDeleteSingle: () -> Unit,
     onDeleteGroup: () -> Unit
 ) {
-    if (task.recurringGroupId == null) {
-        onDeleteSingle()
-        return
-    }
-
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Delete Recurring Task") },
@@ -211,10 +230,7 @@ fun DeleteRecurringTaskDialog(
         },
         confirmButton = {
             TextButton(
-                onClick = {
-                    onDeleteGroup()
-                    onDismiss()
-                },
+                onClick = onDeleteGroup,
                 colors = ButtonDefaults.textButtonColors(
                     contentColor = MaterialTheme.colorScheme.error
                 )
@@ -224,10 +240,7 @@ fun DeleteRecurringTaskDialog(
         },
         dismissButton = {
             TextButton(
-                onClick = {
-                    onDeleteSingle()
-                    onDismiss()
-                }
+                onClick = onDeleteSingle
             ) {
                 Text("Delete This Only")
             }

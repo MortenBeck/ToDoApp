@@ -182,7 +182,8 @@ private fun TasksForSelectedDate(
                 onDelete = onDelete,
                 onCompleteToggle = onCompleteToggle,
                 onUpdateTask = onUpdateTask,
-                searchText = searchText
+                searchText = searchText,
+                onDeleteRequest = onDelete
             )
         } else {
             Text(

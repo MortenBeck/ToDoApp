@@ -38,6 +38,7 @@ import dk.dtu.ToDoList.model.data.TaskPriority
 import dk.dtu.ToDoList.model.data.TaskTag
 import java.text.SimpleDateFormat
 import java.util.*
+import androidx.compose.material3.AlertDialog
 
 @Composable
 fun TaskList(
@@ -46,7 +47,8 @@ fun TaskList(
     modifier: Modifier = Modifier,
     onDelete: (Task) -> Unit,
     onCompleteToggle: (Task) -> Unit,
-    onUpdateTask: (Task) -> Unit
+    onUpdateTask: (Task) -> Unit,
+    onDeleteRequest: (Task) -> Unit  // Add this parameter to forward delete requests
 ) {
     val filteredTasks = if (searchText.isNotEmpty()) {
         Tasks.filter { it.name.contains(searchText, ignoreCase = true) }
@@ -64,7 +66,8 @@ fun TaskList(
                 searchText = searchText,
                 onDelete = onDelete,
                 onCompleteToggle = onCompleteToggle,
-                onUpdateTask = onUpdateTask
+                onUpdateTask = onUpdateTask,
+                onDeleteRequest = onDeleteRequest  // Forward the delete request to parent
             )
         }
     }
@@ -274,7 +277,8 @@ fun SwipeableTaskItem(
     searchText: String,
     onDelete: (Task) -> Unit,
     onCompleteToggle: (Task) -> Unit,
-    onUpdateTask: (Task) -> Unit
+    onUpdateTask: (Task) -> Unit,
+    onDeleteRequest: (Task) -> Unit = {}
 ) {
     var offsetX by remember { mutableStateOf(0f) }
     val swipeThreshold = 200f
@@ -290,7 +294,7 @@ fun SwipeableTaskItem(
                     },
                     onDragEnd = {
                         if (offsetX > swipeThreshold) {
-                            onDelete(task)
+                            onDeleteRequest(task)
                         }
                         offsetX = 0f
                     }
@@ -300,7 +304,7 @@ fun SwipeableTaskItem(
         TaskItem(
             task = task,
             searchText = searchText,
-            onDelete = onDelete,
+            onDelete = onDeleteRequest,  // Change this to use onDeleteRequest instead of onDelete
             onCompleteToggle = onCompleteToggle,
             onUpdateTask = onUpdateTask,
             modifier = Modifier.offset(x = offsetX.dp)

@@ -24,6 +24,8 @@ fun TaskListScreen(
     onUpdateTask: (Task) -> Unit,
     searchText: String
 ) {
+    var taskToDelete by remember { mutableStateOf<Task?>(null) }
+
     val todayStart = Calendar.getInstance().apply {
         set(Calendar.HOUR_OF_DAY, 0)
         set(Calendar.MINUTE, 0)
@@ -79,7 +81,6 @@ fun TaskListScreen(
             modifier = Modifier.fillMaxWidth(),
             contentPadding = PaddingValues(bottom = 80.dp)
         ) {
-            // Function to handle rendering of sections
             fun renderSection(
                 title: String,
                 tasks: List<Task>,
@@ -101,10 +102,11 @@ fun TaskListScreen(
                         ) { _, task ->
                             SwipeableTaskItem(
                                 task = task,
-                                onDelete = { onDelete(task) },
-                                onCompleteToggle = { onCompleteToggle(task) },
+                                searchText = searchText,
+                                onDelete = onDelete,
+                                onCompleteToggle = onCompleteToggle,
                                 onUpdateTask = onUpdateTask,
-                                searchText = searchText
+                                onDeleteRequest = { taskToDelete = it }
                             )
                         }
                     }
@@ -117,11 +119,59 @@ fun TaskListScreen(
             renderSection("Past Completions", completedTasks, isCompletedExpanded)
         }
     }
+
+    // Delete confirmation dialog
+    if (taskToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { taskToDelete = null },
+            title = { Text("Delete Task") },
+            text = {
+                Text(
+                    if (taskToDelete?.recurringGroupId != null)
+                        "This task is part of a recurring series. Do you want to delete all instances or just this one?"
+                    else
+                        "Are you sure you want to delete this task?"
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        taskToDelete?.let { task ->
+                            if (task.recurringGroupId != null) {
+                                // Delete all recurring instances
+                                tasks.filter { it.recurringGroupId == task.recurringGroupId }
+                                    .forEach { onDelete(it) }
+                            } else {
+                                // Delete single task
+                                onDelete(task)
+                            }
+                        }
+                        taskToDelete = null
+                    }
+                ) {
+                    Text(if (taskToDelete?.recurringGroupId != null) "Delete All" else "Delete")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        if (taskToDelete?.recurringGroupId != null) {
+                            // Delete only this instance of recurring task
+                            taskToDelete?.let { onDelete(it) }
+                        }
+                        taskToDelete = null
+                    }
+                ) {
+                    Text(if (taskToDelete?.recurringGroupId != null) "Delete This Only" else "Cancel")
+                }
+            }
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SectionHeader(
+fun SectionHeader(  // Removed 'private' modifier since it's not allowed for composables
     title: String,
     count: Int,
     isExpanded: Boolean,
