@@ -49,7 +49,7 @@ fun Calendar(
 
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surface,
+        color = MaterialTheme.colorScheme.background,
         tonalElevation = 1.dp
     ) {
         Column(
@@ -144,8 +144,8 @@ fun DayCell(
 ) {
     val isToday = date == LocalDate.now()
     val cellColor = when {
-        isSelected -> MaterialTheme.colorScheme.primaryContainer
-        isToday -> MaterialTheme.colorScheme.secondaryContainer
+        isSelected -> MaterialTheme.colorScheme.outline
+        isToday -> MaterialTheme.colorScheme.outlineVariant
         else -> MaterialTheme.colorScheme.surface
     }
     val textColor = when {

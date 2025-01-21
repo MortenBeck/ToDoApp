@@ -27,7 +27,7 @@ private val LightColorScheme = lightColorScheme(
     tertiaryContainer = Color(0xFFFBD7FC),
     onTertiaryContainer = Color(0xFF29132D),
 
-    error = Color(0xFFDA4453),
+    error = Color(0xFFED5565),
     onError = Color(0xFFFFFFFF),
     errorContainer = Color(0xFFFFDAD6),
     onErrorContainer = Color(0xFF410002),
@@ -40,7 +40,7 @@ private val LightColorScheme = lightColorScheme(
     surfaceVariant = Color(0xFFE1E2EC),
     onSurfaceVariant = Color(0xFF44474F),
 
-    outline = Color(0xFF74777F),
+    outline = Color(0xFF83868A),
     outlineVariant = Color(0xFFC4C6D0),
 
     // Surface containers for elevation
@@ -75,7 +75,7 @@ fun ToDoListTheme(
 @Composable
 fun getTaskColor(tag: TaskTag): Color {
     return when (tag) {
-        TaskTag.WORK -> Color(0xFF4FC1E9)
+        TaskTag.WORK -> Color(0xFF5D9CEC)
         TaskTag.SCHOOL -> Color(0xFFFC6E51)
         TaskTag.SPORT -> Color(0xFFAC92EC)
         TaskTag.TRANSPORT -> Color(0xFFFFCE54)
