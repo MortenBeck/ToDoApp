@@ -22,12 +22,14 @@ fun TaskDetails(
     onDeleteTask: (Task) -> Unit,
     onDeleteRecurringGroup: (String) -> Unit
 ) {
+    // Initialize state variables based on the task's properties
     var taskName by remember { mutableStateOf(task.name) }
-    var selectedPriority by remember { mutableStateOf(task.priority.name) }
+    var priorityLevel by remember { mutableStateOf(task.priority.name.lowercase().replaceFirstChar { it.uppercase() }) }
     var selectedTag by remember { mutableStateOf(task.tag) }
     var isCompleted by remember { mutableStateOf(task.completed) }
-    var deadline by remember { mutableStateOf(task.deadline.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()) }
-    var priorityLevel by remember { mutableStateOf(task.priority.name) }
+    var deadline by remember {
+        mutableStateOf(task.deadline.toInstant().atZone(ZoneId.systemDefault()).toLocalDate())
+    }
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     if (showDeleteDialog) {
@@ -190,7 +192,7 @@ fun TaskDetails(
                         onClick = {
                             val updatedTask = task.copy(
                                 name = taskName,
-                                priority = TaskPriority.valueOf(selectedPriority.uppercase()),
+                                priority = TaskPriority.valueOf(priorityLevel.uppercase()),
                                 tag = selectedTag,
                                 completed = isCompleted,
                                 deadline = Date.from(deadline.atStartOfDay(ZoneId.systemDefault()).toInstant()),
