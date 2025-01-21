@@ -1,18 +1,11 @@
 package dk.dtu.ToDoList.view.components
 
 import android.annotation.SuppressLint
-import android.os.Build
-import android.os.VibrationEffect
-import android.os.Vibrator
-import androidx.compose.animation.core.*
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
@@ -20,17 +13,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dk.dtu.ToDoList.R
 import dk.dtu.ToDoList.model.data.Task
@@ -40,7 +29,9 @@ import dk.dtu.ToDoList.view.theme.getPrioColor
 import dk.dtu.ToDoList.view.theme.getTaskColor
 import java.text.SimpleDateFormat
 import java.util.*
-import androidx.compose.material3.AlertDialog
+import androidx.compose.material.icons.outlined.KeyboardDoubleArrowUp
+import androidx.compose.material.icons.outlined.KeyboardDoubleArrowDown
+import androidx.compose.material.icons.outlined.DragHandle
 
 @Composable
 fun TaskList(
@@ -179,13 +170,15 @@ fun TaskItem(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(12.dp)
-                            .clip(CircleShape)
-                            .background(
-                                getPrioColor(task.priority)
-                            )
+                    Icon(
+                        imageVector = when (task.priority) {
+                            TaskPriority.HIGH -> Icons.Outlined.KeyboardDoubleArrowUp
+                            TaskPriority.MEDIUM -> Icons.Outlined.DragHandle
+                            TaskPriority.LOW -> Icons.Outlined.KeyboardDoubleArrowDown
+                        },
+                        contentDescription = "Priority ${task.priority}",
+                        tint = getPrioColor(task.priority),
+                        modifier = Modifier.size(20.dp)
                     )
 
                     Text(
