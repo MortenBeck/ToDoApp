@@ -79,7 +79,7 @@ class WeatherViewModel(
             "01d","01n" -> dk.dtu.ToDoList.R.drawable.weather_sun
             "02d","02n" -> dk.dtu.ToDoList.R.drawable.weather // Cloudy
             "03d", "04d","03n","04n" -> dk.dtu.ToDoList.R.drawable.weather // Cloudy
-            "09d", "10d","09n","10n" -> dk.dtu.ToDoList.R.drawable.weather // Rain (placeholder)
+            "09d", "10d","09n","10n" -> dk.dtu.ToDoList.R.drawable.weather_rain_placeholder // Rain (placeholder)
             "11d","11n" -> dk.dtu.ToDoList.R.drawable.weather_thunderstorm
             "13d","13n" -> dk.dtu.ToDoList.R.drawable.weather_snow
             "50d","50n" -> dk.dtu.ToDoList.R.drawable.weather // Mist (placeholder)
