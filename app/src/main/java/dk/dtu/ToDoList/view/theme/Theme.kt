@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import dk.dtu.ToDoList.model.data.TaskPriority
 import dk.dtu.ToDoList.model.data.TaskTag
 
 private val LightColorScheme = lightColorScheme(
@@ -82,5 +83,14 @@ fun getTaskColor(tag: TaskTag): Color {
         TaskTag.HOME -> Color(0xFF673AB7)
         TaskTag.PRIVATE -> Color(0xFFD32F2F)
         TaskTag.SOCIAL -> Color(0xFF0097A7)
+    }
+}
+
+@Composable
+fun getPrioColor(priority: TaskPriority): Color {
+    return when (priority){
+        TaskPriority.HIGH -> Color(0xFFD32F2F)
+        TaskPriority.MEDIUM -> Color(0xFFF57F17)
+        TaskPriority.LOW -> Color(0xFF1565C0)
     }
 }

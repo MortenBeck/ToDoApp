@@ -36,6 +36,7 @@ import dk.dtu.ToDoList.R
 import dk.dtu.ToDoList.model.data.Task
 import dk.dtu.ToDoList.model.data.TaskPriority
 import dk.dtu.ToDoList.model.data.TaskTag
+import dk.dtu.ToDoList.view.theme.getPrioColor
 import dk.dtu.ToDoList.view.theme.getTaskColor
 import java.text.SimpleDateFormat
 import java.util.*
@@ -180,11 +181,7 @@ fun TaskItem(
                             .size(12.dp)
                             .clip(CircleShape)
                             .background(
-                                when (task.priority) {
-                                    TaskPriority.HIGH -> MaterialTheme.colorScheme.error
-                                    TaskPriority.MEDIUM -> MaterialTheme.colorScheme.tertiary
-                                    TaskPriority.LOW -> MaterialTheme.colorScheme.primary
-                                }
+                                getPrioColor(task.priority)
                             )
                     )
 

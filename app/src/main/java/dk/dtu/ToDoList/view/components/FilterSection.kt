@@ -25,6 +25,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Date
 import dk.dtu.ToDoList.view.theme.getTaskColor
+import dk.dtu.ToDoList.view.theme.getPrioColor
 
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -309,11 +310,7 @@ fun FilterSection(
                         ) {
                             TaskPriority.entries.forEach { priority ->
                                 val isSelected = selectedPriorities.contains(priority)
-                                val priorityColor = when (priority) {
-                                    TaskPriority.HIGH -> Color(0xFFD32F2F)
-                                    TaskPriority.MEDIUM -> Color(0xFFF57F17)
-                                    TaskPriority.LOW -> Color(0xFF1565C0)
-                                }
+                                val priorityColor = getPrioColor(priority)
 
                                 FilterChip(
                                     selected = isSelected,
