@@ -1,5 +1,6 @@
 package dk.dtu.ToDoList.view.screens
 
+import dk.dtu.ToDoList.view.components.AddTaskDialog
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
@@ -8,7 +9,9 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import dk.dtu.ToDoList.model.data.Task
 import dk.dtu.ToDoList.view.components.*
@@ -21,14 +24,15 @@ fun HomeScreen(
     onAddTask: (Task) -> Unit,
     onUpdateTask: (Task) -> Unit,
     onDeleteTask: (String) -> Unit,
+    onDeleteRecurringGroup: (String) -> Unit,
     navController: NavController
 ) {
+    val lifecycleOwner = LocalLifecycleOwner.current
     var showAddDialog by remember { mutableStateOf(false) }
     var taskToDelete by remember { mutableStateOf<Task?>(null) }
     var searchText by remember { mutableStateOf("") }
     var filteredTasks by remember(tasks) { mutableStateOf(tasks) }
 
-    // Search filter
     val searchFilteredTasks = filteredTasks.filter {
         it.name.contains(searchText, ignoreCase = true)
     }
@@ -73,11 +77,14 @@ fun HomeScreen(
                 )
             }
 
-            // Task List
             TaskListScreen(
                 tasks = searchFilteredTasks,
                 onDelete = { task ->
-                    taskToDelete = task
+                    if (task.recurringGroupId != null) {
+                        taskToDelete = task
+                    } else {
+                        onDeleteTask(task.id)
+                    }
                 },
                 onCompleteToggle = { task ->
                     onUpdateTask(task.copy(completed = !task.completed))
@@ -88,7 +95,6 @@ fun HomeScreen(
         }
     }
 
-    // Dialogs
     if (showAddDialog) {
         AddTaskDialog(
             showDialog = showAddDialog,
@@ -97,32 +103,71 @@ fun HomeScreen(
             onTaskAdded = { newTask ->
                 onAddTask(newTask)
                 showAddDialog = false
-            }
+            },
+            lifecycleScope = lifecycleOwner.lifecycleScope
         )
     }
 
     if (taskToDelete != null) {
-        AlertDialog(
-            onDismissRequest = { taskToDelete = null },
-            title = { Text("Delete Task") },
-            text = { Text("Are you sure you want to delete '${taskToDelete!!.name}'?") },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        onDeleteTask(taskToDelete!!.id)
-                        taskToDelete = null
+        if (taskToDelete!!.recurringGroupId != null) {
+            AlertDialog(
+                onDismissRequest = { taskToDelete = null },
+                title = { Text("Delete Recurring Task") },
+                text = {
+                    Text(
+                        if (taskToDelete!!.isRecurringParent) {
+                            "Do you want to delete all instances of '${taskToDelete!!.name}' or just this one?"
+                        } else {
+                            "This task is part of a recurring series. Do you want to delete all instances or just this one?"
+                        }
+                    )
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            taskToDelete!!.recurringGroupId?.let { groupId ->
+                                onDeleteRecurringGroup(groupId)
+                            }
+                            taskToDelete = null
+                        }
+                    ) {
+                        Text("Delete All")
                     }
-                ) {
-                    Text("Delete")
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            onDeleteTask(taskToDelete!!.id)
+                            taskToDelete = null
+                        }
+                    ) {
+                        Text("Delete This Only")
+                    }
                 }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = { taskToDelete = null }
-                ) {
-                    Text("Cancel")
+            )
+        } else {
+            AlertDialog(
+                onDismissRequest = { taskToDelete = null },
+                title = { Text("Delete Task") },
+                text = { Text("Are you sure you want to delete '${taskToDelete!!.name}'?") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            onDeleteTask(taskToDelete!!.id)
+                            taskToDelete = null
+                        }
+                    ) {
+                        Text("Delete")
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = { taskToDelete = null }
+                    ) {
+                        Text("Cancel")
+                    }
                 }
-            }
-        )
+            )
+        }
     }
 }

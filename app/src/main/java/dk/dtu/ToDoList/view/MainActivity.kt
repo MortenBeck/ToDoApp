@@ -191,13 +191,22 @@ fun ToDoApp() {
                     tasks = tasks.value,
                     onAddTask = { task ->
                         scope.launch {
-                            taskCRUD.addTask(task)
+                            Log.d("MainActivity", "Starting task addition from HomeScreen")
+                            if (task.recurrence != null) {
+                                taskCRUD.addTaskWithRecurrence(task)
+                            } else {
+                                taskCRUD.addTask(task)
+                            }
                             snackbarHostState.showSnackbar("Task added successfully")
                         }
                     },
                     onUpdateTask = { task ->
                         scope.launch {
-                            taskCRUD.updateTask(task)
+                            if (task.recurringGroupId != null) {
+                                taskCRUD.updateRecurringGroup(task)
+                            } else {
+                                taskCRUD.updateTask(task)
+                            }
                             snackbarHostState.showSnackbar("Task updated successfully")
                         }
                     },
@@ -211,22 +220,41 @@ fun ToDoApp() {
                             )
                         }
                     },
+                    onDeleteRecurringGroup = { groupId ->
+                        scope.launch {
+                            taskCRUD.deleteRecurringGroup(groupId)
+                            snackbarHostState.showSnackbar(
+                                message = "Recurring task series deleted",
+                                actionLabel = "Undo",
+                                duration = SnackbarDuration.Long
+                            )
+                        }
+                    },
                     navController = navController
                 )
             }
+
             composable("Calendar") {
                 CalendarScreen(
                     tasks = tasks.value,
                     navController = navController,
                     onAddTask = { task ->
                         scope.launch {
-                            taskCRUD.addTask(task)
+                            if (task.recurrence != null) {
+                                taskCRUD.addTaskWithRecurrence(task)
+                            } else {
+                                taskCRUD.addTask(task)
+                            }
                             snackbarHostState.showSnackbar("Event added to calendar")
                         }
                     },
                     onUpdateTask = { task ->
                         scope.launch {
-                            taskCRUD.updateTask(task)
+                            if (task.recurringGroupId != null) {
+                                taskCRUD.updateRecurringGroup(task)
+                            } else {
+                                taskCRUD.updateTask(task)
+                            }
                             snackbarHostState.showSnackbar("Event updated")
                         }
                     },

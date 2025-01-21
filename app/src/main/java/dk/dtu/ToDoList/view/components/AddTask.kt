@@ -1,5 +1,6 @@
 package dk.dtu.ToDoList.view.components
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -8,15 +9,18 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.navigation.NavController
 import dk.dtu.ToDoList.model.data.Task
 import dk.dtu.ToDoList.model.data.TaskPriority
 import dk.dtu.ToDoList.model.data.TaskTag
 import dk.dtu.ToDoList.model.data.RecurrencePattern
+import dk.dtu.ToDoList.model.repository.TaskCRUD
+import dk.dtu.ToDoList.view.components.Calendar
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
@@ -28,8 +32,12 @@ fun AddTaskDialog(
     showDialog: Boolean,
     navController: NavController,
     onDismiss: () -> Unit,
-    onTaskAdded: (Task) -> Unit
+    onTaskAdded: (Task) -> Unit,
+    lifecycleScope: LifecycleCoroutineScope
 ) {
+    val context = LocalContext.current
+    val taskCRUD = remember { TaskCRUD(context) }
+
     if (showDialog) {
         var taskName by remember { mutableStateOf("") }
         var priorityLevel by remember { mutableStateOf("Low") }
@@ -125,7 +133,7 @@ fun AddTaskDialog(
                                     onMonthChanged = { month ->
                                         currentMonth = month
                                     },
-                                    tasks = emptyList()
+                                    tasks = emptyList()  // Just remove the style parameter
                                 )
                             }
                         }

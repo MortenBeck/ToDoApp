@@ -23,7 +23,11 @@ data class Task(
     val subtasks: List<SubTask> = emptyList(),
     val reminderTime: Date? = null,
     val recurrence: RecurrencePattern? = null,
-    val userId: String = ""
+    val userId: String = "",
+    // New fields for recurring task relationship
+    val recurringGroupId: String? = null,  // All tasks in the same recurring group share this ID
+    val isRecurringParent: Boolean = false, // The original task from which others are created
+    val recurringIndex: Int = 0            // Position in the recurring sequence
 ) {
     // Required empty constructor for Firestore
     constructor() : this(

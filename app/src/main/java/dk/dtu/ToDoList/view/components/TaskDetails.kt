@@ -18,7 +18,9 @@ import java.util.Date
 fun TaskDetails(
     task: Task,
     onDismiss: () -> Unit,
-    onUpdateTask: (Task) -> Unit
+    onUpdateTask: (Task) -> Unit,
+    onDeleteTask: (Task) -> Unit,  // Add this parameter
+    onDeleteRecurringGroup: (String) -> Unit  // Add this parameter
 ) {
     var taskName by remember { mutableStateOf(task.name) }
     var selectedPriority by remember { mutableStateOf(task.priority.name) }
@@ -27,7 +29,28 @@ fun TaskDetails(
     var deadline by remember { mutableStateOf(task.deadline.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()) }
     var showDatePicker by remember { mutableStateOf(false) }
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
-    var priorityLevel by remember { mutableStateOf("Low") }
+    var priorityLevel by remember { mutableStateOf(task.priority.name) }
+
+    // Add state for delete dialog
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
+    // Show delete dialog if needed
+    if (showDeleteDialog) {
+        DeleteRecurringTaskDialog(
+            task = task,
+            onDismiss = { showDeleteDialog = false },
+            onDeleteSingle = {
+                onDeleteTask(task)
+                onDismiss()
+            },
+            onDeleteGroup = {
+                task.recurringGroupId?.let { groupId ->
+                    onDeleteRecurringGroup(groupId)
+                }
+                onDismiss()
+            }
+        )
+    }
 
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -113,63 +136,22 @@ fun TaskDetails(
                     style = MaterialTheme.typography.titleMedium
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
+                // Add Delete button
                 OutlinedButton(
-                    onClick = { showDatePicker = true },
+                    onClick = { showDeleteDialog = true },
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error
+                    ),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(deadline.format(DateTimeFormatter.ofPattern("MMM dd, yyyy")))
-                }
-
-                if (showDatePicker) {
-                    Dialog(onDismissRequest = { showDatePicker = false }) {
-                        Card(
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surface
-                            )
-                        ) {
-                            Calendar(
-                                selectedDate = deadline,
-                                currentMonth = currentMonth,
-                                onDateSelected = { date ->
-                                    deadline = date
-                                    showDatePicker = false
-                                },
-                                onMonthChanged = { month ->
-                                    currentMonth = month
-                                },
-                                tasks = emptyList()
-                            )
-                        }
-                    }
+                    Text("Delete Task")
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = "Completed",
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                    Switch(
-                        checked = isCompleted,
-                        onCheckedChange = { isCompleted = it },
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = MaterialTheme.colorScheme.primary,
-                            checkedTrackColor = MaterialTheme.colorScheme.primaryContainer,
-                            uncheckedThumbColor = MaterialTheme.colorScheme.outline,
-                            uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
-                        )
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
+                // Update the existing buttons row
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -201,4 +183,54 @@ fun TaskDetails(
             }
         }
     }
+}
+
+@Composable
+fun DeleteRecurringTaskDialog(
+    task: Task,
+    onDismiss: () -> Unit,
+    onDeleteSingle: () -> Unit,
+    onDeleteGroup: () -> Unit
+) {
+    if (task.recurringGroupId == null) {
+        onDeleteSingle()
+        return
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Delete Recurring Task") },
+        text = {
+            Text(
+                if (task.isRecurringParent) {
+                    "This is the first task in a recurring series. Would you like to delete just this instance or all recurring instances of this task?"
+                } else {
+                    "This is part of a recurring series. Would you like to delete just this instance or all recurring instances of this task?"
+                }
+            )
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onDeleteGroup()
+                    onDismiss()
+                },
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = MaterialTheme.colorScheme.error
+                )
+            ) {
+                Text("Delete All")
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = {
+                    onDeleteSingle()
+                    onDismiss()
+                }
+            ) {
+                Text("Delete This Only")
+            }
+        }
+    )
 }

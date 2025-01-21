@@ -111,12 +111,11 @@ private fun BadgeItem(
 fun TaskItem(
     task: Task,
     searchText: String,
-    onDelete: (Task) -> Unit,
+    onDelete: (Task) -> Unit,  // This will be used for both single delete and passing to TaskDetails
     onCompleteToggle: (Task) -> Unit,
     onUpdateTask: (Task) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // State to control the dialog visibility
     var showDetails by remember { mutableStateOf(false) }
 
     // Function to build the highlighted text
@@ -252,7 +251,15 @@ fun TaskItem(
         TaskDetails(
             task = task,
             onDismiss = { showDetails = false },
-            onUpdateTask = onUpdateTask
+            onUpdateTask = onUpdateTask,
+            onDeleteTask = { taskId ->
+                // For single task deletion
+                onDelete(task)
+            },
+            onDeleteRecurringGroup = { groupId ->
+                // For recurring group deletion - also use onDelete since it will be handled at a higher level
+                onDelete(task)
+            }
         )
     }
 }

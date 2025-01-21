@@ -97,7 +97,7 @@ fun TaskListScreen(
                     if (isExpanded.value) {
                         itemsIndexed(
                             items = tasks,
-                            key = { _, task -> "${task.name}_${task.deadline.time}" }
+                            key = { _, task -> task.id }
                         ) { _, task ->
                             SwipeableTaskItem(
                                 task = task,

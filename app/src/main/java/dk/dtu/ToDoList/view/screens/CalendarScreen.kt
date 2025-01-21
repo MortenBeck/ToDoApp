@@ -16,6 +16,8 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.lifecycleScope
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,6 +28,8 @@ fun CalendarScreen(
     onUpdateTask: (Task) -> Unit,
     onDeleteTask: (String) -> Unit
 ) {
+    val lifecycleOwner = LocalLifecycleOwner.current // Add this line
+
     var selectedDate by remember {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             mutableStateOf(LocalDate.now())
@@ -105,7 +109,8 @@ fun CalendarScreen(
             onTaskAdded = { newTask ->
                 onAddTask(newTask)
                 showAddDialog = false
-            }
+            },
+            lifecycleScope = lifecycleOwner.lifecycleScope // Add this line
         )
     }
 
