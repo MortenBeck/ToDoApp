@@ -23,7 +23,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.navigation.NavController
 import dk.dtu.ToDoList.view.components.AddTaskDialog
-import dk.dtu.ToDoList.view.components.DeleteConfirmation
 import dk.dtu.ToDoList.view.components.TaskList
 
 

@@ -27,7 +27,7 @@ class WeatherViewModel(
         startWeatherUpdates()
     }
 
-    fun startWeatherUpdates() {
+    private fun startWeatherUpdates() {
         updateJob?.cancel()
         updateJob = viewModelScope.launch {
             try {
@@ -56,7 +56,7 @@ class WeatherViewModel(
 
             println("weather: $response") //testing by looking in log lmao
 
-            if (response.main != null && response.weather.isNotEmpty()) {
+            if (response.weather.isNotEmpty()) {
                 val roundedTemp = round(response.main.temp).toInt()
                 val weatherCondition = response.weather.first()
                 val iconRes = getWeatherIconByCode(weatherCondition.icon)
@@ -74,7 +74,7 @@ class WeatherViewModel(
         }
     }
 
-    fun getWeatherIconByCode(iconCode: String): Int {
+    private fun getWeatherIconByCode(iconCode: String): Int {
         return when (iconCode) {
             "01d","01n" -> dk.dtu.ToDoList.R.drawable.weather_sun
             "02d","02n" -> dk.dtu.ToDoList.R.drawable.weather // Cloudy
@@ -94,7 +94,7 @@ class WeatherViewModel(
 }
 
 sealed class WeatherUiState {
-    object Loading : WeatherUiState()
+    data object Loading : WeatherUiState()
     data class Error(val message: String) : WeatherUiState()
     data class Success(
         val temperature: String,

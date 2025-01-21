@@ -2,12 +2,12 @@ package dk.dtu.ToDoList.view
 
 import android.app.Activity
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
@@ -17,7 +17,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -28,11 +27,8 @@ import com.google.android.gms.common.ConnectionResult
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import dk.dtu.ToDoList.R
-import dk.dtu.ToDoList.model.data.Task
 import dk.dtu.ToDoList.model.repository.TaskCRUD
 import dk.dtu.ToDoList.util.UserIdManager
-import dk.dtu.ToDoList.view.components.BottomNavBar
-import dk.dtu.ToDoList.view.components.BottomNavItem
 import dk.dtu.ToDoList.view.screens.*
 import dk.dtu.ToDoList.view.theme.ToDoListTheme
 import kotlinx.coroutines.launch
@@ -93,6 +89,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    @Deprecated("This method has been deprecated in favor of using the Activity Result API\n      which brings increased type safety via an {@link ActivityResultContract} and the prebuilt\n      contracts for common intents available in\n      {@link androidx.activity.result.contract.ActivityResultContracts}, provides hooks for\n      testing, and allow receiving results in separate, testable classes independent from your\n      activity. Use\n      {@link #registerForActivityResult(ActivityResultContract, ActivityResultCallback)}\n      with the appropriate {@link ActivityResultContract} and handling the result in the\n      {@link ActivityResultCallback#onActivityResult(Object) callback}.")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == RC_PLAY_SERVICES) {
@@ -106,7 +103,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ToDoApp() {
     val navController = rememberNavController()
@@ -187,51 +183,53 @@ fun ToDoApp() {
                 .padding(paddingValues)
         ) {
             composable("Tasks") {
-                HomeScreen(
-                    tasks = tasks.value,
-                    onAddTask = { task ->
-                        scope.launch {
-                            Log.d("MainActivity", "Starting task addition from HomeScreen")
-                            if (task.recurrence != null) {
-                                taskCRUD.addTaskWithRecurrence(task)
-                            } else {
-                                taskCRUD.addTask(task)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    HomeScreen(
+                        tasks = tasks.value,
+                        onAddTask = { task ->
+                            scope.launch {
+                                Log.d("MainActivity", "Starting task addition from HomeScreen")
+                                if (task.recurrence != null) {
+                                    taskCRUD.addTaskWithRecurrence(task)
+                                } else {
+                                    taskCRUD.addTask(task)
+                                }
+                                snackbarHostState.showSnackbar("Task added successfully")
                             }
-                            snackbarHostState.showSnackbar("Task added successfully")
-                        }
-                    },
-                    onUpdateTask = { task ->
-                        scope.launch {
-                            if (task.recurringGroupId != null) {
-                                taskCRUD.updateRecurringGroup(task)
-                            } else {
-                                taskCRUD.updateTask(task)
+                        },
+                        onUpdateTask = { task ->
+                            scope.launch {
+                                if (task.recurringGroupId != null) {
+                                    taskCRUD.updateRecurringGroup(task)
+                                } else {
+                                    taskCRUD.updateTask(task)
+                                }
+                                snackbarHostState.showSnackbar("Task updated successfully")
                             }
-                            snackbarHostState.showSnackbar("Task updated successfully")
-                        }
-                    },
-                    onDeleteTask = { taskId ->
-                        scope.launch {
-                            taskCRUD.deleteTask(taskId)
-                            snackbarHostState.showSnackbar(
-                                message = "Task deleted",
-                                actionLabel = "Undo",
-                                duration = SnackbarDuration.Long
-                            )
-                        }
-                    },
-                    onDeleteRecurringGroup = { groupId ->
-                        scope.launch {
-                            taskCRUD.deleteRecurringGroup(groupId)
-                            snackbarHostState.showSnackbar(
-                                message = "Recurring task series deleted",
-                                actionLabel = "Undo",
-                                duration = SnackbarDuration.Long
-                            )
-                        }
-                    },
-                    navController = navController
-                )
+                        },
+                        onDeleteTask = { taskId ->
+                            scope.launch {
+                                taskCRUD.deleteTask(taskId)
+                                snackbarHostState.showSnackbar(
+                                    message = "Task deleted",
+                                    actionLabel = "Undo",
+                                    duration = SnackbarDuration.Long
+                                )
+                            }
+                        },
+                        onDeleteRecurringGroup = { groupId ->
+                            scope.launch {
+                                taskCRUD.deleteRecurringGroup(groupId)
+                                snackbarHostState.showSnackbar(
+                                    message = "Recurring task series deleted",
+                                    actionLabel = "Undo",
+                                    duration = SnackbarDuration.Long
+                                )
+                            }
+                        },
+                        navController = navController
+                    )
+                }
             }
 
             composable("Calendar") {

@@ -1,13 +1,10 @@
 package dk.dtu.ToDoList.view.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.painterResource
 import dk.dtu.ToDoList.view.components.AddTaskDialog
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -15,7 +12,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
@@ -25,7 +21,6 @@ import dk.dtu.ToDoList.view.components.*
 import androidx.compose.foundation.Image
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreen(
@@ -36,7 +31,7 @@ fun HomeScreen(
     onDeleteRecurringGroup: (String) -> Unit,
     navController: NavController
 ) {
-    val lifecycleOwner = LocalLifecycleOwner.current
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     var showAddDialog by remember { mutableStateOf(false) }
     var searchText by remember { mutableStateOf("") }
     var filteredTasks by remember(tasks) { mutableStateOf(tasks) }

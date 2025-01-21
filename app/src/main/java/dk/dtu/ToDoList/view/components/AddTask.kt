@@ -1,6 +1,6 @@
 package dk.dtu.ToDoList.view.components
 
-import android.util.Log
+import android.os.Build
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -19,9 +19,7 @@ import dk.dtu.ToDoList.model.data.TaskPriority
 import dk.dtu.ToDoList.model.data.TaskTag
 import dk.dtu.ToDoList.model.data.RecurrencePattern
 import dk.dtu.ToDoList.model.repository.TaskCRUD
-import dk.dtu.ToDoList.view.components.Calendar
 import dk.dtu.ToDoList.view.theme.getPrioColor
-import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
@@ -45,7 +43,12 @@ fun AddTaskDialog(
         var selectedTag by remember { mutableStateOf(TaskTag.WORK) }
         var selectedRecurrence by remember { mutableStateOf<RecurrencePattern?>(null) }
         var showDatePicker by remember { mutableStateOf(false) }
-        var selectedDate by remember { mutableStateOf(LocalDate.now()) }
+        var selectedDate by remember { if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            mutableStateOf(LocalDate.now())
+        } else {
+            TODO("VERSION.SDK_INT < O")
+        }
+        }
         var currentMonth by remember { mutableStateOf(YearMonth.now()) }
 
         Dialog(onDismissRequest = onDismiss) {
@@ -269,7 +272,7 @@ fun ModernDropdownTagSelector(
             onDismissRequest = { expanded = false },
             modifier = Modifier.fillMaxWidth(0.9f)
         ) {
-            TaskTag.values().forEach { tag ->
+            TaskTag.entries.forEach { tag ->
                 DropdownMenuItem(
                     text = { Text(tag.name) },
                     onClick = {
@@ -322,7 +325,7 @@ fun ModernDropdownRecurrenceSelector(
                 }
             )
 
-            RecurrencePattern.values().forEach { pattern ->
+            RecurrencePattern.entries.forEach { pattern ->
                 DropdownMenuItem(
                     text = { Text(pattern.name) },
                     onClick = {

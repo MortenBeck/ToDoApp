@@ -102,7 +102,7 @@ private fun BadgeItem(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun TaskItem(
     task: Task,
@@ -262,7 +262,7 @@ fun SwipeableTaskItem(
     onUpdateTask: (Task) -> Unit,
     onDeleteRequest: (Task) -> Unit = {}
 ) {
-    var offsetX by remember { mutableStateOf(0f) }
+    var offsetX by remember { mutableFloatStateOf(0f) }
     val swipeThreshold = 200f
 
     Box(
