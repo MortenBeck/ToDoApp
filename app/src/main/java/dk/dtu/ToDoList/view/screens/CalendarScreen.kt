@@ -189,15 +189,14 @@ private fun TasksForSelectedDate(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.background // Use default background color
+            colors = CardDefaults.cardColors( containerColor = MaterialTheme.colorScheme.primaryContainer
             ),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             Text(
                 text = selectedDate.format(DateTimeFormatter.ofPattern("MMMM d, yyyy")),
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface, // Use default onSurface color
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
                 modifier = Modifier.padding(8.dp)
             )
         }
@@ -217,7 +216,7 @@ private fun TasksForSelectedDate(
                 text = "No tasks scheduled for this day",
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(vertical = 8.dp),
-                color = MaterialTheme.colorScheme.onSurface // Use default onSurface color
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
