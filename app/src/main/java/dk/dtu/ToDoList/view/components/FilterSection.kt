@@ -18,6 +18,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import dk.dtu.ToDoList.model.data.Task
 import dk.dtu.ToDoList.model.data.TaskPriority
 import dk.dtu.ToDoList.model.data.TaskTag
@@ -74,6 +75,89 @@ fun FilterSection(
         val selectedDate = Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant())
         dateRange = selectedDate to selectedDate
         applyFilters(tasks, dateRange, selectedTags, selectedPriorities, hideCompletedTasks, onFilterChange)
+    }
+
+    if (showCalendarPicker) {
+        Dialog(onDismissRequest = { showCalendarPicker = false }) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Text(
+                        text = if (isSelectingStartDate) "Select Start Date" else "Select End Date",
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+
+                    Calendar(
+                        selectedDate = selectedStartDate ?: LocalDate.now(),
+                        currentMonth = currentMonth,
+                        onDateSelected = { date ->
+                            if (isSelectingStartDate) {
+                                selectedStartDate = date
+                                isSelectingStartDate = false
+                            } else {
+                                if (date >= selectedStartDate) {
+                                    selectedEndDate = date
+                                    // Convert LocalDate to Date and update dateRange
+                                    val startDate = Date.from(
+                                        selectedStartDate!!.atStartOfDay(ZoneId.systemDefault()).toInstant()
+                                    )
+                                    val endDate = Date.from(
+                                        date.atStartOfDay(ZoneId.systemDefault()).toInstant()
+                                    )
+                                    dateRange = startDate to endDate
+                                    showCalendarPicker = false
+                                    // Apply filters with new date range
+                                    applyFilters(
+                                        tasks,
+                                        dateRange,
+                                        selectedTags,
+                                        selectedPriorities,
+                                        hideCompletedTasks,
+                                        onFilterChange
+                                    )
+                                }
+                            }
+                        },
+                        onMonthChanged = { month ->
+                            currentMonth = month
+                        },
+                        tasks = tasks
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Action buttons
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        TextButton(
+                            onClick = {
+                                selectedStartDate = null
+                                selectedEndDate = null
+                                dateRange = null to null
+                                showCalendarPicker = false
+                            }
+                        ) {
+                            Text("Clear")
+                        }
+                        TextButton(
+                            onClick = { showCalendarPicker = false }
+                        ) {
+                            Text("Cancel")
+                        }
+                    }
+                }
+            }
+        }
     }
 
     Column(
@@ -174,7 +258,10 @@ fun FilterSection(
 
                             // Date Selection Button
                             FilledTonalButton(
-                                onClick = { showCalendarPicker = true },
+                                onClick = {
+                                    isSelectingStartDate = true
+                                    showCalendarPicker = true
+                                },
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = ButtonDefaults.filledTonalButtonColors(
                                     containerColor = MaterialTheme.colorScheme.primaryContainer
