@@ -79,7 +79,8 @@ fun TaskListScreen(
     } else {
         LazyColumn(
             modifier = Modifier.fillMaxWidth(),
-            contentPadding = PaddingValues(bottom = 80.dp)
+            contentPadding = PaddingValues(bottom = 80.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             fun renderSection(
                 title: String,

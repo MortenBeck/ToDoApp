@@ -32,7 +32,7 @@ private val LightColorScheme = lightColorScheme(
     errorContainer = Color(0xFFFFDAD6),
     onErrorContainer = Color(0xFF410002),
 
-    background = Color(0xFFFEFBFF),
+    background = Color(0xFFE6E6F1),
     onBackground = Color(0xFF1B1B1F),
 
     surface = Color(0xFFFEFBFF),
