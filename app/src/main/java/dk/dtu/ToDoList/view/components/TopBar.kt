@@ -30,7 +30,7 @@ fun TopBar(
     var isSearchActive by remember { mutableStateOf(false) }
 
     Surface(
-        color = MaterialTheme.colorScheme.primaryContainer,
+        color = MaterialTheme.colorScheme.background,
         modifier = Modifier.fillMaxWidth(),
         tonalElevation = 4.dp
     ) {

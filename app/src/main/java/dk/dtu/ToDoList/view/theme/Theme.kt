@@ -12,7 +12,7 @@ import dk.dtu.ToDoList.model.data.TaskPriority
 import dk.dtu.ToDoList.model.data.TaskTag
 
 private val LightColorScheme = lightColorScheme(
-    primary = Color(0xFF0055D3),
+    primary = Color(0xFF4A89DC),
     onPrimary = Color(0xFFFFFFFF),
     primaryContainer = Color(0xFFD6E2FF),
     onPrimaryContainer = Color(0xFF001947),
@@ -75,22 +75,22 @@ fun ToDoListTheme(
 @Composable
 fun getTaskColor(tag: TaskTag): Color {
     return when (tag) {
-        TaskTag.WORK -> Color(0xFF1A73E8)
-        TaskTag.SCHOOL -> Color(0xFFE65100)
-        TaskTag.SPORT -> Color(0xFF9C27B0)
-        TaskTag.TRANSPORT -> Color(0xFFFFB300)
-        TaskTag.PET -> Color(0xFF2E7D32)
-        TaskTag.HOME -> Color(0xFF673AB7)
-        TaskTag.PRIVATE -> Color(0xFFD32F2F)
-        TaskTag.SOCIAL -> Color(0xFF0097A7)
+        TaskTag.WORK -> Color(0xFF4FC1E9)
+        TaskTag.SCHOOL -> Color(0xFFFC6E51)
+        TaskTag.SPORT -> Color(0xFFAC92EC)
+        TaskTag.TRANSPORT -> Color(0xFFFFCE54)
+        TaskTag.PET -> Color(0xFFA0D468)
+        TaskTag.HOME -> Color(0xFFCCD1D9)
+        TaskTag.PRIVATE -> Color(0xFFED5565)
+        TaskTag.SOCIAL -> Color(0xFF48CFAD)
     }
 }
 
 @Composable
 fun getPrioColor(priority: TaskPriority): Color {
     return when (priority){
-        TaskPriority.HIGH -> Color(0xFFD32F2F)
-        TaskPriority.MEDIUM -> Color(0xFFF57F17)
-        TaskPriority.LOW -> Color(0xFF1565C0)
+        TaskPriority.HIGH -> Color(0xFFDA4453)
+        TaskPriority.MEDIUM -> Color(0xFFF6BB42)
+        TaskPriority.LOW -> Color(0xFF4A89DC)
     }
 }
