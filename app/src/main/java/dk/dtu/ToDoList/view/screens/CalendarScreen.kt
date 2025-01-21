@@ -187,11 +187,22 @@ private fun TasksForSelectedDate(
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
-        Text(
-            text = selectedDate.format(DateTimeFormatter.ofPattern("MMMM d, yyyy")),
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        ) {
+            Text(
+                text = selectedDate.format(DateTimeFormatter.ofPattern("MMMM d, yyyy")),
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.padding(12.dp)
+            )
+        }
 
         if (tasksForDate.isNotEmpty()) {
             TaskList(
