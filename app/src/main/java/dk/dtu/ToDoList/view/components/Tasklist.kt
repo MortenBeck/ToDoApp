@@ -36,6 +36,7 @@ import dk.dtu.ToDoList.R
 import dk.dtu.ToDoList.model.data.Task
 import dk.dtu.ToDoList.model.data.TaskPriority
 import dk.dtu.ToDoList.model.data.TaskTag
+import dk.dtu.ToDoList.view.theme.getTaskColor
 import java.text.SimpleDateFormat
 import java.util.*
 import androidx.compose.material3.AlertDialog
@@ -223,16 +224,7 @@ fun TaskItem(
 
                     BadgeItem(
                         badgeText = task.tag.name,
-                        badgeColor = when (task.tag) {
-                            TaskTag.WORK -> MaterialTheme.colorScheme.primaryContainer
-                            TaskTag.SCHOOL -> MaterialTheme.colorScheme.secondaryContainer
-                            TaskTag.PET -> MaterialTheme.colorScheme.tertiaryContainer
-                            TaskTag.SPORT -> MaterialTheme.colorScheme.errorContainer
-                            TaskTag.HOME -> MaterialTheme.colorScheme.surfaceVariant
-                            TaskTag.TRANSPORT -> MaterialTheme.colorScheme.primaryContainer
-                            TaskTag.PRIVATE -> MaterialTheme.colorScheme.secondaryContainer
-                            TaskTag.SOCIAL -> MaterialTheme.colorScheme.tertiaryContainer
-                        },
+                        badgeColor = getTaskColor(task.tag),
                         badgeIcon = when (task.tag) {
                             TaskTag.WORK -> R.drawable.work
                             TaskTag.SCHOOL -> R.drawable.school

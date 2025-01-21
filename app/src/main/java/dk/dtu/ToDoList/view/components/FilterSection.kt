@@ -24,6 +24,8 @@ import java.time.YearMonth
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Date
+import dk.dtu.ToDoList.view.theme.getTaskColor
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
@@ -256,16 +258,7 @@ fun FilterSection(
                         ) {
                             TaskTag.entries.forEach { tag ->
                                 val isSelected = selectedTags.contains(tag)
-                                val tagColor = when (tag) {
-                                    TaskTag.WORK -> Color(0xFF1A73E8)
-                                    TaskTag.SCHOOL -> Color(0xFFE65100)
-                                    TaskTag.SPORT -> Color(0xFF9C27B0)
-                                    TaskTag.TRANSPORT -> Color(0xFFFFB300)
-                                    TaskTag.PET -> Color(0xFF2E7D32)
-                                    TaskTag.HOME -> Color(0xFF673AB7)
-                                    TaskTag.PRIVATE -> Color(0xFFD32F2F)
-                                    TaskTag.SOCIAL -> Color(0xFF0097A7)
-                                }
+                                val tagColor = getTaskColor(tag)
 
                                 FilterChip(
                                     selected = isSelected,

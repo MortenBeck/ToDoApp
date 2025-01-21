@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import dk.dtu.ToDoList.model.data.TaskTag
 
 private val LightColorScheme = lightColorScheme(
     primary = Color(0xFF0055D3),
@@ -68,4 +69,18 @@ fun ToDoListTheme(
         colorScheme = colorScheme,
         content = content
     )
+}
+
+@Composable
+fun getTaskColor(tag: TaskTag): Color {
+    return when (tag) {
+        TaskTag.WORK -> Color(0xFF1A73E8)
+        TaskTag.SCHOOL -> Color(0xFFE65100)
+        TaskTag.SPORT -> Color(0xFF9C27B0)
+        TaskTag.TRANSPORT -> Color(0xFFFFB300)
+        TaskTag.PET -> Color(0xFF2E7D32)
+        TaskTag.HOME -> Color(0xFF673AB7)
+        TaskTag.PRIVATE -> Color(0xFFD32F2F)
+        TaskTag.SOCIAL -> Color(0xFF0097A7)
+    }
 }
