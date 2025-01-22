@@ -32,6 +32,8 @@ import dk.dtu.ToDoList.util.UserIdManager
 import dk.dtu.ToDoList.view.screens.*
 import dk.dtu.ToDoList.view.theme.ToDoListTheme
 import kotlinx.coroutines.launch
+import dk.dtu.ToDoList.viewmodel.HomeScreenViewModel
+import dk.dtu.ToDoList.viewmodel.TaskListViewModel
 
 
 
@@ -138,19 +140,27 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun ToDoApp() {
     val navController = rememberNavController()
-    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Get context and instantiate TaskCRUD
     val context = LocalContext.current
     val taskCRUD = remember { TaskCRUD(context) }
-    // Flow that collects real-time updates of tasks
-    val tasks = taskCRUD.getTasksFlow().collectAsState(initial = emptyList())
+
+    // Instantiate ViewModels
+    val taskListViewModel = remember { TaskListViewModel(taskCRUD) }
+    val homeScreenViewModel = remember { HomeScreenViewModel() }
+
+    // CoroutineScope for calling suspend functions
+    val coroutineScope = rememberCoroutineScope()
 
     // Navigation state
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = currentBackStackEntry?.destination?.route ?: "Tasks"
 
-    // Scaffold state for snackbar
-    val snackbarHostState = remember { SnackbarHostState() }
+    // Collect tasks as a flow
+    val tasks by taskListViewModel.tasks.collectAsState(emptyList())
 
+    // Start Scaffold
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
@@ -160,7 +170,6 @@ fun ToDoApp() {
                 containerColor = MaterialTheme.colorScheme.surfaceContainer,
                 tonalElevation = 3.dp
             ) {
-                // A list of bottom nav items: (route, unselected icon, selected icon)
                 val items = listOf(
                     Triple("Tasks", R.drawable.home_grey, R.drawable.home_black),
                     Triple("Calendar", R.drawable.calender_grey, R.drawable.calender_black),
@@ -171,7 +180,6 @@ fun ToDoApp() {
                     NavigationBarItem(
                         selected = currentRoute == route,
                         onClick = {
-                            // Navigate to the chosen route, pop up to start, and handle state restoration
                             navController.navigate(route) {
                                 popUpTo(navController.graph.findStartDestination().id) {
                                     saveState = true
@@ -217,122 +225,82 @@ fun ToDoApp() {
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Home screen (Tasks)
             composable("Tasks") {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     HomeScreen(
-                        tasks = tasks.value,
+                        taskListViewModel = taskListViewModel,
+                        homeScreenViewModel = homeScreenViewModel,
+                        navController = navController,
                         onAddTask = { task ->
-                            scope.launch {
-                                Log.d("MainActivity", "Starting task addition from HomeScreen")
-                                if (task.recurrence != null) {
-                                    taskCRUD.addTaskWithRecurrence(task)
-                                } else {
-                                    taskCRUD.addTask(task)
-                                }
+                            coroutineScope.launch {
+                                taskListViewModel.addTask(task)
                                 snackbarHostState.showSnackbar("Task added successfully")
                             }
                         },
                         onUpdateTask = { task ->
-                            scope.launch {
-                                if (task.recurringGroupId != null) {
-                                    taskCRUD.updateRecurringGroup(task)
-                                } else {
-                                    taskCRUD.updateTask(task)
-                                }
+                            coroutineScope.launch {
+                                taskListViewModel.updateTask(task)
                                 snackbarHostState.showSnackbar("Task updated successfully")
                             }
                         },
                         onDeleteTask = { taskId ->
-                            scope.launch {
-                                taskCRUD.deleteTask(taskId)
-                                snackbarHostState.showSnackbar(
-                                    message = "Task deleted",
-                                    actionLabel = "Undo",
-                                    duration = SnackbarDuration.Long
-                                )
+                            coroutineScope.launch {
+                                taskListViewModel.deleteTask(taskId)
+                                snackbarHostState.showSnackbar("Task deleted successfully")
                             }
                         },
                         onDeleteRecurringGroup = { groupId ->
-                            scope.launch {
-                                taskCRUD.deleteRecurringGroup(groupId)
-                                snackbarHostState.showSnackbar(
-                                    message = "Recurring task series deleted",
-                                    actionLabel = "Undo",
-                                    duration = SnackbarDuration.Long
-                                )
+                            coroutineScope.launch {
+                                taskListViewModel.deleteRecurringGroup(groupId)
+                                snackbarHostState.showSnackbar("Recurring task group deleted")
                             }
-                        },
-                        navController = navController
+                        }
                     )
                 }
             }
 
-            // Calender screen
             composable("Calendar") {
                 CalendarScreen(
-                    tasks = tasks.value,
+                    tasks = tasks,
                     navController = navController,
                     onAddTask = { task ->
-                        scope.launch {
-                            if (task.recurrence != null) {
-                                taskCRUD.addTaskWithRecurrence(task)
-                            } else {
-                                taskCRUD.addTask(task)
-                            }
-                            snackbarHostState.showSnackbar("Event added to calendar")
+                        coroutineScope.launch {
+                            taskListViewModel.addTask(task)
                         }
                     },
                     onUpdateTask = { task ->
-                        scope.launch {
-                            if (task.recurringGroupId != null) {
-                                taskCRUD.updateRecurringGroup(task)
-                            } else {
-                                taskCRUD.updateTask(task)
-                            }
-                            snackbarHostState.showSnackbar("Event updated")
+                        coroutineScope.launch {
+                            taskListViewModel.updateTask(task)
                         }
                     },
                     onDeleteTask = { taskId ->
-                        scope.launch {
-                            taskCRUD.deleteTask(taskId)
-                            snackbarHostState.showSnackbar("Event deleted")
+                        coroutineScope.launch {
+                            taskListViewModel.deleteTask(taskId)
                         }
                     }
                 )
             }
 
-            // Profile screen
             composable("Profile") {
-                ProfileScreen(
-                    navController = navController
-                )
+                ProfileScreen(navController = navController)
             }
 
-            // Account settings
             composable("account_settings") {
-                AccountSettingsScreen(
-                    navController = navController
-                )
+                AccountSettingsScreen(navController = navController)
             }
 
-            // App settings
             composable("app_settings") {
-                AppSettingsScreen(
-                    navController = navController
-                )
+                AppSettingsScreen(navController = navController)
             }
 
-            // Add to calender
             composable("addToCalendar?taskName={taskName}") { backStackEntry ->
                 val taskName = backStackEntry.arguments?.getString("taskName") ?: "New Task"
                 AddToCalendarPage(
                     navController = navController,
                     taskName = taskName,
                     onTaskAdded = { newTask ->
-                        scope.launch {
-                            taskCRUD.addTask(newTask)
-                            snackbarHostState.showSnackbar("Task added to calendar")
+                        coroutineScope.launch {
+                            taskListViewModel.addTask(newTask)
                         }
                     }
                 )

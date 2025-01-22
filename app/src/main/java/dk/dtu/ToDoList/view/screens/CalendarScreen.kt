@@ -143,8 +143,7 @@ fun CalendarScreen(
             onTaskAdded = { newTask ->
                 onAddTask(newTask)
                 showAddDialog = false
-            },
-            lifecycleScope = lifecycleOwner.lifecycleScope // Add this line
+            }
         )
     }
 

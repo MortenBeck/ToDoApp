@@ -41,7 +41,6 @@ fun AddTaskDialog(
     navController: NavController,
     onDismiss: () -> Unit,
     onTaskAdded: (Task) -> Unit,
-    lifecycleScope: LifecycleCoroutineScope
 ) {
     val context = LocalContext.current
     val taskCRUD = remember { TaskCRUD(context) }

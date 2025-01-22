@@ -8,8 +8,7 @@ import dk.dtu.ToDoList.model.repository.TaskCRUD
 import kotlinx.coroutines.launch
 import java.util.*
 
-class TaskListViewModel(private val taskCRUD: TaskCRUD) : ViewModel()
- {
+class TaskListViewModel(private val taskCRUD: TaskCRUD) : ViewModel() {
     private val _tasks = MutableStateFlow<List<Task>>(emptyList())
     val tasks: StateFlow<List<Task>> = _tasks
 
@@ -40,6 +39,10 @@ class TaskListViewModel(private val taskCRUD: TaskCRUD) : ViewModel()
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
 
+    init {
+        loadTasks()
+    }
+
     fun setTasks(newTasks: List<Task>) {
         _tasks.value = newTasks
     }
@@ -51,13 +54,11 @@ class TaskListViewModel(private val taskCRUD: TaskCRUD) : ViewModel()
     fun confirmDelete(task: Task, deleteAll: Boolean) {
         viewModelScope.launch {
             if (deleteAll && task.recurringGroupId != null) {
-                // Delete all tasks in the recurring group
                 val result = taskCRUD.deleteRecurringGroup(task.recurringGroupId)
                 if (result) {
                     _tasks.value = tasks.value.filterNot { it.recurringGroupId == task.recurringGroupId }
                 }
             } else {
-                // Delete a single task
                 val result = taskCRUD.deleteTask(task.id)
                 if (result) {
                     _tasks.value = tasks.value - task
@@ -67,17 +68,63 @@ class TaskListViewModel(private val taskCRUD: TaskCRUD) : ViewModel()
         }
     }
 
-
-
     fun cancelDelete() {
         _taskToDelete.value = null
     }
 
-     fun loadTasks() {
-         viewModelScope.launch {
-             taskCRUD.getTasksFlow().collect { taskList ->
-                 _tasks.value = taskList
-             }
-         }
-     }
+    private fun loadTasks() {
+        viewModelScope.launch {
+            taskCRUD.getTasksFlow().collect { taskList ->
+                _tasks.value = taskList
+            }
+        }
+    }
+
+    fun addTask(task: Task) {
+        viewModelScope.launch {
+            try {
+                if (taskCRUD.addTask(task)) {
+                    loadTasks() // Reload tasks to reflect the addition
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun updateTask(task: Task) {
+        viewModelScope.launch {
+            try {
+                if (taskCRUD.updateTask(task)) {
+                    loadTasks() // Reload tasks to reflect the update
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun deleteTask(taskId: String) {
+        viewModelScope.launch {
+            try {
+                if (taskCRUD.deleteTask(taskId)) {
+                    loadTasks() // Reload tasks to reflect the deletion
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun deleteRecurringGroup(groupId: String) {
+        viewModelScope.launch {
+            try {
+                if (taskCRUD.deleteRecurringGroup(groupId)) {
+                    loadTasks() // Reload tasks to reflect the deletion
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
 }

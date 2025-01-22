@@ -21,8 +21,9 @@ import dk.dtu.ToDoList.view.components.*
 import androidx.compose.foundation.Image
 import androidx.compose.ui.platform.LocalContext
 import dk.dtu.ToDoList.model.repository.TaskCRUD
+import dk.dtu.ToDoList.viewmodel.HomeScreenViewModel
 import dk.dtu.ToDoList.viewmodel.TaskListViewModel
-
+import kotlinx.coroutines.launch
 
 
 /**
@@ -41,44 +42,37 @@ import dk.dtu.ToDoList.viewmodel.TaskListViewModel
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreen(
-    tasks: List<Task>,
+    taskListViewModel: TaskListViewModel,
+    homeScreenViewModel: HomeScreenViewModel,
+    navController: NavController,
     onAddTask: (Task) -> Unit,
     onUpdateTask: (Task) -> Unit,
     onDeleteTask: (String) -> Unit,
-    onDeleteRecurringGroup: (String) -> Unit,
-    navController: NavController
+    onDeleteRecurringGroup: (String) -> Unit
 ) {
-    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
-    var showAddDialog by remember { mutableStateOf(false) }
-    var searchText by remember { mutableStateOf("") }
+    // Observe UI-related states
+    val searchText by homeScreenViewModel.searchText.collectAsState()
+    val showAddDialog by homeScreenViewModel.showAddDialog.collectAsState()
 
-    val context = LocalContext.current
-    val taskCRUD = remember { TaskCRUD(context) }
-    val viewModel = remember { TaskListViewModel(taskCRUD) }
+    // Observe tasks from TaskListViewModel
+    val categorizedTasks by taskListViewModel.categorizedTasks.collectAsState()
 
-    // Provide initial tasks to the ViewModel
-    LaunchedEffect(Unit) {
-        viewModel.loadTasks()
-    }
-
-
-    // Observe categorized tasks and filtered tasks from the ViewModel
-    val categorizedTasks by viewModel.categorizedTasks.collectAsState()
     val filteredTasks = categorizedTasks.values.flatten().filter { it.name.contains(searchText, ignoreCase = true) }
+
+    // Remember coroutine scope for launching suspend functions
+    val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
             TopBar(
-                // The top bar includes a search icon that toggles a search field
                 searchText = searchText,
-                onSearchTextChange = { searchText = it },
+                onSearchTextChange = { homeScreenViewModel.updateSearchText(it) },
                 navController = navController
             )
         },
         floatingActionButton = {
-            // A FAB for adding a new task
             FloatingActionButton(
-                onClick = { showAddDialog = true },
+                onClick = { homeScreenViewModel.toggleAddDialog(true) },
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer
             ) {
@@ -91,8 +85,7 @@ fun HomeScreen(
         }
     ) { paddingValues ->
         Box(
-            modifier = Modifier
-                .fillMaxSize()
+            modifier = Modifier.fillMaxSize()
         ) {
             // Background image
             Image(
@@ -113,20 +106,18 @@ fun HomeScreen(
                         .padding(horizontal = 16.dp, vertical = 4.dp)
                 ) {
                     FilterSection(
-                        tasks = tasks,
-                        onFilterChange = { newFilteredTasks ->
-                            viewModel.setTasks(newFilteredTasks)
-                        }
+                        tasks = filteredTasks,
+                        onFilterChange = { filtered -> taskListViewModel.setTasks(filtered) }
                     )
                 }
 
                 // Displays the filtered and/or searched tasks
                 TaskListScreen(
-                    viewModel = viewModel,
+                    viewModel = taskListViewModel,
                     onCompleteToggle = { task ->
                         val updatedTask = task.copy(completed = !task.completed)
                         onUpdateTask(updatedTask)
-                        viewModel.setTasks(viewModel.tasks.value.map {
+                        taskListViewModel.setTasks(taskListViewModel.tasks.value.map {
                             if (it.id == task.id) updatedTask else it
                         })
                     },
@@ -141,13 +132,16 @@ fun HomeScreen(
         AddTaskDialog(
             showDialog = showAddDialog,
             navController = navController,
-            onDismiss = { showAddDialog = false },
+            onDismiss = { homeScreenViewModel.toggleAddDialog(false) },
             onTaskAdded = { newTask ->
-                onAddTask(newTask)
-                viewModel.setTasks(tasks + newTask)
-                showAddDialog = false
-            },
-            lifecycleScope = lifecycleOwner.lifecycleScope
+                // Launch coroutine to call suspend function
+                coroutineScope.launch {
+                    taskListViewModel.addTask(newTask) // This is now inside a coroutine
+                    onAddTask(newTask)
+                    homeScreenViewModel.toggleAddDialog(false)
+                }
+            }
         )
     }
 }
+
