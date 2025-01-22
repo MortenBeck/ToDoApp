@@ -9,6 +9,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import dk.dtu.ToDoList.model.data.Task
 import dk.dtu.ToDoList.model.data.TaskPriority
+import java.time.YearMonth
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Date
@@ -40,7 +41,7 @@ fun TaskDetails(
     val isCompleted by remember { mutableStateOf(task.completed) }
 
     // Convert the deadline to a LocalDate if possible
-    val deadline by remember {
+    var deadline by remember {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             mutableStateOf(task.deadline.toInstant().atZone(ZoneId.systemDefault()).toLocalDate())
         } else {
@@ -49,6 +50,7 @@ fun TaskDetails(
     }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
+    var currentMonth by remember { mutableStateOf(YearMonth.now())}
 
     // Conditionally show the delete dialog for recurring tasks
     if (showDeleteDialog) {
@@ -194,10 +196,15 @@ fun TaskDetails(
                     Dialog(onDismissRequest = { showDatePicker = false }) {
                         Calendar(
                             selectedDate = deadline,
-                            onDateSelected = { selectedDate ->
-                                deadline = selectedDate
+                            currentMonth = currentMonth,
+                            onDateSelected = { date ->
+                                deadline = date
                                 showDatePicker = false
-                            }
+                            },
+                            onMonthChanged = { month ->
+                                currentMonth = month
+                            },
+                            tasks = emptyList()
                         )
                     }
                 }
