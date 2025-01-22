@@ -10,6 +10,18 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.semantics.Role
 
+
+/**
+ * A composable function representing a single settings row item,
+ * typically used within a list or screen of settings/preferences.
+ *
+ * @param icon The [ImageVector] displayed at the start of the row (e.g., a settings icon).
+ * @param text The text to display next to the icon.
+ * @param onClick A callback invoked when the item is clicked.
+ * @param modifier The [Modifier] to be applied to the parent [Surface].
+ * @param enabled Whether the item is enabled or not. If `false`, the item is displayed
+ * in a visually "disabled" state and the click action is inactive.
+ */
 @Composable
 fun SettingsItem(
     icon: ImageVector,
