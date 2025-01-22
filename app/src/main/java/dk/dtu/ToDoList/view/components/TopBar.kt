@@ -21,6 +21,18 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.compose.foundation.gestures.detectTapGestures
 
+
+
+/**
+ * A top bar composable that displays a dynamic search icon and an optional search text field.
+ *
+ * When the search icon is toggled, it slides a search field into view. Tapping anywhere else
+ * (outside the search field) will hide the field if it's visible.
+ *
+ * @param searchText The current text in the search field.
+ * @param onSearchTextChange A callback that is invoked whenever the search text changes.
+ * @param navController A [NavController] that can be used for navigation if needed.
+ */
 @Composable
 fun TopBar(
     searchText: String,
