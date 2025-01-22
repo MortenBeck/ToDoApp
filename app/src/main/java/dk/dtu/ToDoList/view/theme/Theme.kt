@@ -51,6 +51,13 @@ private val LightColorScheme = lightColorScheme(
     surfaceContainerLowest = Color(0xFFFFFFFF)
 )
 
+
+/**
+ * The main theme for the ToDoList application.
+ * Applies a custom [LightColorScheme] and configures the status bar appearance.
+ *
+ * @param content A composable lambda representing the UI content that will inherit this theme.
+ */
 @Composable
 fun ToDoListTheme(
     content: @Composable () -> Unit
@@ -72,6 +79,13 @@ fun ToDoListTheme(
     )
 }
 
+
+/**
+ * Returns a color associated with a given [TaskTag].
+ *
+ * @param tag The [TaskTag] for which color is requested (e.g., WORK, SCHOOL).
+ * @return A [Color] that visually represents the specified tag.
+ */
 @Composable
 fun getTaskColor(tag: TaskTag): Color {
     return when (tag) {
@@ -86,6 +100,13 @@ fun getTaskColor(tag: TaskTag): Color {
     }
 }
 
+
+/**
+ * Returns a color corresponding to the priority level of a task.
+ *
+ * @param priority The [TaskPriority] (HIGH, MEDIUM, LOW).
+ * @return A [Color] that visually indicates the priority level.
+ */
 @Composable
 fun getPrioColor(priority: TaskPriority): Color {
     return when (priority){
