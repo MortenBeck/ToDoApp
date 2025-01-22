@@ -178,7 +178,7 @@ fun FilterSection(
                         TextButton(
                             onClick = { showCalendarPicker = false }
                         ) {
-                            Text("Cancel")
+                            Text("Confirm")
                         }
                     }
                 }
