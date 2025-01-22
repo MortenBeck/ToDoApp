@@ -16,6 +16,14 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import dk.dtu.ToDoList.R
 
+
+
+/**
+ * A composable screen that displays application-level settings, such as Theme, Language, and Data Usage.
+ * Each setting has a corresponding dialog for user interaction, although some features may not be fully implemented.
+ *
+ * @param navController A [NavController] used for navigating back or to other screens.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppSettingsScreen(navController: NavController) {
