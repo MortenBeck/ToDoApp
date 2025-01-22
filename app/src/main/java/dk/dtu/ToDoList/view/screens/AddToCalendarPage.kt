@@ -27,6 +27,16 @@ import java.time.YearMonth
 import java.time.ZoneId
 import java.util.Date
 
+
+
+/**
+ * A composable screen that allows the user to select a date from a calendar and then create a [Task]
+ * with the chosen date as its deadline. The newly created task is passed back via [onTaskAdded].
+ *
+ * @param navController A [NavController] for handling navigation actions (e.g., returning to the previous screen).
+ * @param taskName The name of the task to be added.
+ * @param onTaskAdded A callback invoked with the newly created [Task] once the user confirms.
+ */
 @Composable
 fun AddToCalendarPage(
     navController: NavController,
@@ -52,16 +62,18 @@ fun AddToCalendarPage(
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
+        // A calender composable allowing the user to pick a date for the task's deadline.
         Calendar(
             selectedDate = selectedDate,
             currentMonth = currentMonth,
             onDateSelected = { selectedDate = it },
             onMonthChanged = { currentMonth = it },
-            tasks = emptyList()
+            tasks = emptyList() // No tasks to display here; purely selecting a date
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // A button that creates a new task with the selected date and navigates back.
         Button(
             onClick = {
                 val newTask = Task(
