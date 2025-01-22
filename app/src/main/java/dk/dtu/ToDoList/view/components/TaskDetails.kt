@@ -10,6 +10,7 @@ import androidx.compose.ui.window.Dialog
 import dk.dtu.ToDoList.model.data.Task
 import dk.dtu.ToDoList.model.data.TaskPriority
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Date
 
 
@@ -47,6 +48,7 @@ fun TaskDetails(
         }
     }
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var showDatePicker by remember { mutableStateOf(false) }
 
     // Conditionally show the delete dialog for recurring tasks
     if (showDeleteDialog) {
@@ -177,6 +179,28 @@ fun TaskDetails(
                     text = "Deadline",
                     style = MaterialTheme.typography.titleMedium
                 )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                OutlinedButton(
+                    onClick = { showDatePicker = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(deadline.format(DateTimeFormatter.ofPattern("MMM dd, yyyy")))
+                }
+
+                if (showDatePicker) {
+                    // Show Date Picker Dialog
+                    Dialog(onDismissRequest = { showDatePicker = false }) {
+                        Calendar(
+                            selectedDate = deadline,
+                            onDateSelected = { selectedDate ->
+                                deadline = selectedDate
+                                showDatePicker = false
+                            }
+                        )
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
