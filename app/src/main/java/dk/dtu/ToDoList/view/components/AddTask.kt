@@ -30,10 +30,10 @@ import java.util.Date
  * fields for the task name, priority, deadline, category, and recurrence pattern.
  *
  * @param showDialog Whether the dialog should be displayed.
- * @param navController A [NavController] instance for navigation (if needed in your workflow).
+ * @param navController A [NavController] instance for navigation (currently unused).
  * @param onDismiss A callback triggered when the user dismisses the dialog (e.g., pressing "Cancel" or clicking outside).
  * @param onTaskAdded A callback triggered with the newly created [Task] when the user confirms.
- * @param lifecycleScope A [LifecycleCoroutineScope] used for any required coroutines within this composable.
+ * @param lifecycleScope A [LifecycleCoroutineScope] used for any required coroutines within this composable (currently unused.
  */
 @Composable
 fun AddTaskDialog(

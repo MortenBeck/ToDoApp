@@ -25,8 +25,20 @@ import java.time.YearMonth
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.temporal.WeekFields
-import java.util.*
+import java.util.Locale
 
+
+
+/**
+ * A composable function that renders a monthly calendar view, highlighting days with tasks
+ * and allowing selection of a specific date. It also provides month navigation (previous/next).
+ *
+ * @param selectedDate The currently selected [LocalDate].
+ * @param currentMonth The [YearMonth] currently being displayed.
+ * @param onDateSelected A callback invoked when the user taps on a specific date.
+ * @param onMonthChanged A callback invoked when the user navigates to a different month.
+ * @param tasks A list of [Task] objects that determine which dates have associated tasks.
+ */
 @Composable
 fun Calendar(
     selectedDate: LocalDate,
@@ -35,6 +47,7 @@ fun Calendar(
     onMonthChanged: (YearMonth) -> Unit,
     tasks: List<Task>
 ) {
+    // Remember the set of dates (LocalDate) on which there are tasks
     val taskDates = remember(tasks) {
         tasks.map { task ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -64,6 +77,7 @@ fun Calendar(
                 modifier = Modifier.padding(bottom = 24.dp)
             )
 
+            // Month Navigation
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -94,6 +108,7 @@ fun Calendar(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Day-of-Week Headers
             Row(modifier = Modifier.fillMaxWidth()) {
                 val daysOfWeek = WeekFields.of(Locale.getDefault()).firstDayOfWeek.let { firstDay ->
                     (0..6).map { firstDay.plus(it.toLong()) }
@@ -112,8 +127,10 @@ fun Calendar(
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            // Calculate the dates to display in the grid
             val days = calculateDaysInMonth(currentMonth)
 
+            // Days in a 7-column grid
             LazyVerticalGrid(
                 columns = GridCells.Fixed(7),
                 modifier = Modifier.fillMaxWidth(),
@@ -134,6 +151,19 @@ fun Calendar(
     }
 }
 
+
+/**
+ * A composable function representing a single day cell in the calendar grid.
+ *
+ * It displays the day number, indicates if the day is selected or if it has an associated task,
+ * and detects user clicks for date selection.
+ *
+ * @param date The [LocalDate] represented by this cell.
+ * @param isSelected Whether the date is currently selected.
+ * @param isCurrentMonth Whether the date belongs to the currently displayed month.
+ * @param hasTask Whether this date has an associated task.
+ * @param onDateSelected A callback invoked when the user taps on this day cell.
+ */
 @Composable
 fun DayCell(
     date: LocalDate,
@@ -143,6 +173,8 @@ fun DayCell(
     onDateSelected: (LocalDate) -> Unit
 ) {
     val isToday = date == LocalDate.now()
+
+    // Determine background and text colors based on state
     val cellColor = when {
         isSelected -> MaterialTheme.colorScheme.outline
         isToday -> MaterialTheme.colorScheme.outlineVariant
@@ -172,6 +204,8 @@ fun DayCell(
                 style = MaterialTheme.typography.bodyMedium,
                 color = textColor
             )
+
+            // Small indicator circle if there's a task on this date
             if (hasTask) {
                 Spacer(modifier = Modifier.height(2.dp))
                 Box(
@@ -179,8 +213,11 @@ fun DayCell(
                         .size(4.dp)
                         .clip(CircleShape)
                         .background(
-                            if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
-                            else MaterialTheme.colorScheme.primary
+                            if (isSelected) {
+                                MaterialTheme.colorScheme.onPrimaryContainer
+                            } else {
+                                MaterialTheme.colorScheme.primary
+                            }
                         )
                 )
             }
@@ -188,6 +225,18 @@ fun DayCell(
     }
 }
 
+
+/**
+ * Calculates a list of [LocalDate] values to display in a 6-row calendar grid for the given [YearMonth].
+ *
+ * This includes:
+ * - The last few days of the previous month (if needed) so the first row starts on the correct day of the week.
+ * - All days of the current month.
+ * - The first few days of the next month to fill the remaining cells (up to 42 total).
+ *
+ * @param currentMonth The [YearMonth] for which days should be generated.
+ * @return A list of [LocalDate] values containing up to 42 days for display in a 6-row grid.
+ */
 private fun calculateDaysInMonth(currentMonth: YearMonth): List<LocalDate> {
     val days = mutableListOf<LocalDate>()
     val firstOfMonth = currentMonth.atDay(1)
@@ -196,17 +245,20 @@ private fun calculateDaysInMonth(currentMonth: YearMonth): List<LocalDate> {
     val firstDayOfWeek = WeekFields.of(Locale.getDefault()).firstDayOfWeek
     var current = firstOfMonth
 
+    // Add days from the previous month to align the first row
     while (current.dayOfWeek != firstDayOfWeek) {
         current = current.minusDays(1)
         days.add(0, current)
     }
 
+    // Add all days of the current month
     current = firstOfMonth
     while (!current.isAfter(lastOfMonth)) {
         days.add(current)
         current = current.plusDays(1)
     }
 
+    // Fill in the remaining days until we reach 42 cells (6 rows)
     current = lastOfMonth.plusDays(1)
     while (days.size < 42) {
         days.add(current)
