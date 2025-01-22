@@ -21,6 +21,16 @@ import dk.dtu.ToDoList.view.components.SettingsItem
 import com.google.firebase.auth.FirebaseAuth
 import java.util.*
 
+
+
+/**
+ * A screen presenting the user's profile information, including username and email,
+ * as well as some basic task statistics (today's tasks, completed tasks, and upcoming tasks).
+ *
+ * It also includes navigable settings items that lead to [AccountSettingsScreen] and [AppSettingsScreen].
+ *
+ * @param navController Used for navigating to other screens, such as account or app settings.
+ */
 @Composable
 fun ProfileScreen(navController: NavController) {
     val context = LocalContext.current
@@ -101,7 +111,7 @@ fun ProfileScreen(navController: NavController) {
             email = userEmail
         )
 
-        // Stats Card
+        // Stats Card displaying user task statistics
         StatsCard(
             todayTasksCount = todayTasksCount,
             completedTodayCount = completedTodayCount,
@@ -113,6 +123,14 @@ fun ProfileScreen(navController: NavController) {
     }
 }
 
+
+/**
+ * A private composable showing a user's avatar placeholder (a [Person] icon),
+ * username, and email address.
+ *
+ * @param username The display name of the user.
+ * @param email The user's email address.
+ */
 @Composable
 private fun ProfileHeader(
     username: String,
@@ -155,6 +173,15 @@ private fun ProfileHeader(
     }
 }
 
+
+/**
+ * A private composable showing a card containing three basic task statistics:
+ * tasks scheduled for today, tasks completed today, and upcoming tasks.
+ *
+ * @param todayTasksCount The number of tasks scheduled for the current day.
+ * @param completedTodayCount The number of tasks completed on the current day.
+ * @param upcomingTasksCount The number of tasks scheduled for future days (excluding today).
+ */
 @Composable
 private fun StatsCard(
     todayTasksCount: Int,
@@ -187,6 +214,12 @@ private fun StatsCard(
     }
 }
 
+/**
+ * A private composable that shows a single statistic column with a label and a value.
+ *
+ * @param label A short title describing the statistic (e.g., "Tasks Today").
+ * @param value A string representing the numeric value of that statistic.
+ */
 @Composable
 private fun StatColumn(label: String, value: String) {
     Column(
@@ -208,6 +241,10 @@ private fun StatColumn(label: String, value: String) {
     }
 }
 
+
+/**
+ * A private composable acting as a vertical divider between statistics columns.
+ */
 @Composable
 private fun StatDivider() {
     HorizontalDivider(
@@ -218,6 +255,13 @@ private fun StatDivider() {
     )
 }
 
+
+/**
+ * A private composable section listing settings options, each represented by a [SettingsItem].
+ * Navigates to "account_settings" and "app_settings" when corresponding items are clicked.
+ *
+ * @param navController A [NavController] used to navigate to the respective settings screens.
+ */
 @Composable
 private fun SettingsSection(navController: NavController) {
     Column(
