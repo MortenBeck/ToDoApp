@@ -127,4 +127,18 @@ class TaskListViewModel(private val taskCRUD: TaskCRUD) : ViewModel() {
             }
         }
     }
+
+    fun addTaskWithRecurrence(task: Task) {
+        viewModelScope.launch {
+            try {
+                val result = taskCRUD.addTaskWithRecurrence(task)
+                if (result) {
+                    loadTasks() // Reload tasks to reflect the addition
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
 }

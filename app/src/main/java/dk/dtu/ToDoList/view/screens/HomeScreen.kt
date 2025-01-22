@@ -133,10 +133,13 @@ fun HomeScreen(
             showDialog = showAddDialog,
             navController = navController,
             onDismiss = { homeScreenViewModel.toggleAddDialog(false) },
-            onTaskAdded = { newTask ->
-                // Launch coroutine to call suspend function
+            onTaskAdded = { newTask, isRecurring ->
                 coroutineScope.launch {
-                    onAddTask(newTask)
+                    if (isRecurring) {
+                        taskListViewModel.addTaskWithRecurrence(newTask)
+                    } else {
+                        taskListViewModel.addTask(newTask)
+                    }
                     homeScreenViewModel.toggleAddDialog(false)
                 }
             }

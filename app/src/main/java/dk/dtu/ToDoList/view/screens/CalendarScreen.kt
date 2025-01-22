@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
@@ -22,6 +23,9 @@ import java.time.YearMonth
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import androidx.lifecycle.lifecycleScope
+import dk.dtu.ToDoList.model.repository.TaskCRUD
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 
 
@@ -45,20 +49,24 @@ fun CalendarScreen(
     onUpdateTask: (Task) -> Unit,
     onDeleteTask: (String) -> Unit
 ) {
-    val lifecycleOwner = LocalLifecycleOwner.current // Add this line
+    val context = LocalContext.current
+    val taskCRUD = remember { TaskCRUD(context) } // Initialize TaskCRUD once
+    val coroutineScope = rememberCoroutineScope()
 
-    // States for date selection, dialogs and task actions
     var selectedDate by remember {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            mutableStateOf(LocalDate.now())
-        } else {
-            TODO("VERSION.SDK_INT < O")
-        }
+        mutableStateOf(
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                LocalDate.now()
+            } else {
+                TODO("VERSION.SDK_INT < O")
+            }
+        )
     }
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var taskToDelete by remember { mutableStateOf<Task?>(null) }
     var showAddDialog by remember { mutableStateOf(false) }
+    var updatedTasks by remember { mutableStateOf(tasks) } // Manage updated task list locally
 
     Scaffold(
         floatingActionButton = {
@@ -94,7 +102,7 @@ fun CalendarScreen(
                     .padding(paddingValues)
                     .padding(horizontal = 16.dp)
             ) {
-                // Calender Card
+                // Calendar Card
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -111,7 +119,7 @@ fun CalendarScreen(
                         currentMonth = currentMonth,
                         onDateSelected = { selectedDate = it },
                         onMonthChanged = { currentMonth = it },
-                        tasks = tasks
+                        tasks = updatedTasks
                     )
                 }
 
@@ -119,7 +127,7 @@ fun CalendarScreen(
 
                 // List of tasks filtered for the selected date
                 TasksForSelectedDate(
-                    tasks = tasks,
+                    tasks = updatedTasks,
                     selectedDate = selectedDate,
                     onDelete = { task ->
                         taskToDelete = task
@@ -140,9 +148,22 @@ fun CalendarScreen(
             showDialog = showAddDialog,
             navController = navController,
             onDismiss = { showAddDialog = false },
-            onTaskAdded = { newTask ->
-                onAddTask(newTask)
-                showAddDialog = false
+            onTaskAdded = { newTask, isRecurring ->
+                coroutineScope.launch {
+                    try {
+                        if (isRecurring) {
+                            taskCRUD.addTaskWithRecurrence(newTask)
+                        } else {
+                            taskCRUD.addTask(newTask)
+                        }
+                        // Refresh task list
+                        updatedTasks = taskCRUD.getTasksFlow().first() // Force a refresh
+                    } catch (e: Exception) {
+                        e.printStackTrace() // Log error
+                    } finally {
+                        showAddDialog = false
+                    }
+                }
             }
         )
     }
@@ -159,9 +180,17 @@ fun CalendarScreen(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        onDeleteTask(taskToDelete!!.id)
-                        taskToDelete = null
-                        showDeleteDialog = false
+                        coroutineScope.launch {
+                            try {
+                                taskCRUD.deleteTask(taskToDelete!!.id)
+                                updatedTasks = taskCRUD.getTasksFlow().first() // Force a refresh
+                            } catch (e: Exception) {
+                                e.printStackTrace() // Log error
+                            } finally {
+                                taskToDelete = null
+                                showDeleteDialog = false
+                            }
+                        }
                     }
                 ) {
                     Text("Delete")
@@ -180,6 +209,7 @@ fun CalendarScreen(
         )
     }
 }
+
 
 
 /**

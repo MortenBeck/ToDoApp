@@ -40,7 +40,7 @@ fun AddTaskDialog(
     showDialog: Boolean,
     navController: NavController,
     onDismiss: () -> Unit,
-    onTaskAdded: (Task) -> Unit,
+    onTaskAdded: (Task, Boolean) -> Unit,
 ) {
     val context = LocalContext.current
     val taskCRUD = remember { TaskCRUD(context) }
@@ -218,7 +218,7 @@ fun AddTaskDialog(
                                         completed = false,
                                         recurrence = selectedRecurrence
                                     )
-                                    onTaskAdded(newTask)
+                                    onTaskAdded(newTask, selectedRecurrence != null) // true if recurring, false otherwise
                                     onDismiss()
                                 }
                             },
