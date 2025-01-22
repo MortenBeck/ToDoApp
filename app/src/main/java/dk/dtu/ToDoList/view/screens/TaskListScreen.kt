@@ -83,25 +83,27 @@ fun TaskListScreen(
             contentPadding = PaddingValues(bottom = 80.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            categorizedTasks.forEach { (title, taskList) -> // taskList is a List<Task>
-                item {
-                    SectionHeader(
-                        title = title,
-                        count = taskList.size,
-                        isExpanded = sectionStates[title] ?: false,
-                        onToggle = { sectionStates[title] = !(sectionStates[title] ?: true) }
-                    )
-                }
-                if (sectionStates[title] == true) {
-                    items(taskList, key = { it.id }) { task -> // task is a Task
-                        SwipeableTaskItem(
-                            task = task,
-                            searchText = "", // Pass appropriate searchText if applicable
-                            onDelete = { viewModel.confirmDelete(it, deleteAll = false) },
-                            onCompleteToggle = onCompleteToggle,
-                            onUpdateTask = onUpdateTask,
-                            onDeleteRequest = { viewModel.requestDelete(task) }
+            categorizedTasks.forEach { (title, taskList) ->
+                if (taskList.isNotEmpty()) { // Render only if the section has tasks
+                    item {
+                        SectionHeader(
+                            title = title,
+                            count = taskList.size,
+                            isExpanded = sectionStates[title] ?: false,
+                            onToggle = { sectionStates[title] = !(sectionStates[title] ?: true) }
                         )
+                    }
+                    if (sectionStates[title] == true) {
+                        items(taskList, key = { it.id }) { task ->
+                            SwipeableTaskItem(
+                                task = task,
+                                searchText = "", // Pass appropriate searchText if applicable
+                                onDelete = { viewModel.confirmDelete(it, deleteAll = false) },
+                                onCompleteToggle = onCompleteToggle,
+                                onUpdateTask = onUpdateTask,
+                                onDeleteRequest = { viewModel.requestDelete(task) }
+                            )
+                        }
                     }
                 }
             }
