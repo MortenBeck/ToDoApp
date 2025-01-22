@@ -136,7 +136,6 @@ fun HomeScreen(
             onTaskAdded = { newTask ->
                 // Launch coroutine to call suspend function
                 coroutineScope.launch {
-                    taskListViewModel.addTask(newTask) // This is now inside a coroutine
                     onAddTask(newTask)
                     homeScreenViewModel.toggleAddDialog(false)
                 }
