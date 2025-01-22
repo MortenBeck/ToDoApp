@@ -19,6 +19,17 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dk.dtu.ToDoList.viewmodel.WeatherViewModelFactory
 
+
+
+/**
+ * A composable that observes a [WeatherViewModel]'s UI state and displays
+ * a weather widget accordingly. It handles three states:
+ * - [WeatherUiState.Loading]: Shows a [CircularProgressIndicator].
+ * - [WeatherUiState.Error]: Shows an error icon and message.
+ * - [WeatherUiState.Success]: Shows the weather icon and temperature.
+ *
+ * @param viewModel The [WeatherViewModel] instance (defaults to one created by [viewModel]).
+ */
 @Composable
 fun WeatherWidget(
     viewModel: WeatherViewModel = viewModel(factory = WeatherViewModelFactory())
@@ -38,6 +49,13 @@ fun WeatherWidget(
     }
 }
 
+
+/**
+ * A private composable to display the weather icon and temperature.
+ *
+ * @param temperature The current temperature as a [String].
+ * @param iconRes A drawable resource representing the current weather icon.
+ */
 @Composable
 private fun WeatherContent(
     temperature: String,
@@ -61,6 +79,11 @@ private fun WeatherContent(
     }
 }
 
+
+/**
+ * A private composable to display an error message when the weather fails to load.
+ * It includes an icon and a descriptive text message indicating a fetch error.
+ */
 @Composable
 private fun ErrorDisplay() {
     Row(
