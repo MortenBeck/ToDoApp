@@ -12,6 +12,18 @@ import dk.dtu.ToDoList.model.data.TaskPriority
 import java.time.ZoneId
 import java.util.Date
 
+
+/**
+ * A dialog that displays the details of a given [task]. Users can edit task information,
+ * update priority, tag, or deadline, and delete the task. If the task is part of a recurring
+ * series, users can choose to delete a single occurrence or the entire group.
+ *
+ * @param task The [Task] object whose details are displayed and edited.
+ * @param onDismiss A callback invoked when the dialog is dismissed without saving or deleting.
+ * @param onUpdateTask A callback invoked with the updated [Task] when the user saves changes.
+ * @param onDeleteTask A callback invoked with the current [Task] when the user chooses to delete only this instance.
+ * @param onDeleteRecurringGroup A callback invoked with the group's ID when the user chooses to delete the entire recurring group.
+ */
 @Composable
 fun TaskDetails(
     task: Task,
@@ -25,6 +37,8 @@ fun TaskDetails(
     var priorityLevel by remember { mutableStateOf(task.priority.name.lowercase().replaceFirstChar { it.uppercase() }) }
     var selectedTag by remember { mutableStateOf(task.tag) }
     val isCompleted by remember { mutableStateOf(task.completed) }
+
+    // Convert the deadline to a LocalDate if possible
     val deadline by remember {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             mutableStateOf(task.deadline.toInstant().atZone(ZoneId.systemDefault()).toLocalDate())
@@ -34,6 +48,7 @@ fun TaskDetails(
     }
     var showDeleteDialog by remember { mutableStateOf(false) }
 
+    // Conditionally show the delete dialog for recurring tasks
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
@@ -96,6 +111,7 @@ fun TaskDetails(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Task name text field
                 OutlinedTextField(
                     value = taskName,
                     onValueChange = { taskName = it },
@@ -110,6 +126,7 @@ fun TaskDetails(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Priority Section
                 Text(
                     text = "Priority",
                     style = MaterialTheme.typography.titleMedium
@@ -140,6 +157,7 @@ fun TaskDetails(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Tag Section
                 Text(
                     text = "Category",
                     style = MaterialTheme.typography.titleMedium
@@ -154,6 +172,7 @@ fun TaskDetails(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Deadline Section
                 Text(
                     text = "Deadline",
                     style = MaterialTheme.typography.titleMedium
@@ -161,6 +180,7 @@ fun TaskDetails(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
+                // Delete Button
                 OutlinedButton(
                     onClick = {
                         if (task.recurringGroupId != null) {
@@ -180,6 +200,7 @@ fun TaskDetails(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Action Buttons
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -213,6 +234,16 @@ fun TaskDetails(
     }
 }
 
+
+/**
+ * A dialog to confirm the deletion of a recurring task. Allows the user to either delete
+ * a single occurrence or the entire recurring group of tasks.
+ *
+ * @param task The [Task] to delete.
+ * @param onDismiss A callback invoked when the dialog is dismissed without deleting.
+ * @param onDeleteSingle A callback invoked when the user chooses to delete only the current task instance.
+ * @param onDeleteGroup A callback invoked when the user chooses to delete all tasks in the recurring group.
+ */
 @Composable
 fun DeleteRecurringTaskDialog(
     task: Task,
