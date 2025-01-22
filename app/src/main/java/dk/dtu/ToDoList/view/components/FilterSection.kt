@@ -24,14 +24,28 @@ import androidx.compose.ui.window.Dialog
 import dk.dtu.ToDoList.model.data.Task
 import dk.dtu.ToDoList.model.data.TaskPriority
 import dk.dtu.ToDoList.model.data.TaskTag
+import dk.dtu.ToDoList.view.theme.getPrioColor
+import dk.dtu.ToDoList.view.theme.getTaskColor
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Date
-import dk.dtu.ToDoList.view.theme.getTaskColor
-import dk.dtu.ToDoList.view.theme.getPrioColor
 
+/**
+ * A composable function that displays a collapsible filter panel for filtering a list of [Task] objects.
+ * It supports filtering by:
+ * - Date range (with a calendar picker and quick-select options)
+ * - Tags ([TaskTag])
+ * - Priorities ([TaskPriority])
+ * - Completion status (hide completed tasks)
+ *
+ * When any filter is changed, the filtered list is emitted via [onFilterChange].
+ *
+ * @param onFilterChange A callback that returns the filtered list of [Task] objects.
+ * @param tasks The original (unfiltered) list of [Task] objects to be filtered.
+ * @param modifier An optional [Modifier] for styling the container of this composable.
+ */
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -60,6 +74,10 @@ fun FilterSection(
 
     val dateFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy")
 
+    /**
+     * Resets all filters to their default values and applies the filter,
+     * returning the unfiltered [tasks] list via [onFilterChange].
+     */
     fun resetFilters() {
         dateRange = null to null
         selectedStartDate = null
@@ -70,6 +88,11 @@ fun FilterSection(
         applyFilters(tasks, dateRange, selectedTags, selectedPriorities, false, onFilterChange)
     }
 
+    /**
+     * Helper function that selects a "quick date" (e.g., today, yesterday, tomorrow).
+     *
+     * @param daysOffset The number of days from today (negative for past days, zero for today, positive for future days).
+     */
     fun selectQuickDate(daysOffset: Int) {
         val date = LocalDate.now().plusDays(daysOffset.toLong())
         selectedStartDate = date
@@ -79,6 +102,7 @@ fun FilterSection(
         applyFilters(tasks, dateRange, selectedTags, selectedPriorities, hideCompletedTasks, onFilterChange)
     }
 
+    // Calendar date range picker dialog
     if (showCalendarPicker) {
         Dialog(onDismissRequest = { showCalendarPicker = false }) {
             Card(
@@ -116,7 +140,7 @@ fun FilterSection(
                                     )
                                     dateRange = startDate to endDate
                                     showCalendarPicker = false
-                                    // Apply filters with new date range
+                                    // Apply filters with the new date range
                                     applyFilters(
                                         tasks,
                                         dateRange,
@@ -180,7 +204,7 @@ fun FilterSection(
                     .fillMaxWidth()
                     .animateContentSize()
             ) {
-                // Header
+                // Header (Filters row with expand/collapse icon)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -212,6 +236,7 @@ fun FilterSection(
                     )
                 }
 
+                // Expanded content: various filtering sections
                 if (isExpanded) {
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
 
@@ -289,7 +314,7 @@ fun FilterSection(
                                 )
                             }
 
-                            // Quick Date Selection
+                            // Quick Date Selection (Yesterday, Today, Tomorrow)
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -501,6 +526,16 @@ fun FilterSection(
     }
 }
 
+/**
+ * Filters a list of [Task] objects based on various criteria, then invokes [onFilterChange] with the filtered list.
+ *
+ * @param tasks The original list of [Task] objects.
+ * @param dateRange A [Pair] containing optional start and end [Date] values (both can be `null`).
+ * @param selectedTags A set of [TaskTag] values to filter by. If empty, no tag-based filtering is applied.
+ * @param selectedPriorities A set of [TaskPriority] values to filter by. If empty, no priority-based filtering is applied.
+ * @param hideCompletedTasks If `true`, completed tasks are excluded from the results.
+ * @param onFilterChange A callback returning the filtered list of tasks.
+ */
 @RequiresApi(Build.VERSION_CODES.O)
 private fun applyFilters(
     tasks: List<Task>,
@@ -511,7 +546,7 @@ private fun applyFilters(
     onFilterChange: (List<Task>) -> Unit
 ) {
     val filteredList = tasks.filter { task ->
-        // Date range filter
+        // 1. Date range filter (if both start/end are non-null)
         val dateMatches = if (dateRange.first != null && dateRange.second != null) {
             val taskDate = task.deadline.toInstant()
                 .atZone(ZoneId.systemDefault())
@@ -527,13 +562,13 @@ private fun applyFilters(
             !taskDate.isBefore(startDate) && !taskDate.isAfter(endDate)
         } else true
 
-        // Tag filter
+        // 2. Tag filter
         val tagMatches = selectedTags.isEmpty() || task.tag in selectedTags
 
-        // Priority filter
+        // 3. Priority filter
         val priorityMatches = selectedPriorities.isEmpty() || task.priority in selectedPriorities
 
-        // Completion status filter
+        // 4. Completion status filter
         val completionMatches = !hideCompletedTasks || !task.completed
 
         dateMatches && tagMatches && priorityMatches && completionMatches
@@ -541,4 +576,3 @@ private fun applyFilters(
 
     onFilterChange(filteredList)
 }
-
