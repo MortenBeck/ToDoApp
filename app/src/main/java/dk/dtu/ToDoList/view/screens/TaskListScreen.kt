@@ -3,6 +3,7 @@ package dk.dtu.ToDoList.view.screens
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandLess
@@ -16,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import dk.dtu.ToDoList.model.data.Task
 import dk.dtu.ToDoList.view.components.SwipeableTaskItem
 import java.util.Calendar
+import dk.dtu.ToDoList.viewmodel.TaskListViewModel
 
 
 
@@ -36,48 +38,26 @@ import java.util.Calendar
  */
 @Composable
 fun TaskListScreen(
-    tasks: List<Task>,
-    onDelete: (Task) -> Unit,
+    viewModel: TaskListViewModel,
     onCompleteToggle: (Task) -> Unit,
-    onUpdateTask: (Task) -> Unit,
-    searchText: String
+    onUpdateTask: (Task) -> Unit
 ) {
-    var taskToDelete by remember { mutableStateOf<Task?>(null) }
+    val categorizedTasks by viewModel.categorizedTasks.collectAsState()
+    val taskToDelete by viewModel.taskToDelete.collectAsState()
 
-    // Define time boundaries for categorized tasks
-    val todayStart = Calendar.getInstance().apply {
-        set(Calendar.HOUR_OF_DAY, 0)
-        set(Calendar.MINUTE, 0)
-        set(Calendar.SECOND, 0)
-        set(Calendar.MILLISECOND, 0)
-    }.time
+    // Track expanded/collapsed states for sections
+    val sectionStates = remember {
+        mutableStateMapOf(
+            "Expired" to true,
+            "Today" to true,
+            "Future" to true,
+            "Completed" to false
+        )
+    }
 
-    val tomorrowStart = Calendar.getInstance().apply {
-        add(Calendar.DAY_OF_MONTH, 1)
-        set(Calendar.HOUR_OF_DAY, 0)
-        set(Calendar.MINUTE, 0)
-        set(Calendar.SECOND, 0)
-        set(Calendar.MILLISECOND, 0)
-    }.time
-
-    // Partition tasks into relevant sections
-    val todayTasks = tasks.filter { it.deadline >= todayStart && it.deadline < tomorrowStart }.sortedBy { it.deadline }
-    val futureTasks = tasks.filter { it.deadline >= tomorrowStart }.sortedBy { it.deadline }
-    val expiredTasks = tasks.filter { it.deadline < todayStart && !it.completed }.sortedBy { it.deadline }
-    val completedTasks = tasks.filter { it.deadline < todayStart && it.completed }.sortedBy { it.deadline }
-
-    // Track expanded/collapsed state for each section
-    val isExpiredExpanded = remember { mutableStateOf(true) }
-    val isTodayExpanded = remember { mutableStateOf(true) }
-    val isFutureExpanded = remember { mutableStateOf(true) }
-    val isCompletedExpanded = remember { mutableStateOf(false) }
-
-    // If no tasks exist at all, show a prompt. Otherwise, show categorized sections
-    if (tasks.isEmpty()) {
+    if (categorizedTasks.isEmpty()) {
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(30.dp),
+            modifier = Modifier.fillMaxSize().padding(30.dp),
             contentAlignment = Alignment.Center
         ) {
             Column(
@@ -103,51 +83,34 @@ fun TaskListScreen(
             contentPadding = PaddingValues(bottom = 80.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            // Helper to render each section with a header and tasks
-            fun renderSection(
-                title: String,
-                tasks: List<Task>,
-                isExpanded: MutableState<Boolean>
-            ) {
-                if (tasks.isNotEmpty()) {
-                    item {
-                        SectionHeader(
-                            title = title,
-                            count = tasks.size,
-                            isExpanded = isExpanded.value,
-                            onToggle = { isExpanded.value = !isExpanded.value }
+            categorizedTasks.forEach { (title, taskList) -> // taskList is a List<Task>
+                item {
+                    SectionHeader(
+                        title = title,
+                        count = taskList.size,
+                        isExpanded = sectionStates[title] ?: false,
+                        onToggle = { sectionStates[title] = !(sectionStates[title] ?: true) }
+                    )
+                }
+                if (sectionStates[title] == true) {
+                    items(taskList, key = { it.id }) { task -> // task is a Task
+                        SwipeableTaskItem(
+                            task = task,
+                            searchText = "", // Pass appropriate searchText if applicable
+                            onDelete = { viewModel.confirmDelete(it, deleteAll = false) },
+                            onCompleteToggle = onCompleteToggle,
+                            onUpdateTask = onUpdateTask,
+                            onDeleteRequest = { viewModel.requestDelete(task) }
                         )
-                    }
-                    if (isExpanded.value) {
-                        itemsIndexed(
-                            items = tasks,
-                            key = { _, task -> task.id }
-                        ) { _, task ->
-                            SwipeableTaskItem(
-                                task = task,
-                                searchText = searchText,
-                                onDelete = onDelete,
-                                onCompleteToggle = onCompleteToggle,
-                                onUpdateTask = onUpdateTask,
-                                onDeleteRequest = { taskToDelete = it }
-                            )
-                        }
                     }
                 }
             }
-
-            // Render four sections: expired, today, future and past completions
-            renderSection("Expired", expiredTasks, isExpiredExpanded)
-            renderSection("Today", todayTasks, isTodayExpanded)
-            renderSection("Future", futureTasks, isFutureExpanded)
-            renderSection("Past Completions", completedTasks, isCompletedExpanded)
         }
     }
 
-    // Delete confirmation dialog
     if (taskToDelete != null) {
         AlertDialog(
-            onDismissRequest = { taskToDelete = null },
+            onDismissRequest = { viewModel.cancelDelete() },
             title = { Text("Delete Task") },
             text = {
                 Text(
@@ -160,17 +123,9 @@ fun TaskListScreen(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        taskToDelete?.let { task ->
-                            if (task.recurringGroupId != null) {
-                                // Delete all recurring instances
-                                tasks.filter { it.recurringGroupId == task.recurringGroupId }
-                                    .forEach { onDelete(it) }
-                            } else {
-                                // Delete single task
-                                onDelete(task)
-                            }
+                        taskToDelete?.let {
+                            viewModel.confirmDelete(it, deleteAll = it.recurringGroupId != null)
                         }
-                        taskToDelete = null
                     }
                 ) {
                     Text(if (taskToDelete?.recurringGroupId != null) "Delete All" else "Delete")
@@ -179,11 +134,7 @@ fun TaskListScreen(
             dismissButton = {
                 TextButton(
                     onClick = {
-                        if (taskToDelete?.recurringGroupId != null) {
-                            // Delete only this instance of recurring task
-                            taskToDelete?.let { onDelete(it) }
-                        }
-                        taskToDelete = null
+                        taskToDelete?.let { viewModel.confirmDelete(it, deleteAll = false) }
                     }
                 ) {
                     Text(if (taskToDelete?.recurringGroupId != null) "Delete This Only" else "Cancel")
@@ -192,6 +143,7 @@ fun TaskListScreen(
         )
     }
 }
+
 
 
 /**

@@ -19,6 +19,7 @@ import dk.dtu.ToDoList.R
 import dk.dtu.ToDoList.model.data.Task
 import dk.dtu.ToDoList.view.components.*
 import androidx.compose.foundation.Image
+import dk.dtu.ToDoList.viewmodel.TaskListViewModel
 
 
 
@@ -48,12 +49,18 @@ fun HomeScreen(
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     var showAddDialog by remember { mutableStateOf(false) }
     var searchText by remember { mutableStateOf("") }
-    var filteredTasks by remember(tasks) { mutableStateOf(tasks) }
 
-    // Further filter tasks by search text
-    val searchFilteredTasks = filteredTasks.filter {
-        it.name.contains(searchText, ignoreCase = true)
+    // Initialize ViewModel
+    val viewModel = remember { TaskListViewModel() }
+
+    // Provide initial tasks to the ViewModel
+    LaunchedEffect(tasks) {
+        viewModel.setTasks(tasks)
     }
+
+    // Observe categorized tasks and filtered tasks from the ViewModel
+    val categorizedTasks by viewModel.categorizedTasks.collectAsState()
+    val filteredTasks = categorizedTasks.values.flatten().filter { it.name.contains(searchText, ignoreCase = true) }
 
     Scaffold(
         topBar = {
@@ -104,27 +111,22 @@ fun HomeScreen(
                     FilterSection(
                         tasks = tasks,
                         onFilterChange = { newFilteredTasks ->
-                            filteredTasks = newFilteredTasks
+                            viewModel.setTasks(newFilteredTasks)
                         }
                     )
                 }
 
                 // Displays the filtered and/or searched tasks
                 TaskListScreen(
-                    tasks = searchFilteredTasks,
-                    onDelete = { task ->
-                        // If the task has a recurring group I; delete the group, otherwise, delete a single task
-                        if (task.recurringGroupId != null) {
-                            onDeleteRecurringGroup(task.recurringGroupId)
-                        } else {
-                            onDeleteTask(task.id)
-                        }
-                    },
+                    viewModel = viewModel,
                     onCompleteToggle = { task ->
-                        onUpdateTask(task.copy(completed = !task.completed))
+                        val updatedTask = task.copy(completed = !task.completed)
+                        onUpdateTask(updatedTask)
+                        viewModel.setTasks(viewModel.tasks.value.map {
+                            if (it.id == task.id) updatedTask else it
+                        })
                     },
-                    onUpdateTask = onUpdateTask,
-                    searchText = searchText
+                    onUpdateTask = onUpdateTask
                 )
             }
         }
@@ -138,6 +140,7 @@ fun HomeScreen(
             onDismiss = { showAddDialog = false },
             onTaskAdded = { newTask ->
                 onAddTask(newTask)
+                viewModel.setTasks(tasks + newTask)
                 showAddDialog = false
             },
             lifecycleScope = lifecycleOwner.lifecycleScope
