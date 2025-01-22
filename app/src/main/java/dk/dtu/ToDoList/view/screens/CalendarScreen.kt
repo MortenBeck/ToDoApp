@@ -23,6 +23,19 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import androidx.lifecycle.lifecycleScope
 
+
+
+/**
+ * A composable screen that displays a calendar for the user to browse through tasks by date.
+ * It also provides a floating action button for adding new tasks, and supports deleting
+ * or updating existing tasks.
+ *
+ * @param tasks The list of [Task] objects to be displayed in the calendar and the list below it.
+ * @param navController A [NavController] used for navigation (e.g., returning to previous screens).
+ * @param onAddTask A callback to add a new [Task] to the data source.
+ * @param onUpdateTask A callback to update an existing [Task].
+ * @param onDeleteTask A callback to delete a task by its ID.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarScreen(
@@ -34,6 +47,7 @@ fun CalendarScreen(
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current // Add this line
 
+    // States for date selection, dialogs and task actions
     var selectedDate by remember {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             mutableStateOf(LocalDate.now())
@@ -65,6 +79,7 @@ fun CalendarScreen(
             modifier = Modifier
                 .fillMaxSize()
         ) {
+            // Background image
             Image(
                 painter = painterResource(id = R.drawable.background_gradient),
                 contentDescription = null,
@@ -72,12 +87,14 @@ fun CalendarScreen(
                 contentScale = ContentScale.FillBounds
             )
 
+            // Main content
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
                     .padding(horizontal = 16.dp)
             ) {
+                // Calender Card
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -100,6 +117,7 @@ fun CalendarScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
+                // List of tasks filtered for the selected date
                 TasksForSelectedDate(
                     tasks = tasks,
                     selectedDate = selectedDate,
@@ -116,7 +134,7 @@ fun CalendarScreen(
         }
     }
 
-    // Dialogs
+    // Dialog for adding a new task
     if (showAddDialog) {
         AddTaskDialog(
             showDialog = showAddDialog,
@@ -130,6 +148,7 @@ fun CalendarScreen(
         )
     }
 
+    // Dialog for deleting a task
     if (showDeleteDialog && taskToDelete != null) {
         AlertDialog(
             onDismissRequest = {
@@ -163,6 +182,18 @@ fun CalendarScreen(
     }
 }
 
+
+/**
+ * A private composable that displays tasks scheduled for a given [selectedDate]. If there are no tasks
+ * on that date, a message is displayed.
+ *
+ * @param tasks The original (unfiltered) list of tasks.
+ * @param selectedDate The currently chosen [LocalDate] in the calendar.
+ * @param onDelete Callback invoked when a task is targeted for deletion.
+ * @param onCompleteToggle Callback invoked when a task’s completion status is toggled.
+ * @param onUpdateTask Callback invoked when a task is updated.
+ * @param searchText An optional search string, if filtering by name is desired (defaults to empty).
+ */
 @Composable
 private fun TasksForSelectedDate(
     tasks: List<Task>,
@@ -172,6 +203,7 @@ private fun TasksForSelectedDate(
     onUpdateTask: (Task) -> Unit,
     searchText: String = ""
 ) {
+    // User rememeber to avoid recomputing filtering on each recomposition when date or task change.
     val tasksForDate = remember(selectedDate, tasks) {
         tasks.filter { task ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
