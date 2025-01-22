@@ -4,9 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.*
 import dk.dtu.ToDoList.model.data.Task
+import dk.dtu.ToDoList.model.repository.TaskCRUD
+import kotlinx.coroutines.launch
 import java.util.*
 
-class TaskListViewModel : ViewModel() {
+class TaskListViewModel(private val taskCRUD: TaskCRUD) : ViewModel()
+ {
     private val _tasks = MutableStateFlow<List<Task>>(emptyList())
     val tasks: StateFlow<List<Task>> = _tasks
 
@@ -46,16 +49,35 @@ class TaskListViewModel : ViewModel() {
     }
 
     fun confirmDelete(task: Task, deleteAll: Boolean) {
-        val updatedTasks = if (deleteAll && task.recurringGroupId != null) {
-            tasks.value.filterNot { it.recurringGroupId == task.recurringGroupId }
-        } else {
-            tasks.value - task
+        viewModelScope.launch {
+            if (deleteAll && task.recurringGroupId != null) {
+                // Delete all tasks in the recurring group
+                val result = taskCRUD.deleteRecurringGroup(task.recurringGroupId)
+                if (result) {
+                    _tasks.value = tasks.value.filterNot { it.recurringGroupId == task.recurringGroupId }
+                }
+            } else {
+                // Delete a single task
+                val result = taskCRUD.deleteTask(task.id)
+                if (result) {
+                    _tasks.value = tasks.value - task
+                }
+            }
+            _taskToDelete.value = null
         }
-        _tasks.value = updatedTasks
-        _taskToDelete.value = null
     }
+
+
 
     fun cancelDelete() {
         _taskToDelete.value = null
     }
+
+     fun loadTasks() {
+         viewModelScope.launch {
+             taskCRUD.getTasksFlow().collect { taskList ->
+                 _tasks.value = taskList
+             }
+         }
+     }
 }

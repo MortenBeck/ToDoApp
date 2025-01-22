@@ -19,6 +19,8 @@ import dk.dtu.ToDoList.R
 import dk.dtu.ToDoList.model.data.Task
 import dk.dtu.ToDoList.view.components.*
 import androidx.compose.foundation.Image
+import androidx.compose.ui.platform.LocalContext
+import dk.dtu.ToDoList.model.repository.TaskCRUD
 import dk.dtu.ToDoList.viewmodel.TaskListViewModel
 
 
@@ -50,13 +52,15 @@ fun HomeScreen(
     var showAddDialog by remember { mutableStateOf(false) }
     var searchText by remember { mutableStateOf("") }
 
-    // Initialize ViewModel
-    val viewModel = remember { TaskListViewModel() }
+    val context = LocalContext.current
+    val taskCRUD = remember { TaskCRUD(context) }
+    val viewModel = remember { TaskListViewModel(taskCRUD) }
 
     // Provide initial tasks to the ViewModel
-    LaunchedEffect(tasks) {
-        viewModel.setTasks(tasks)
+    LaunchedEffect(Unit) {
+        viewModel.loadTasks()
     }
+
 
     // Observe categorized tasks and filtered tasks from the ViewModel
     val categorizedTasks by viewModel.categorizedTasks.collectAsState()
