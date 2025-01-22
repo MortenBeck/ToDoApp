@@ -14,9 +14,21 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
+
+
+/**
+ * A custom [Application] class for the ToDoList app. It handles the initialization
+ * of Firebase, Google Play Services checks, and sets up an application-scoped
+ * [CoroutineScope] for background work.
+ */
 class ToDoApplication : Application() {
 
-    // Application-scoped coroutine scope
+    /**
+     * A [CoroutineScope] tied to the application's lifetime. It uses a [SupervisorJob] so that
+     * one failing child job won't cancel all other children, and [Dispatchers.Main] to run
+     * coroutines on the main thread by default. The [CoroutineExceptionHandler] logs any
+     * uncaught exceptions globally.
+     */
     private val applicationScope = CoroutineScope(
         SupervisorJob() +
                 Dispatchers.Main +
@@ -25,21 +37,31 @@ class ToDoApplication : Application() {
                 }
     )
 
+
+    /**
+     * Called by the Android system when the application is created. Triggers the
+     * initialization process for Firebase and Google Play Services.
+     */
     override fun onCreate() {
         super.onCreate()
 
-        // Initialize core components
         initializeComponents()
     }
 
+    /**
+     * A convenience method to group all initial setup tasks:
+     * - Firebase initialization
+     * - Google Play Services check
+     */
     private fun initializeComponents() {
-        // Initialize Firebase
         initializeFirebase()
-
-        // Check and initialize Google Play Services
         checkGooglePlayServices()
     }
 
+    /**
+     * Attempts to initialize Firebase. Logs a success message if initialization
+     * completes, otherwise logs an error.
+     */
     private fun initializeFirebase() {
         try {
             FirebaseApp.initializeApp(this)
@@ -49,6 +71,10 @@ class ToDoApplication : Application() {
         }
     }
 
+    /**
+     * Checks if Google Play Services is available on the device. If successful,
+     * proceeds to initialize authentication. Otherwise, logs an error message.
+     */
     private fun checkGooglePlayServices() {
         val googleApiAvailability = GoogleApiAvailability.getInstance()
         val resultCode = googleApiAvailability.isGooglePlayServicesAvailable(this)
@@ -62,6 +88,15 @@ class ToDoApplication : Application() {
         }
     }
 
+
+    /**
+     * Handles any error states related to Google Play Services availability.
+     * If the error is user-resolvable, logs a warning message so the user can be prompted
+     * to resolve it (handled in [MainActivity]).
+     *
+     * @param googleApiAvailability The [GoogleApiAvailability] instance used for error resolution info.
+     * @param resultCode The error code indicating the state of Google Play Services.
+     */
     private fun handleGooglePlayServicesError(
         googleApiAvailability: GoogleApiAvailability,
         resultCode: Int
@@ -75,6 +110,10 @@ class ToDoApplication : Application() {
         }
     }
 
+
+    /**
+     * Checks if the user is already authenticated. If not, performs an anonymous sign-in.
+     */
     private fun initializeAuthentication() {
         val auth = FirebaseAuth.getInstance()
 
@@ -84,6 +123,11 @@ class ToDoApplication : Application() {
         }
     }
 
+
+    /**
+     * Launches a coroutine on [Dispatchers.IO] to perform an anonymous sign-in
+     * using [UserIdManager]. Logs success or failure messages.
+     */
     private fun performAnonymousSignIn() {
         applicationScope.launch(Dispatchers.IO) {
             try {
