@@ -136,10 +136,10 @@ fun TaskListScreen(
             dismissButton = {
                 TextButton(
                     onClick = {
-                        taskToDelete?.let { viewModel.confirmDelete(it, deleteAll = false) }
+                        viewModel.cancelDelete() // Cancel deletion without any action
                     }
                 ) {
-                    Text(if (taskToDelete?.recurringGroupId != null) "Delete This Only" else "Cancel")
+                    Text("Cancel")
                 }
             }
         )
@@ -147,8 +147,7 @@ fun TaskListScreen(
 }
 
 
-
-/**
+    /**
  * A composable that serves as a header for different task sections.
  * It displays a title, the count of tasks in that section, and an icon to
  * expand or collapse the list below it.
