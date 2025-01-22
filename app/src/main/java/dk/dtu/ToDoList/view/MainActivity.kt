@@ -261,23 +261,8 @@ fun ToDoApp() {
 
             composable("Calendar") {
                 CalendarScreen(
-                    tasks = tasks,
                     navController = navController,
-                    onAddTask = { task ->
-                        coroutineScope.launch {
-                            taskListViewModel.addTask(task)
-                        }
-                    },
-                    onUpdateTask = { task ->
-                        coroutineScope.launch {
-                            taskListViewModel.updateTask(task)
-                        }
-                    },
-                    onDeleteTask = { taskId ->
-                        coroutineScope.launch {
-                            taskListViewModel.deleteTask(taskId)
-                        }
-                    }
+                    taskListViewModel = taskListViewModel
                 )
             }
 

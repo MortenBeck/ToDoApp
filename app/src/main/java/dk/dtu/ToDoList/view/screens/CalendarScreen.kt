@@ -24,6 +24,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import androidx.lifecycle.lifecycleScope
 import dk.dtu.ToDoList.model.repository.TaskCRUD
+import dk.dtu.ToDoList.viewmodel.TaskListViewModel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -43,16 +44,14 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarScreen(
-    tasks: List<Task>,
     navController: NavController,
-    onAddTask: (Task) -> Unit,
-    onUpdateTask: (Task) -> Unit,
-    onDeleteTask: (String) -> Unit
+    taskListViewModel: TaskListViewModel
 ) {
-    val context = LocalContext.current
-    val taskCRUD = remember { TaskCRUD(context) } // Initialize TaskCRUD once
+    val tasks by taskListViewModel.tasks.collectAsState()
+    val taskToDelete by taskListViewModel.taskToDelete.collectAsState()
     val coroutineScope = rememberCoroutineScope()
 
+    // UI state
     var selectedDate by remember {
         mutableStateOf(
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -64,9 +63,7 @@ fun CalendarScreen(
     }
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
     var showDeleteDialog by remember { mutableStateOf(false) }
-    var taskToDelete by remember { mutableStateOf<Task?>(null) }
     var showAddDialog by remember { mutableStateOf(false) }
-    var updatedTasks by remember { mutableStateOf(tasks) } // Manage updated task list locally
 
     Scaffold(
         floatingActionButton = {
@@ -119,7 +116,7 @@ fun CalendarScreen(
                         currentMonth = currentMonth,
                         onDateSelected = { selectedDate = it },
                         onMonthChanged = { currentMonth = it },
-                        tasks = updatedTasks
+                        tasks = tasks
                     )
                 }
 
@@ -127,22 +124,22 @@ fun CalendarScreen(
 
                 // List of tasks filtered for the selected date
                 TasksForSelectedDate(
-                    tasks = updatedTasks,
+                    tasks = tasks,
                     selectedDate = selectedDate,
                     onDelete = { task ->
-                        taskToDelete = task
+                        taskListViewModel.requestDelete(task)
                         showDeleteDialog = true
                     },
                     onCompleteToggle = { task ->
-                        onUpdateTask(task.copy(completed = !task.completed))
+                        taskListViewModel.addTask(task.copy(completed = !task.completed))
                     },
-                    onUpdateTask = onUpdateTask
+                    onUpdateTask = { taskListViewModel.addTask(it) }
                 )
             }
         }
     }
 
-    // Dialog for adding a new task
+    // Add Task Dialog
     if (showAddDialog) {
         AddTaskDialog(
             showDialog = showAddDialog,
@@ -150,29 +147,22 @@ fun CalendarScreen(
             onDismiss = { showAddDialog = false },
             onTaskAdded = { newTask, isRecurring ->
                 coroutineScope.launch {
-                    try {
-                        if (isRecurring) {
-                            taskCRUD.addTaskWithRecurrence(newTask)
-                        } else {
-                            taskCRUD.addTask(newTask)
-                        }
-                        // Refresh task list
-                        updatedTasks = taskCRUD.getTasksFlow().first() // Force a refresh
-                    } catch (e: Exception) {
-                        e.printStackTrace() // Log error
-                    } finally {
-                        showAddDialog = false
+                    if (isRecurring) {
+                        taskListViewModel.addTaskWithRecurrence(newTask)
+                    } else {
+                        taskListViewModel.addTask(newTask)
                     }
+                    showAddDialog = false
                 }
             }
         )
     }
 
-    // Dialog for deleting a task
+    // Delete Task Dialog
     if (showDeleteDialog && taskToDelete != null) {
         AlertDialog(
             onDismissRequest = {
-                taskToDelete = null
+                taskListViewModel.cancelDelete()
                 showDeleteDialog = false
             },
             title = { Text("Delete Task") },
@@ -180,17 +170,10 @@ fun CalendarScreen(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        coroutineScope.launch {
-                            try {
-                                taskCRUD.deleteTask(taskToDelete!!.id)
-                                updatedTasks = taskCRUD.getTasksFlow().first() // Force a refresh
-                            } catch (e: Exception) {
-                                e.printStackTrace() // Log error
-                            } finally {
-                                taskToDelete = null
-                                showDeleteDialog = false
-                            }
+                        taskToDelete?.let {
+                            taskListViewModel.confirmDelete(it, deleteAll = false)
                         }
+                        showDeleteDialog = false
                     }
                 ) {
                     Text("Delete")
@@ -199,7 +182,7 @@ fun CalendarScreen(
             dismissButton = {
                 TextButton(
                     onClick = {
-                        taskToDelete = null
+                        taskListViewModel.cancelDelete()
                         showDeleteDialog = false
                     }
                 ) {
