@@ -14,10 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.navigation.NavController
-import dk.dtu.ToDoList.model.data.Task
-import dk.dtu.ToDoList.model.data.TaskPriority
-import dk.dtu.ToDoList.model.data.TaskTag
-import dk.dtu.ToDoList.model.data.RecurrencePattern
+import dk.dtu.ToDoList.model.data.*
 import dk.dtu.ToDoList.model.repository.TaskCRUD
 import dk.dtu.ToDoList.view.theme.getPrioColor
 import java.time.LocalDate
@@ -26,6 +23,18 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Date
 
+
+
+/**
+ * Displays a dialog where the user can create a new [Task]. The dialog includes
+ * fields for the task name, priority, deadline, category, and recurrence pattern.
+ *
+ * @param showDialog Whether the dialog should be displayed.
+ * @param navController A [NavController] instance for navigation (if needed in your workflow).
+ * @param onDismiss A callback triggered when the user dismisses the dialog (e.g., pressing "Cancel" or clicking outside).
+ * @param onTaskAdded A callback triggered with the newly created [Task] when the user confirms.
+ * @param lifecycleScope A [LifecycleCoroutineScope] used for any required coroutines within this composable.
+ */
 @Composable
 fun AddTaskDialog(
     showDialog: Boolean,
@@ -38,16 +47,18 @@ fun AddTaskDialog(
     val taskCRUD = remember { TaskCRUD(context) }
 
     if (showDialog) {
+        // State variables to manage input fields
         var taskName by remember { mutableStateOf("") }
         var priorityLevel by remember { mutableStateOf("Low") }
         var selectedTag by remember { mutableStateOf(TaskTag.WORK) }
         var selectedRecurrence by remember { mutableStateOf<RecurrencePattern?>(null) }
         var showDatePicker by remember { mutableStateOf(false) }
-        var selectedDate by remember { if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            mutableStateOf(LocalDate.now())
-        } else {
-            TODO("VERSION.SDK_INT < O")
-        }
+        var selectedDate by remember {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                mutableStateOf(LocalDate.now())
+            } else {
+                TODO("VERSION.SDK_INT < O")
+            }
         }
         var currentMonth by remember { mutableStateOf(YearMonth.now()) }
 
@@ -72,6 +83,7 @@ fun AddTaskDialog(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
+                    // Task Name
                     OutlinedTextField(
                         value = taskName,
                         onValueChange = { taskName = it },
@@ -87,6 +99,7 @@ fun AddTaskDialog(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
+                    // Priority Section
                     Text(
                         text = "Priority",
                         style = MaterialTheme.typography.titleMedium
@@ -105,6 +118,7 @@ fun AddTaskDialog(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
+                    // Deadline Section
                     Text(
                         text = "Deadline",
                         style = MaterialTheme.typography.titleMedium
@@ -116,9 +130,14 @@ fun AddTaskDialog(
                         onClick = { showDatePicker = true },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(selectedDate.format(DateTimeFormatter.ofPattern("MMM dd, yyyy")))
+                        Text(
+                            selectedDate.format(
+                                DateTimeFormatter.ofPattern("MMM dd, yyyy")
+                            )
+                        )
                     }
 
+                    // Date Picker Dialog
                     if (showDatePicker) {
                         Dialog(onDismissRequest = { showDatePicker = false }) {
                             Card(
@@ -127,6 +146,7 @@ fun AddTaskDialog(
                                     .padding(16.dp),
                                 shape = RoundedCornerShape(16.dp)
                             ) {
+                                // Replace "Calendar" with your actual composable or date-picker logic
                                 Calendar(
                                     selectedDate = selectedDate,
                                     currentMonth = currentMonth,
@@ -137,7 +157,7 @@ fun AddTaskDialog(
                                     onMonthChanged = { month ->
                                         currentMonth = month
                                     },
-                                    tasks = emptyList()  // Just remove the style parameter
+                                    tasks = emptyList()
                                 )
                             }
                         }
@@ -145,6 +165,7 @@ fun AddTaskDialog(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
+                    // Category (Tag) Section
                     Text(
                         text = "Category",
                         style = MaterialTheme.typography.titleMedium
@@ -159,6 +180,7 @@ fun AddTaskDialog(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
+                    // Recurrence Section
                     Text(
                         text = "Repeat",
                         style = MaterialTheme.typography.titleMedium
@@ -173,6 +195,7 @@ fun AddTaskDialog(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
+                    // Buttons
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -189,7 +212,9 @@ fun AddTaskDialog(
                                     val newTask = Task(
                                         name = taskName,
                                         priority = TaskPriority.valueOf(priorityLevel.uppercase()),
-                                        deadline = Date.from(selectedDate.atStartOfDay(ZoneId.systemDefault()).toInstant()),
+                                        deadline = Date.from(
+                                            selectedDate.atStartOfDay(ZoneId.systemDefault()).toInstant()
+                                        ),
                                         tag = selectedTag,
                                         completed = false,
                                         recurrence = selectedRecurrence
@@ -209,6 +234,14 @@ fun AddTaskDialog(
     }
 }
 
+
+/**
+ * A composable that renders a chip-like button for selecting the [TaskPriority].
+ *
+ * @param text The label displayed on the chip (e.g., "Low", "Medium", "High").
+ * @param selectedPriority The currently selected priority.
+ * @param onClick A callback invoked when this chip is clicked.
+ */
 @Composable
 fun PriorityChip(
     text: String,
@@ -236,10 +269,17 @@ fun PriorityChip(
         modifier = Modifier.width(80.dp),
         contentPadding = PaddingValues(horizontal = 1.dp)
     ) {
-        Text(text=text,maxLines=1)
+        Text(text = text, maxLines = 1)
     }
 }
 
+
+/**
+ * A composable that provides a dropdown menu for selecting a [TaskTag].
+ *
+ * @param selectedTag The currently selected [TaskTag].
+ * @param onTagSelected A callback invoked with the newly selected [TaskTag].
+ */
 @Composable
 fun ModernDropdownTagSelector(
     selectedTag: TaskTag,
@@ -247,9 +287,7 @@ fun ModernDropdownTagSelector(
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    Box(
-        modifier = Modifier.fillMaxWidth()
-    ) {
+    Box(modifier = Modifier.fillMaxWidth()) {
         OutlinedButton(
             onClick = { expanded = true },
             modifier = Modifier.fillMaxWidth()
@@ -272,6 +310,7 @@ fun ModernDropdownTagSelector(
             onDismissRequest = { expanded = false },
             modifier = Modifier.fillMaxWidth(0.9f)
         ) {
+            // 'entries' is a Kotlin 1.8+ feature for enum classes
             TaskTag.entries.forEach { tag ->
                 DropdownMenuItem(
                     text = { Text(tag.name) },
@@ -285,6 +324,14 @@ fun ModernDropdownTagSelector(
     }
 }
 
+
+/**
+ * A composable that provides a dropdown menu for selecting a [RecurrencePattern].
+ * Includes an option to select "Don't repeat."
+ *
+ * @param selectedRecurrence The currently selected [RecurrencePattern], or `null` if none.
+ * @param onRecurrenceSelected A callback invoked with the newly selected [RecurrencePattern] or `null`.
+ */
 @Composable
 fun ModernDropdownRecurrenceSelector(
     selectedRecurrence: RecurrencePattern?,
@@ -292,9 +339,7 @@ fun ModernDropdownRecurrenceSelector(
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    Box(
-        modifier = Modifier.fillMaxWidth()
-    ) {
+    Box(modifier = Modifier.fillMaxWidth()) {
         OutlinedButton(
             onClick = { expanded = true },
             modifier = Modifier.fillMaxWidth()
@@ -317,6 +362,7 @@ fun ModernDropdownRecurrenceSelector(
             onDismissRequest = { expanded = false },
             modifier = Modifier.fillMaxWidth(0.9f)
         ) {
+            // Option for no recurrence
             DropdownMenuItem(
                 text = { Text("Don't repeat") },
                 onClick = {
@@ -324,7 +370,7 @@ fun ModernDropdownRecurrenceSelector(
                     expanded = false
                 }
             )
-
+            // Enum entries for recurrence patterns
             RecurrencePattern.entries.forEach { pattern ->
                 DropdownMenuItem(
                     text = { Text(pattern.name) },
