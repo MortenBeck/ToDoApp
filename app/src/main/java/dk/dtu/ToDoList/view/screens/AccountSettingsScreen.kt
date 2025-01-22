@@ -18,6 +18,15 @@ import dk.dtu.ToDoList.R
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 
+
+
+/**
+ * A screen that displays various account settings for the current user. This includes
+ * options for changing the password, privacy settings, notifications, logging out,
+ * and deleting the account. The screen also shows basic user profile details (email/username).
+ *
+ * @param navController Used for navigating to other screens within the app (e.g., going back or returning to a login screen).
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AccountSettingsScreen(navController: NavController) {
@@ -75,7 +84,7 @@ fun AccountSettingsScreen(navController: NavController) {
                     )
                     .padding(paddingValues)
             ) {
-                // Profile Card
+                // Displays basic user profile info (username/email)
                 ElevatedCard(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -108,7 +117,7 @@ fun AccountSettingsScreen(navController: NavController) {
                     )
                 }
 
-                // Account Settings Card
+                // Card containing various account settings
                 ElevatedCard(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -154,7 +163,7 @@ fun AccountSettingsScreen(navController: NavController) {
                     )
                 }
 
-                // Danger Zone Card
+                // "Danger Zone" Card: Logout and delete account
                 ElevatedCard(
                     modifier = Modifier
                         .fillMaxWidth()
