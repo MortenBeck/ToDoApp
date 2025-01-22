@@ -17,6 +17,23 @@ import dk.dtu.ToDoList.model.data.Task
 import dk.dtu.ToDoList.view.components.SwipeableTaskItem
 import java.util.Calendar
 
+
+
+/**
+ * Displays a list of tasks organized into four sections: expired tasks, today's tasks,
+ * future tasks, and past completions. Each section can be expanded or collapsed.
+ * If there are no tasks at all, a prompt is shown to the user instead.
+ *
+ * The function also manages a confirmation dialog for deleting tasks,
+ * including special handling for recurring tasks.
+ *
+ * @param tasks The complete list of [Task] objects to be displayed.
+ * @param onDelete A callback invoked when a [Task] is deleted. For recurring tasks,
+ *   all instances or a single instance can be deleted depending on user choice.
+ * @param onCompleteToggle A callback invoked when a user toggles the completion status of a [Task].
+ * @param onUpdateTask A callback invoked when a [Task] is updated (e.g., from editing details).
+ * @param searchText An optional search term for highlighting or filtering tasks (though not used directly here).
+ */
 @Composable
 fun TaskListScreen(
     tasks: List<Task>,
@@ -27,6 +44,7 @@ fun TaskListScreen(
 ) {
     var taskToDelete by remember { mutableStateOf<Task?>(null) }
 
+    // Define time boundaries for categorized tasks
     val todayStart = Calendar.getInstance().apply {
         set(Calendar.HOUR_OF_DAY, 0)
         set(Calendar.MINUTE, 0)
@@ -42,17 +60,19 @@ fun TaskListScreen(
         set(Calendar.MILLISECOND, 0)
     }.time
 
+    // Partition tasks into relevant sections
     val todayTasks = tasks.filter { it.deadline >= todayStart && it.deadline < tomorrowStart }.sortedBy { it.deadline }
     val futureTasks = tasks.filter { it.deadline >= tomorrowStart }.sortedBy { it.deadline }
     val expiredTasks = tasks.filter { it.deadline < todayStart && !it.completed }.sortedBy { it.deadline }
     val completedTasks = tasks.filter { it.deadline < todayStart && it.completed }.sortedBy { it.deadline }
 
-    // State for section expansion
+    // Track expanded/collapsed state for each section
     val isExpiredExpanded = remember { mutableStateOf(true) }
     val isTodayExpanded = remember { mutableStateOf(true) }
     val isFutureExpanded = remember { mutableStateOf(true) }
     val isCompletedExpanded = remember { mutableStateOf(false) }
 
+    // If no tasks exist at all, show a prompt. Otherwise, show categorized sections
     if (tasks.isEmpty()) {
         Box(
             modifier = Modifier
@@ -83,6 +103,7 @@ fun TaskListScreen(
             contentPadding = PaddingValues(bottom = 80.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
+            // Helper to render each section with a header and tasks
             fun renderSection(
                 title: String,
                 tasks: List<Task>,
@@ -115,6 +136,7 @@ fun TaskListScreen(
                 }
             }
 
+            // Render four sections: expired, today, future and past completions
             renderSection("Expired", expiredTasks, isExpiredExpanded)
             renderSection("Today", todayTasks, isTodayExpanded)
             renderSection("Future", futureTasks, isFutureExpanded)
@@ -171,6 +193,18 @@ fun TaskListScreen(
     }
 }
 
+
+/**
+ * A composable that serves as a header for different task sections.
+ * It displays a title, the count of tasks in that section, and an icon to
+ * expand or collapse the list below it.
+ *
+ * @param title The label for the section (e.g., "Today", "Expired").
+ * @param count The number of tasks in this section.
+ * @param isExpanded Indicates whether the section is currently expanded.
+ * @param onToggle A callback to be invoked when the user taps on the header,
+ * toggling expansion/collapse.
+ */
 @Composable
 fun SectionHeader(
     title: String,
@@ -219,6 +253,11 @@ fun SectionHeader(
     }
 }
 
+
+/**
+ * A private composable (not currently used in this example, but preserved for reference)
+ * that can render the header content. It serves as a secondary helper if customization is needed.
+ */
 @Composable
 private fun SectionHeaderContent(
     title: String,
