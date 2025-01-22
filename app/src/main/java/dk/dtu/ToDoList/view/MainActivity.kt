@@ -33,6 +33,15 @@ import dk.dtu.ToDoList.view.screens.*
 import dk.dtu.ToDoList.view.theme.ToDoListTheme
 import kotlinx.coroutines.launch
 
+
+
+/**
+ * The main [Activity] for the application. Responsible for:
+ * 1. Initializing Firebase,
+ * 2. Checking Google Play Services availability,
+ * 3. Handling user authentication (anonymous sign-in if necessary),
+ * 4. Setting up the [ToDoApp] composable once everything is ready.
+ */
 class MainActivity : ComponentActivity() {
     private val RC_PLAY_SERVICES = 123
 
@@ -47,6 +56,11 @@ class MainActivity : ComponentActivity() {
         checkGooglePlayServices()
     }
 
+
+    /**
+     * Checks for Google Play Services availability. If an error is resolvable,
+     * shows a dialog for the user to resolve it. Otherwise, logs the failure.
+     */
     private fun checkGooglePlayServices() {
         val googleApiAvailability = GoogleApiAvailability.getInstance()
         val resultCode = googleApiAvailability.isGooglePlayServicesAvailable(this)
@@ -62,6 +76,11 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+
+    /**
+     * Called after Google Play Services check passes. Ensures Firebase Authentication
+     * is set up. If no user is logged in, signs in anonymously. Then starts the app UI.
+     */
     private fun initializeApp() {
         val auth = FirebaseAuth.getInstance()
         if (auth.currentUser == null) {
@@ -81,6 +100,11 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+
+    /**
+     * Sets the content view with the [ToDoApp] composable, effectively launching
+     * the main UI of the application.
+     */
     private fun startApp() {
         setContent {
             ToDoListTheme {
@@ -103,12 +127,21 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+
+/**
+ * The main composable function for the ToDoList application. Sets up:
+ * - A [NavHost] with multiple destinations: Tasks, Calendar, Profile, etc.
+ * - A bottom navigation bar ([NavigationBar]) for switching between routes.
+ * - Observes tasks from [TaskCRUD] as a [State], passing updated lists to relevant screens.
+ * - A [SnackbarHostState] for displaying temporary messages (e.g., onAddTask success).
+ */
 @Composable
 fun ToDoApp() {
     val navController = rememberNavController()
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val taskCRUD = remember { TaskCRUD(context) }
+    // Flow that collects real-time updates of tasks
     val tasks = taskCRUD.getTasksFlow().collectAsState(initial = emptyList())
 
     // Navigation state
@@ -127,6 +160,7 @@ fun ToDoApp() {
                 containerColor = MaterialTheme.colorScheme.surfaceContainer,
                 tonalElevation = 3.dp
             ) {
+                // A list of bottom nav items: (route, unselected icon, selected icon)
                 val items = listOf(
                     Triple("Tasks", R.drawable.home_grey, R.drawable.home_black),
                     Triple("Calendar", R.drawable.calender_grey, R.drawable.calender_black),
@@ -137,6 +171,7 @@ fun ToDoApp() {
                     NavigationBarItem(
                         selected = currentRoute == route,
                         onClick = {
+                            // Navigate to the chosen route, pop up to start, and handle state restoration
                             navController.navigate(route) {
                                 popUpTo(navController.graph.findStartDestination().id) {
                                     saveState = true
@@ -182,6 +217,7 @@ fun ToDoApp() {
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
+            // Home screen (Tasks)
             composable("Tasks") {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     HomeScreen(
@@ -232,6 +268,7 @@ fun ToDoApp() {
                 }
             }
 
+            // Calender screen
             composable("Calendar") {
                 CalendarScreen(
                     tasks = tasks.value,
@@ -264,21 +301,29 @@ fun ToDoApp() {
                     }
                 )
             }
+
+            // Profile screen
             composable("Profile") {
                 ProfileScreen(
                     navController = navController
                 )
             }
+
+            // Account settings
             composable("account_settings") {
                 AccountSettingsScreen(
                     navController = navController
                 )
             }
+
+            // App settings
             composable("app_settings") {
                 AppSettingsScreen(
                     navController = navController
                 )
             }
+
+            // Add to calender
             composable("addToCalendar?taskName={taskName}") { backStackEntry ->
                 val taskName = backStackEntry.arguments?.getString("taskName") ?: "New Task"
                 AddToCalendarPage(
