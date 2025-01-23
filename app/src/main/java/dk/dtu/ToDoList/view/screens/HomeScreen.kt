@@ -16,7 +16,10 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import dk.dtu.ToDoList.R
 import dk.dtu.ToDoList.model.data.task.Task
-import dk.dtu.ToDoList.view.components.*
+import dk.dtu.ToDoList.view.components.miscellaneous.FilterSection
+import dk.dtu.ToDoList.view.components.miscellaneous.TopBar
+import dk.dtu.ToDoList.view.components.task.AddTaskDialog
+import dk.dtu.ToDoList.view.components.task.TaskListScreen
 import dk.dtu.ToDoList.viewmodel.HomeScreenViewModel
 import dk.dtu.ToDoList.viewmodel.TaskListViewModel
 import kotlinx.coroutines.launch

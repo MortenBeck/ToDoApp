@@ -1,4 +1,4 @@
-package dk.dtu.ToDoList.view.components
+package dk.dtu.ToDoList.view.components.miscellaneous
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -20,7 +20,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.compose.foundation.gestures.detectTapGestures
-
 
 
 /**

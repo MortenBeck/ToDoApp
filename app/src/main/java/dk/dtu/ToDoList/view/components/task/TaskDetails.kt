@@ -1,4 +1,4 @@
-package dk.dtu.ToDoList.view.components
+package dk.dtu.ToDoList.view.components.task
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -8,6 +8,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import dk.dtu.ToDoList.model.data.task.Task
 import dk.dtu.ToDoList.model.data.task.TaskPriority
+import dk.dtu.ToDoList.view.components.miscellaneous.Calendar
 import dk.dtu.ToDoList.viewmodel.TaskListViewModel
 import java.time.YearMonth
 import java.time.ZoneId

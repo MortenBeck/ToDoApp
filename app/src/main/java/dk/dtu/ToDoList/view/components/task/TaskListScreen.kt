@@ -1,4 +1,4 @@
-package dk.dtu.ToDoList.view.screens
+package dk.dtu.ToDoList.view.components.task
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -14,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import dk.dtu.ToDoList.model.data.task.Task
-import dk.dtu.ToDoList.view.components.*
 import dk.dtu.ToDoList.viewmodel.TaskListViewModel
 
 @Composable

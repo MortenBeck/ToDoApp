@@ -1,4 +1,4 @@
-package dk.dtu.ToDoList.view.screens
+package dk.dtu.ToDoList.view.components.miscellaneous
 
 import android.os.Build
 import androidx.compose.material3.*
@@ -21,7 +21,6 @@ import androidx.navigation.NavController
 import dk.dtu.ToDoList.model.data.task.Task
 import dk.dtu.ToDoList.model.data.task.TaskPriority
 import dk.dtu.ToDoList.model.data.task.TaskTag
-import dk.dtu.ToDoList.view.components.Calendar
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId

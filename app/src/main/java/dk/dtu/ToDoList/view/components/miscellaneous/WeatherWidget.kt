@@ -1,4 +1,4 @@
-package dk.dtu.ToDoList.view.components
+package dk.dtu.ToDoList.view.components.miscellaneous
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState

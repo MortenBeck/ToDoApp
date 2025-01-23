@@ -1,4 +1,4 @@
-package dk.dtu.ToDoList.view.components
+package dk.dtu.ToDoList.view.components.task
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.clickable
@@ -28,8 +28,8 @@ import dk.dtu.ToDoList.R
 import dk.dtu.ToDoList.model.data.task.Task
 import dk.dtu.ToDoList.model.data.task.TaskPriority
 import dk.dtu.ToDoList.model.data.task.TaskTag
-import dk.dtu.ToDoList.view.theme.getPrioColor
-import dk.dtu.ToDoList.view.theme.getTaskColor
+import dk.dtu.ToDoList.view.core.theme.getPrioColor
+import dk.dtu.ToDoList.view.core.theme.getTaskColor
 import dk.dtu.ToDoList.viewmodel.TaskListViewModel
 import java.text.SimpleDateFormat
 import java.util.*

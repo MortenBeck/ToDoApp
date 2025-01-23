@@ -1,4 +1,4 @@
-package dk.dtu.ToDoList.view.components
+package dk.dtu.ToDoList.view.components.task
 
 import android.os.Build
 import androidx.compose.foundation.layout.*
@@ -20,7 +20,8 @@ import dk.dtu.ToDoList.model.data.task.Task
 import dk.dtu.ToDoList.model.data.task.TaskPriority
 import dk.dtu.ToDoList.model.data.task.TaskTag
 import dk.dtu.ToDoList.model.repository.TaskCRUD
-import dk.dtu.ToDoList.view.theme.getPrioColor
+import dk.dtu.ToDoList.view.components.miscellaneous.Calendar
+import dk.dtu.ToDoList.view.core.theme.getPrioColor
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId

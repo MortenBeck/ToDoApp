@@ -1,4 +1,4 @@
-package dk.dtu.ToDoList.view
+package dk.dtu.ToDoList.view.core
 
 import android.app.Activity
 import android.content.Intent
@@ -29,8 +29,12 @@ import com.google.firebase.auth.FirebaseAuth
 import dk.dtu.ToDoList.R
 import dk.dtu.ToDoList.model.repository.TaskCRUD
 import dk.dtu.ToDoList.util.UserIdManager
+import dk.dtu.ToDoList.view.components.miscellaneous.AddToCalendarPage
 import dk.dtu.ToDoList.view.screens.*
-import dk.dtu.ToDoList.view.theme.ToDoListTheme
+import dk.dtu.ToDoList.view.screens.profile.AccountSettingsScreen
+import dk.dtu.ToDoList.view.screens.profile.AppSettingsScreen
+import dk.dtu.ToDoList.view.screens.profile.ProfileScreen
+import dk.dtu.ToDoList.view.core.theme.ToDoListTheme
 import kotlinx.coroutines.launch
 import dk.dtu.ToDoList.viewmodel.HomeScreenViewModel
 import dk.dtu.ToDoList.viewmodel.TaskListViewModel

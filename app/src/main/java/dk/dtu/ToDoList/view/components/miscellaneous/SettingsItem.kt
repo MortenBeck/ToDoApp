@@ -1,4 +1,4 @@
-package dk.dtu.ToDoList.view.components
+package dk.dtu.ToDoList.view.components.miscellaneous
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*

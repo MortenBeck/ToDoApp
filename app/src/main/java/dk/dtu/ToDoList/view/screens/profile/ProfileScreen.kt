@@ -1,4 +1,4 @@
-package dk.dtu.ToDoList.view.screens
+package dk.dtu.ToDoList.view.screens.profile
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import dk.dtu.ToDoList.R
 import dk.dtu.ToDoList.model.repository.TaskCRUD
-import dk.dtu.ToDoList.view.components.SettingsItem
+import dk.dtu.ToDoList.view.components.miscellaneous.SettingsItem
 import dk.dtu.ToDoList.model.data.state.TaskStats
 import dk.dtu.ToDoList.viewmodel.SettingsViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel

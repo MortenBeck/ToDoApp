@@ -1,4 +1,4 @@
-package dk.dtu.ToDoList.view.screens
+package dk.dtu.ToDoList.view.screens.profile
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*

@@ -1,4 +1,4 @@
-package dk.dtu.ToDoList.view.theme
+package dk.dtu.ToDoList.view.core.theme
 
 import android.app.Activity
 import androidx.compose.material3.*

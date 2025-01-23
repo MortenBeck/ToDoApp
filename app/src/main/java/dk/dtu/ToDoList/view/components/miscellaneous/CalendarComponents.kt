@@ -1,4 +1,4 @@
-package dk.dtu.ToDoList.view.components
+package dk.dtu.ToDoList.view.components.miscellaneous
 
 import android.os.Build
 import androidx.compose.foundation.background
