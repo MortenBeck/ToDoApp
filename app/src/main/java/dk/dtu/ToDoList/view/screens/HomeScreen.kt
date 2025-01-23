@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -96,18 +97,32 @@ fun HomeScreen(
                 }
 
                 // Displays the filtered and/or searched tasks
-                TaskListScreen(
-                    viewModel = taskListViewModel,
-                    onCompleteToggle = { task ->
-                        val updatedTask = task.copy(completed = !task.completed)
-                        onUpdateTask(updatedTask)
-                        taskListViewModel.setTasks(taskListViewModel.tasks.value.map {
-                            if (it.id == task.id) updatedTask else it
-                        })
-                    },
-                    onUpdateTask = onUpdateTask,
-                    searchText = searchText
-                )
+                if (filteredTasks.isEmpty()) {
+                    // Show message if no tasks are available
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "No tasks available. Please add a task by clicking the '+' button to get started.",
+                            color = MaterialTheme.colorScheme.onBackground,
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+                    }
+                } else {
+                    TaskListScreen(
+                        viewModel = taskListViewModel,
+                        onCompleteToggle = { task ->
+                            val updatedTask = task.copy(completed = !task.completed)
+                            onUpdateTask(updatedTask)
+                            taskListViewModel.setTasks(taskListViewModel.tasks.value.map {
+                                if (it.id == task.id) updatedTask else it
+                            })
+                        },
+                        onUpdateTask = onUpdateTask,
+                        searchText = searchText
+                    )
+                }
             }
         }
     }
