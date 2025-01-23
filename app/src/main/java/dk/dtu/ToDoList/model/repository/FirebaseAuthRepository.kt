@@ -1,6 +1,7 @@
-package dk.dtu.ToDoList.repository
+package dk.dtu.ToDoList.data.repository
 
 import com.google.firebase.auth.FirebaseAuth
+import dk.dtu.ToDoList.repository.AuthRepository
 import kotlinx.coroutines.tasks.await
 
 class FirebaseAuthRepository(

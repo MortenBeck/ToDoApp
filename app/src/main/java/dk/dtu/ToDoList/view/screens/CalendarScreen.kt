@@ -1,5 +1,6 @@
 package dk.dtu.ToDoList.view.screens
 
+import android.os.Build
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -21,7 +22,6 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarScreen(
     navController: NavController,
@@ -31,8 +31,18 @@ fun CalendarScreen(
     val taskToDelete by taskListViewModel.taskToDelete.collectAsState()
     val coroutineScope = rememberCoroutineScope()
 
-    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
-    var currentMonth by remember { mutableStateOf(YearMonth.now()) }
+    var selectedDate by remember { if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        mutableStateOf(LocalDate.now())
+    } else {
+        TODO("VERSION.SDK_INT < O")
+    }
+    }
+    var currentMonth by remember { if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        mutableStateOf(YearMonth.now())
+    } else {
+        TODO("VERSION.SDK_INT < O")
+    }
+    }
     var showAddDialog by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -136,7 +146,11 @@ private fun TasksForSelectedDate(
 ) {
     val tasksForDate = remember(selectedDate, tasks) {
         tasks.filter { task ->
-            task.deadline.toInstant().atZone(ZoneId.systemDefault()).toLocalDate() == selectedDate
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                task.deadline.toInstant().atZone(ZoneId.systemDefault()).toLocalDate() == selectedDate
+            } else {
+                TODO("VERSION.SDK_INT < O")
+            }
         }
     }
 

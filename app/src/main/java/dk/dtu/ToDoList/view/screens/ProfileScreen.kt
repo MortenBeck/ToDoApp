@@ -18,13 +18,10 @@ import androidx.navigation.NavController
 import dk.dtu.ToDoList.R
 import dk.dtu.ToDoList.model.repository.TaskCRUD
 import dk.dtu.ToDoList.view.components.SettingsItem
-import com.google.firebase.auth.FirebaseAuth
 import dk.dtu.ToDoList.model.data.state.TaskStats
 import dk.dtu.ToDoList.viewmodel.SettingsViewModel
-import java.util.*
 import androidx.lifecycle.viewmodel.compose.viewModel
-import dk.dtu.ToDoList.repository.AuthRepository
-import dk.dtu.ToDoList.repository.FirebaseAuthRepository
+import dk.dtu.ToDoList.data.repository.FirebaseAuthRepository
 import dk.dtu.ToDoList.viewmodel.SettingsViewModelFactory
 
 

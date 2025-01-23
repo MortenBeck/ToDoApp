@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -20,8 +21,7 @@ import dk.dtu.ToDoList.data.events.SettingsEvent
 import dk.dtu.ToDoList.viewmodel.SettingsViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dk.dtu.ToDoList.model.repository.TaskCRUD
-import dk.dtu.ToDoList.repository.AuthRepository
-import dk.dtu.ToDoList.repository.FirebaseAuthRepository
+import dk.dtu.ToDoList.data.repository.FirebaseAuthRepository
 import dk.dtu.ToDoList.viewmodel.SettingsViewModelFactory
 
 /**
@@ -85,7 +85,7 @@ fun AppSettingsScreen(
                                     color = MaterialTheme.colorScheme.primary
                                 )
                                 Icon(
-                                    Icons.Default.KeyboardArrowRight,
+                                    Icons.AutoMirrored.Filled.KeyboardArrowRight,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.primary
                                 )
@@ -116,7 +116,7 @@ fun AppSettingsScreen(
                                     color = MaterialTheme.colorScheme.primary
                                 )
                                 Icon(
-                                    Icons.Default.KeyboardArrowRight,
+                                    Icons.AutoMirrored.Filled.KeyboardArrowRight,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.primary
                                 )

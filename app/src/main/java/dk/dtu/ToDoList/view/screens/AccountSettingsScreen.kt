@@ -15,19 +15,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import dk.dtu.ToDoList.R
-import com.google.firebase.auth.FirebaseAuth
 import dk.dtu.ToDoList.data.events.SettingsEvent
 import dk.dtu.ToDoList.viewmodel.SettingsViewModel
-import kotlinx.coroutines.launch
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.collectAsState
-import kotlinx.coroutines.flow.StateFlow
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.LocalContext
+import dk.dtu.ToDoList.data.repository.FirebaseAuthRepository
 import dk.dtu.ToDoList.model.data.state.UserProfileState
 import dk.dtu.ToDoList.model.repository.TaskCRUD
-import dk.dtu.ToDoList.repository.AuthRepository
-import dk.dtu.ToDoList.repository.FirebaseAuthRepository
 import dk.dtu.ToDoList.viewmodel.SettingsViewModelFactory
 
 /**

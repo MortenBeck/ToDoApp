@@ -204,7 +204,6 @@ class TaskCRUD(private val context: Context) {
                 RecurrencePattern.WEEKLY -> 4
                 RecurrencePattern.MONTHLY -> 3
                 RecurrencePattern.YEARLY -> 1
-                null -> 0
             }
 
             // Create child tasks
@@ -214,7 +213,6 @@ class TaskCRUD(private val context: Context) {
                     RecurrencePattern.WEEKLY -> calendar.add(Calendar.WEEK_OF_YEAR, 1)
                     RecurrencePattern.MONTHLY -> calendar.add(Calendar.MONTH, 1)
                     RecurrencePattern.YEARLY -> calendar.add(Calendar.YEAR, 1)
-                    null -> {}
                 }
 
                 val recurringTask = task.copy(
