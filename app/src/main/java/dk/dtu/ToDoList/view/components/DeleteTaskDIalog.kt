@@ -1,8 +1,11 @@
 package dk.dtu.ToDoList.view.components
 
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import dk.dtu.ToDoList.model.data.Task
 
 @Composable
@@ -12,6 +15,7 @@ fun DeleteTaskDialog(
     onConfirmDelete: (Boolean) -> Unit
 ) {
     AlertDialog(
+        modifier = Modifier.widthIn(min = 400.dp),
         onDismissRequest = onDismiss,
         title = { Text("Delete Task") },
         text = {
@@ -23,31 +27,24 @@ fun DeleteTaskDialog(
             )
         },
         confirmButton = {
-            if (task.recurringGroupId != null) {
-                TextButton(onClick = { onConfirmDelete(true) }) {
-                    Text("Delete All")
+            Row {
+                TextButton(onClick = onDismiss) {
+                    Text("Cancel")
                 }
-            } else {
-                TextButton(onClick = { onConfirmDelete(false) }) {
-                    Text("Delete")
-                }
-            }
-        },
-        dismissButton = {
-            if (task.recurringGroupId != null) {
-                Row {
-                    TextButton(onClick = onDismiss) {
-                        Text("Cancel")
+                if (task.recurringGroupId != null) {
+                    TextButton(onClick = { onConfirmDelete(true) }) {
+                        Text("Delete All")
                     }
                     TextButton(onClick = { onConfirmDelete(false) }) {
                         Text("Delete This Only")
                     }
-                }
-            } else {
-                TextButton(onClick = onDismiss) {
-                    Text("Cancel")
+                } else {
+                    TextButton(onClick = { onConfirmDelete(false) }) {
+                        Text("Delete")
+                    }
                 }
             }
-        }
+        },
+        dismissButton = null
     )
 }
