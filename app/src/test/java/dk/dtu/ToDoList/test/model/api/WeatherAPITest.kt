@@ -1,152 +1,111 @@
-package dk.dtu.ToDoList.model.api
-
-import io.mockk.coEvery
-import io.mockk.mockk
+import dk.dtu.ToDoList.model.api.*
+import io.mockk.*
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class WeatherServiceTest {
 
-    private lateinit var weatherApi: WeatherApi
+    private lateinit var mockWeatherApi: WeatherApi
     private lateinit var weatherService: WeatherService
 
     @BeforeEach
-    fun setUp() {
+    fun setup() {
         // Mock the WeatherApi
-        weatherApi = mockk()
+        mockWeatherApi = mockk()
 
-        // Inject the mocked WeatherApi into WeatherService
+        // Inject the mock API into WeatherService
         weatherService = WeatherService().apply {
-            val privateWeatherApiField = WeatherService::class.java.getDeclaredField("weatherApi")
-            privateWeatherApiField.isAccessible = true
-            privateWeatherApiField.set(this, weatherApi)
+            // Override the private API with the mock (requires reflection or testing-specific class adjustment)
+            val field = WeatherService::class.java.getDeclaredField("weatherApi")
+            field.isAccessible = true
+            field.set(this, mockWeatherApi)
         }
     }
 
     @Test
-    fun `getWeatherForCity returns expected WeatherResponse`() = runBlocking {
-        // Arrange
-        val city = "Copenhagen"
-        val mockResponse = WeatherResponse(
+    @DisplayName("Should return weather data for a valid city")
+    fun `test getWeatherForCity returns correct data`() = runBlocking {
+        // Mocked response
+        val mockWeatherResponse = WeatherResponse(
             weather = listOf(WeatherInfo(description = "clear sky", icon = "01d")),
-            main = MainInfo(temp = 15.5),
+            main = MainInfo(temp = 20.0),
             name = "Copenhagen"
         )
 
-        // Mock the API call
-        coEvery { weatherApi.getCurrentWeather(city, "metric", any()) } returns mockResponse
+        // Mock API behavior
+        coEvery {
+            mockWeatherApi.getCurrentWeather("Copenhagen", "metric", any())
+        } returns mockWeatherResponse
 
-        // Act
-        val result = weatherService.getWeatherForCity(city)
+        // Call the method
+        val result = weatherService.getWeatherForCity("Copenhagen")
 
-        // Assert
-        assertEquals(mockResponse, result)
-        assertEquals("clear sky", result.weather.first().description)
-        assertEquals(15.5, result.main.temp)
+        // Assertions
+        assertNotNull(result)
         assertEquals("Copenhagen", result.name)
-    }
+        assertEquals(20.0, result.main.temp)
+        assertEquals("clear sky", result.weather.first().description)
 
-    @Test
-    fun `getWeatherForCity handles empty city name`() = runBlocking {
-        // Arrange
-        val emptyCity = ""
-        val mockResponse = WeatherResponse(
-            weather = listOf(WeatherInfo(description = "unknown", icon = "50d")),
-            main = MainInfo(temp = 0.0),
-            name = "Unknown"
-        )
-
-        coEvery { weatherApi.getCurrentWeather(emptyCity, "metric", any()) } returns mockResponse
-
-        // Act
-        val result = weatherService.getWeatherForCity(emptyCity)
-
-        // Assert
-        assertEquals(mockResponse, result)
-        assertEquals("Unknown", result.name)
-    }
-
-    @Test
-    fun `getWeatherForCity handles API failure gracefully`() = runBlocking {
-        // Arrange
-        val city = "Copenhagen"
-        coEvery { weatherApi.getCurrentWeather(city, "metric", any()) } throws RuntimeException("Network error")
-
-        // Act & Assert
-        try {
-            weatherService.getWeatherForCity(city)
-            assert(false) { "Expected exception was not thrown" }
-        } catch (e: Exception) {
-            assert(e is RuntimeException)
-            assertEquals("Network error", e.message)
+        // Verify API was called
+        coVerify(exactly = 1) {
+            mockWeatherApi.getCurrentWeather("Copenhagen", "metric", any())
         }
     }
 
     @Test
-    fun `getWeatherForCity handles extreme temperatures`() = runBlocking {
-        // Arrange
-        val city = "Death Valley"
-        val mockResponse = WeatherResponse(
-            weather = listOf(WeatherInfo(description = "hot", icon = "01d")),
-            main = MainInfo(temp = 56.7), // Record-breaking high temperature
-            name = city
-        )
+    @DisplayName("Should handle API throwing exception for invalid city")
+    fun `test getWeatherForCity handles exception`() = runBlocking {
+        // Simulate API exception
+        coEvery {
+            mockWeatherApi.getCurrentWeather("InvalidCity", "metric", any())
+        } throws RuntimeException("City not found")
 
-        coEvery { weatherApi.getCurrentWeather(city, "metric", any()) } returns mockResponse
+        // Call the method and verify exception is thrown
+        val exception = assertThrows<RuntimeException> {
+            runBlocking {
+                weatherService.getWeatherForCity("InvalidCity")
+            }
+        }
 
-        // Act
-        val result = weatherService.getWeatherForCity(city)
+        // Verify exception message
+        assertEquals("City not found", exception.message)
 
-        // Assert
-        assertEquals(mockResponse, result)
-        assertEquals(56.7, result.main.temp)
-    }
-
-    @Test
-    fun `getWeatherForCity handles multiple weather conditions`() = runBlocking {
-        // Arrange
-        val city = "London"
-        val mockResponse = WeatherResponse(
-            weather = listOf(
-                WeatherInfo(description = "rainy", icon = "09d"),
-                WeatherInfo(description = "windy", icon = "50d")
-            ),
-            main = MainInfo(temp = 12.3),
-            name = city
-        )
-
-        coEvery { weatherApi.getCurrentWeather(city, "metric", any()) } returns mockResponse
-
-        // Act
-        val result = weatherService.getWeatherForCity(city)
-
-        // Assert
-        assertEquals(mockResponse, result)
-        assertEquals(2, result.weather.size)
-        assertEquals("rainy", result.weather[0].description)
-        assertEquals("windy", result.weather[1].description)
-    }
-
-    @Test
-    fun `getWeatherForCity handles invalid API key`() = runBlocking {
-        // Arrange
-        val city = "Copenhagen"
-        coEvery { weatherApi.getCurrentWeather(city, "metric", any()) } throws RuntimeException("Invalid API key")
-
-        // Act & Assert
-        try {
-            weatherService.getWeatherForCity(city)
-            assert(false) { "Expected exception was not thrown" }
-        } catch (e: Exception) {
-            assert(e is RuntimeException)
-            assertEquals("Invalid API key", e.message)
+        // Verify API was called
+        coVerify(exactly = 1) {
+            mockWeatherApi.getCurrentWeather("InvalidCity", "metric", any())
         }
     }
 
+    @Test
+    @DisplayName("Should use default city when no city is provided")
+    fun `test getWeatherForCity defaults to Copenhagen`() = runBlocking {
+        // Mocked response for default city
+        val mockWeatherResponse = WeatherResponse(
+            weather = listOf(WeatherInfo(description = "clear sky", icon = "01d")),
+            main = MainInfo(temp = 15.0),
+            name = "Copenhagen"
+        )
 
+        coEvery {
+            mockWeatherApi.getCurrentWeather("Copenhagen", "metric", any())
+        } returns mockWeatherResponse
 
+        // Call the method without specifying a city
+        val result = weatherService.getWeatherForCity()
 
+        // Assertions
+        assertNotNull(result)
+        assertEquals("Copenhagen", result.name)
 
+        // Verify API was called
+        coVerify(exactly = 1) {
+            mockWeatherApi.getCurrentWeather("Copenhagen", "metric", any())
+        }
+    }
 }

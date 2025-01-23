@@ -1,106 +1,145 @@
+package dk.dtu.ToDoList.util
+
 import android.content.Context
+import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import com.google.android.gms.tasks.Task
-import dk.dtu.ToDoList.util.UserIdManager
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Assertions.*
 import kotlinx.coroutines.tasks.await
-import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.*
+import org.junit.jupiter.api.Assertions.*
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class UserIdManagerTest {
 
-    private val mockContext: Context = mockk(relaxed = true)
-    private val mockFirebaseAuth: FirebaseAuth = mockk()
-    private val mockFirebaseUser: FirebaseUser = mockk()
+    private lateinit var mockAuth: FirebaseAuth
+    private lateinit var mockUser: FirebaseUser
 
-    @BeforeEach
-    fun setUp() {
-        // Set up MockK to mock FirebaseAuth
+    @BeforeAll
+    fun setupMocks() {
         mockkStatic(FirebaseAuth::class)
-        every { FirebaseAuth.getInstance() } returns mockFirebaseAuth
-        every { mockFirebaseAuth.currentUser} returns mockFirebaseUser
-        every { mockFirebaseUser.email} returns "user@example.com"
-        every { mockFirebaseAuth.signOut() } returns Unit
-        every { mockFirebaseUser.uid} returns "mockUserId"
+        mockAuth = mockk()
+        mockUser = mockk()
+
+        every { FirebaseAuth.getInstance() } returns mockAuth
     }
 
     @Test
-    fun `test signInAnonymously success`() = runBlocking {
-        // Given: Mock a successful anonymous sign-in result
-        val mockAuthResult = mockk<com.google.firebase.auth.AuthResult>()
-        val mockUser = mockk<FirebaseUser>()
+    fun `getUserId should return user ID if user is authenticated`() {
+        every { mockAuth.currentUser } returns mockUser
+        every { mockUser.uid } returns "testUserId"
 
-        // Mock the user and result
-        every { mockAuthResult.user } returns mockUser
-        every { mockUser.uid } returns "testUid"  // Return a direct String (not a function)
+        val context = mockk<Context>()
 
-        // Mock Task<AuthResult> to return mockAuthResult
-        val mockTask = mockk<Task<com.google.firebase.auth.AuthResult>>()
-        every { mockTask.isSuccessful } returns true
-        every { mockTask.result } returns mockAuthResult
-        coEvery { mockTask.await() } returns mockAuthResult
+        val userId = UserIdManager.getUserId(context)
 
-        // Mock the FirebaseAuth's signInAnonymously method to return the mock Task
-        coEvery { mockFirebaseAuth.signInAnonymously() } returns mockTask
+        assertEquals("testUserId", userId)
+        verify { mockAuth.currentUser }
+    }
 
-        // When: Call the `signInAnonymously` method
+    @Test
+    fun `getUserId should throw exception if user is not authenticated`() {
+        every { mockAuth.currentUser } returns null
+
+        val context = mockk<Context>()
+
+        val exception = assertThrows<IllegalStateException> {
+            UserIdManager.getUserId(context)
+        }
+
+        assertEquals("User not authenticated", exception.message)
+    }
+
+    @Test
+    fun `signInAnonymously should return user ID when sign-in is successful`() = runBlocking {
+        // Mock the AuthResult and FirebaseUser
+        val mockResult = mockk<AuthResult>()
+        every { mockAuth.signInAnonymously() } returns mockk {
+            coEvery { await() } returns mockResult
+        }
+        every { mockResult.user } returns mockUser
+        every { mockUser.uid } returns "testUserId"
+
+        // Call the method under test
         val userId = UserIdManager.signInAnonymously()
 
-        // Then: Assert that the user ID is as expected
-        assertEquals("testUid", userId)
+        // Verify the behavior and assertions
+        assertEquals("testUserId", userId)
+        coVerify { mockAuth.signInAnonymously() }
+        coVerify { mockAuth.signInAnonymously().await() }
     }
 
 
-    @Test
-    fun `test signInAnonymously failure`() = runBlocking {
-        // Given: Mock a failure scenario for sign-in
-        coEvery { mockFirebaseAuth.signInAnonymously() } throws Exception("Auth failed")
 
-        // When & Then: Expect IllegalStateException with message "Authentication failed"
+    @Test
+    fun `signInAnonymously should throw exception if sign-in fails`() = runBlocking {
+        // Mock the sign-in method to throw an exception
+        every { mockAuth.signInAnonymously() } returns mockk {
+            coEvery { await() } throws Exception("Sign-in error")
+        }
+
+        // Assert that the exception is thrown
         val exception = assertThrows<IllegalStateException> {
             UserIdManager.signInAnonymously()
         }
+
+        // Verify the exception message
         assertEquals("Authentication failed", exception.message)
     }
 
 
+
     @Test
-    fun `test getUserId when user is authenticated`() {
-        // Given: mock FirebaseUser with a valid UID
-        every { mockFirebaseAuth.currentUser } returns mockFirebaseUser
-        every { mockFirebaseUser.uid } returns "testUid"  // Ensure it returns a String, not a function
+    fun `getCurrentUserEmail should return email if user is authenticated`() {
+        every { mockAuth.currentUser } returns mockUser
+        every { mockUser.email } returns "test@example.com"
 
-        // When
-        val userId = UserIdManager.getUserId(mockContext)
+        val email = UserIdManager.getCurrentUserEmail()
 
-        // Then
-        assertEquals("testUid", userId)
+        assertEquals("test@example.com", email)
+        verify { mockAuth.currentUser }
     }
 
+    @Test
+    fun `getCurrentUserEmail should return null if user is not authenticated`() {
+        every { mockAuth.currentUser } returns null
+
+        val email = UserIdManager.getCurrentUserEmail()
+
+        assertNull(email)
+    }
 
     @Test
-    fun `test isUserSignedIn when user is authenticated`() {
-        // Given: mock FirebaseUser to indicate user is signed in
-        every { mockFirebaseAuth.currentUser } returns mockFirebaseUser
+    fun `isUserSignedIn should return true if user is authenticated`() {
+        every { mockAuth.currentUser } returns mockUser
 
-        // When
         val isSignedIn = UserIdManager.isUserSignedIn()
 
-        // Then
         assertTrue(isSignedIn)
+        verify { mockAuth.currentUser }
     }
 
+    @Test
+    fun `isUserSignedIn should return false if user is not authenticated`() {
+        every { mockAuth.currentUser } returns null
+
+        val isSignedIn = UserIdManager.isUserSignedIn()
+
+        assertFalse(isSignedIn)
+    }
 
     @Test
-    fun `test signOut`() {
-        // Given: No specific setup needed for signOut() method
+    fun `signOut should call FirebaseAuth signOut`() {
+        every { mockAuth.signOut() } just Runs
+
         UserIdManager.signOut()
 
-        // Then: Verify that FirebaseAuth's signOut() was called
-        verify { mockFirebaseAuth.signOut() }
+        verify { mockAuth.signOut() }
+    }
+
+    @AfterAll
+    fun teardown() {
+        unmockkAll()
     }
 }

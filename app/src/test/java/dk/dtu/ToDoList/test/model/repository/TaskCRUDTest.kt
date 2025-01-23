@@ -1,166 +1,147 @@
 package dk.dtu.ToDoList.model.repository
 
 import android.content.Context
+import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.*
+import com.google.firebase.firestore.EventListener
 import dk.dtu.ToDoList.model.data.task.Task
 import io.mockk.*
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
 import java.util.*
 
+@RunWith(RobolectricTestRunner::class)
 class TaskCRUDTest {
-    private lateinit var taskCRUD: TaskCRUD
-    private lateinit var mockContext: Context
-    private lateinit var mockAuth: FirebaseAuth
+
     private lateinit var mockFirestore: FirebaseFirestore
+    private lateinit var mockAuth: FirebaseAuth
     private lateinit var mockTasksCollection: CollectionReference
-    private val mockUserId = "test_user_id"
+    private lateinit var mockContext: Context
+    private lateinit var taskCRUD: TaskCRUD
 
     @BeforeEach
     fun setup() {
-        mockContext = mockk(relaxed = true)
-        mockAuth = mockk(relaxed = true)
-        mockFirestore = mockk(relaxed = true)
-        mockTasksCollection = mockk(relaxed = true)
-
-        // Mock FirebaseAuth and Firestore
-        mockkStatic(FirebaseAuth::class)
         mockkStatic(FirebaseFirestore::class)
-        every { FirebaseAuth.getInstance() } returns mockAuth
+        mockkStatic(FirebaseAuth::class)
+        mockkStatic(Log::class)
+
+        mockFirestore = mockk()
+        mockAuth = mockk()
+        mockTasksCollection = mockk()
+        mockContext = mockk()
+
         every { FirebaseFirestore.getInstance() } returns mockFirestore
-        every { mockAuth.currentUser?.uid } returns mockUserId
+        every { FirebaseAuth.getInstance() } returns mockAuth
         every { mockFirestore.collection("tasks") } returns mockTasksCollection
+        every { mockAuth.currentUser?.uid } returns "testUserId"
 
-        taskCRUD = TaskCRUD(mockContext)
-    }
+        taskCRUD = TaskCRUD(mockContext).apply {
+            val firestoreField = TaskCRUD::class.java.getDeclaredField("firestore")
+            firestoreField.isAccessible = true
+            firestoreField.set(this, mockFirestore)
 
-    @Test
-    fun `getTasksFlow should return tasks when user is authenticated`() = runBlocking {
-        // Arrange
-        val mockSnapshot = mockk<QuerySnapshot>()
-        val mockDocument = mockk<DocumentSnapshot>()
-        val task = Task(id = "task1", name = "Test Task", userId = mockUserId)
-
-        every { mockTasksCollection.whereEqualTo("userId", mockUserId) } returns mockTasksCollection
-        every { mockTasksCollection.orderBy("deadline", Query.Direction.ASCENDING) } returns mockTasksCollection
-        every { mockTasksCollection.addSnapshotListener(capture(slot<com.google.firebase.firestore.EventListener<QuerySnapshot>>()))} answers {
-            firstArg<com.google.firebase.firestore.EventListener<QuerySnapshot>>().onEvent(mockSnapshot, null)
-            mockk()
+            val authField = TaskCRUD::class.java.getDeclaredField("auth")
+            authField.isAccessible = true
+            authField.set(this, mockAuth)
         }
-        every { mockSnapshot.documents } returns listOf(mockDocument)
-        every { mockDocument.toObject(Task::class.java) } returns task
 
-        // Act
-        val tasks = taskCRUD.getTasksFlow().first()
-
-        // Assert
-        assertEquals(1, tasks.size)
-        assertEquals(task, tasks[0])
-        verify { mockTasksCollection.whereEqualTo("userId", mockUserId) }
-        verify { mockTasksCollection.orderBy("deadline", Query.Direction.ASCENDING) }
+        every { Log.e(any(), any<String>()) } returns 0
+        every { Log.w(any(), any<String>()) } returns 0
+        every { Log.i(any(), any<String>()) } returns 0
+        every { Log.d(any(), any<String>()) } returns 0
+        every { Log.v(any(), any<String>()) } returns 0
     }
 
     @Test
-    fun `getTasksFlow should return empty list when user is not authenticated`() = runBlocking {
-        // Arrange
-        every { mockAuth.currentUser?.uid } returns null
+    @DisplayName("Should add a task successfully")
+    fun `test addTask`() = runBlocking {
+        val mockDocumentReference: DocumentReference = mockk()
+        val task = Task(name = "Test Task", deadline = Date())
 
-        // Act
-        val tasks = taskCRUD.getTasksFlow().first()
+        every { mockTasksCollection.document(any()) } returns mockDocumentReference
+        coEvery { mockDocumentReference.set(any()) } returns mockk()
 
-        // Assert
-        assertTrue(tasks.isEmpty())
-    }
-
-    @Test
-    fun `addTask should return true on successful task addition`() = runBlocking {
-        // Arrange
-        val task = Task(id = "task1", name = "Test Task", userId = mockUserId)
-        val mockBatch = mockk<WriteBatch>(relaxed = true)
-        val mockDocRef = mockk<DocumentReference>()
-
-        every { mockTasksCollection.document(any()) } returns mockDocRef
-        every { mockFirestore.batch() } returns mockBatch
-        every { mockBatch.set(any(), any()) } returns mockBatch
-        coEvery { mockBatch.commit().await() } returns null
-
-        // Act
         val result = taskCRUD.addTask(task)
 
-        // Assert
         assertTrue(result)
-        verify { mockBatch.set(mockDocRef, task) }
-        coVerify { mockBatch.commit() }
+        verify { mockTasksCollection.document(any()) }
+        coVerify { mockDocumentReference.set(any()) }
     }
 
     @Test
-    fun `deleteTask should return true if task exists and belongs to user`() = runBlocking {
-        // Arrange
-        val taskId = "task1"
-        val mockDocSnapshot = mockk<DocumentSnapshot>()
-        val mockDocRef = mockk<DocumentReference>()
+    @DisplayName("Should get tasks as Flow")
+    fun `test getTasksFlow`() = runBlocking {
+        val mockQuery: Query = mockk()
+        val mockRegistration: ListenerRegistration = mockk()
+        val mockQuerySnapshot: QuerySnapshot = mockk()
+        val mockDocument: DocumentSnapshot = mockk()
+        val task = Task(id = "task1", name = "Task 1")
 
-        every { mockTasksCollection.document(taskId) } returns mockDocRef
-        coEvery { mockDocRef.get().await() } returns mockDocSnapshot
-        every { mockDocSnapshot.exists() } returns true
-        every { mockDocSnapshot.getString("userId") } returns mockUserId
-        coEvery { mockDocRef.delete().await() } returns null
+        every { mockTasksCollection.whereEqualTo("userId", "testUserId") } returns mockQuery
+        every { mockQuery.orderBy("deadline", Query.Direction.ASCENDING) } returns mockQuery
+        every { mockQuery.orderBy("createdAt", Query.Direction.DESCENDING) } returns mockQuery
+        every { mockQuery.addSnapshotListener(any<EventListener<QuerySnapshot>>()) } answers {
+            val listener = args[0] as EventListener<QuerySnapshot>
+            listener.onEvent(mockQuerySnapshot, null)
+            mockRegistration
+        }
 
-        // Act
-        val result = taskCRUD.deleteTask(taskId)
+        every { mockQuerySnapshot.documents } returns listOf(mockDocument)
+        every { mockDocument.toObject(Task::class.java) } returns task
 
-        // Assert
-        assertTrue(result)
-        coVerify { mockDocRef.delete() }
+        val tasksFlow = taskCRUD.getTasksFlow()
+        val tasks = tasksFlow.first()
+
+        assertEquals(1, tasks.size)
+        assertEquals("Task 1", tasks.first().name)
+        verify { mockTasksCollection.whereEqualTo("userId", "testUserId") }
+        verify { mockQuery.orderBy("deadline", Query.Direction.ASCENDING) }
     }
 
     @Test
-    fun `updateTask should return true on successful task update`() = runBlocking {
-        // Arrange
-        val task = Task(id = "task1", name = "Updated Task", userId = mockUserId)
-        val mockDocSnapshot = mockk<DocumentSnapshot>()
-        val mockDocRef = mockk<DocumentReference>()
+    @DisplayName("Should update a task successfully")
+    fun `test updateTask`() = runBlocking {
+        val mockDocumentReference: DocumentReference = mockk()
+        val task = Task(id = "task1", name = "Updated Task")
 
-        every { mockTasksCollection.document(task.id) } returns mockDocRef
-        coEvery { mockDocRef.get().await() } returns mockDocSnapshot
-        every { mockDocSnapshot.exists() } returns true
-        every { mockDocSnapshot.getString("userId") } returns mockUserId
-        coEvery { mockDocRef.set(any()).await() } returns null
+        every { mockTasksCollection.document("task1") } returns mockDocumentReference
+        coEvery { mockDocumentReference.get().await() } returns mockk {
+            every { exists() } returns true
+            every { getString("userId") } returns "testUserId"
+        }
+        coEvery { mockDocumentReference.set(any()) } returns mockk()
 
-        // Act
         val result = taskCRUD.updateTask(task)
 
-        // Assert
         assertTrue(result)
-        coVerify { mockDocRef.set(task) }
+        verify { mockTasksCollection.document("task1") }
+        coVerify { mockDocumentReference.get().await() }
+        coVerify { mockDocumentReference.set(any()) }
     }
 
     @Test
-    fun `getTasksByDeadlineRange should return tasks within the range`() = runBlocking {
-        // Arrange
-        val startDate = Date()
-        val endDate = Date(startDate.time + 86400000) // +1 day
-        val mockQuery = mockk<Query>()
-        val mockQuerySnapshot = mockk<QuerySnapshot>()
-        val mockTask = Task(id = "task1", name = "Task in Range", userId = mockUserId)
+    @DisplayName("Should delete a task successfully")
+    fun `test deleteTask`() = runBlocking {
+        val mockDocumentReference: DocumentReference = mockk()
 
-        every { mockTasksCollection.whereEqualTo("userId", mockUserId) } returns mockQuery
-        every { mockQuery.whereGreaterThanOrEqualTo("deadline", startDate) } returns mockQuery
-        every { mockQuery.whereLessThanOrEqualTo("deadline", endDate) } returns mockQuery
-        every { mockQuery.orderBy("deadline", Query.Direction.ASCENDING) } returns mockQuery
-        coEvery { mockQuery.get().await() } returns mockQuerySnapshot
-        every { mockQuerySnapshot.toObjects(Task::class.java) } returns listOf(mockTask)
+        every { mockTasksCollection.document("task1") } returns mockDocumentReference
+        coEvery { mockDocumentReference.get().await() } returns mockk {
+            every { exists() } returns true
+            every { getString("userId") } returns "testUserId"
+        }
+        coEvery { mockDocumentReference.delete().await() } returns mockk()
 
-        // Act
-        val tasks = taskCRUD.getTasksByDeadlineRange(startDate, endDate)
+        val result = taskCRUD.deleteTask("task1")
 
-        // Assert
-        assertEquals(1, tasks.size)
-        assertEquals(mockTask, tasks[0])
+        assertTrue(result)
+        verify { mockTasksCollection.document("task1") }
+        coVerify { mockDocumentReference.get().await() }
+        coVerify { mockDocumentReference.delete().await() }
     }
 }

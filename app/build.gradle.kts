@@ -53,13 +53,11 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.firebase.auth.ktx)
-    
     implementation(libs.firebase.analytics)
 
     // Google Play Services
     implementation(libs.play.services.base)
     implementation(libs.play.services.auth)
-    implementation(libs.play.services.basement)
     implementation(libs.play.services.tasks)
 
     // Compose
@@ -100,15 +98,22 @@ dependencies {
 
     // Testing
     testImplementation(libs.junit)
-    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.junit.jupiter) // JUnit 5 support
     testImplementation(libs.mockk)
-    testImplementation(libs.androidx.core.testing)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.byte.buddy)
+    testImplementation(libs.byte.buddy.agent)
+
+    // Firebase testing
+    testImplementation(platform(libs.firebase.bom)) // Firebase BOM for consistent versions
+    testImplementation(libs.firebase.firestore.ktx)
+    testImplementation(libs.firebase.auth.ktx)
+
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-
 }

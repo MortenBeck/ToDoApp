@@ -1,7 +1,11 @@
 [versions]
 # Android & Kotlin
 agp = "8.7.2"
+byteBuddy = "1.14.6"
 coreTesting = "2.2.0"
+firebaseAuth = "23.1.0"
+firebaseCommon = "21.0.0"
+firebaseFirestore = "25.1.1"
 googleServices = "4.4.2"
 kotlin = "2.0.0"
 
@@ -52,6 +56,7 @@ junit = "4.13.2"
 junitVersion = "1.2.1"
 junitJupiter = "5.8.2"
 espressoCore = "3.6.1"
+robolectric = "4.10.3"
 
 
 
@@ -61,6 +66,11 @@ androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = 
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 androidx-core-testing = { module = "androidx.arch.core:core-testing", version.ref = "coreTesting" }
+byte-buddy = { module = "net.bytebuddy:byte-buddy", version.ref = "byteBuddy" }
+byte-buddy-agent = { module = "net.bytebuddy:byte-buddy-agent", version.ref = "byteBuddy" }
+firebase-auth = { module = "com.google.firebase:firebase-auth", version.ref = "firebaseAuth" }
+firebase-common = { module = "com.google.firebase:firebase-common", version.ref = "firebaseCommon" }
+firebase-firestore = { module = "com.google.firebase:firebase-firestore", version.ref = "firebaseFirestore" }
 google-services = { module = "com.google.gms:google-services", version.ref = "googleServices" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTest" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
@@ -121,6 +131,7 @@ junit = { group = "junit", name = "junit", version.ref = "junit" }
 junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junitJupiter" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 
 
 
