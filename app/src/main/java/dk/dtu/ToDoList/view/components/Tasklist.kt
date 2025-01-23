@@ -9,6 +9,9 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
+import androidx.compose.material.icons.outlined.KeyboardDoubleArrowUp
+import androidx.compose.material.icons.outlined.KeyboardDoubleArrowDown
+import androidx.compose.material.icons.outlined.DragHandle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -27,26 +30,10 @@ import dk.dtu.ToDoList.model.data.TaskPriority
 import dk.dtu.ToDoList.model.data.TaskTag
 import dk.dtu.ToDoList.view.theme.getPrioColor
 import dk.dtu.ToDoList.view.theme.getTaskColor
+import dk.dtu.ToDoList.viewmodel.TaskListViewModel
 import java.text.SimpleDateFormat
 import java.util.*
-import androidx.compose.material.icons.outlined.KeyboardDoubleArrowUp
-import androidx.compose.material.icons.outlined.KeyboardDoubleArrowDown
-import androidx.compose.material.icons.outlined.DragHandle
 
-
-
-/**
- * A composable that displays a list of [Task] items. Each task is wrapped in a swipeable area, allowing
- * horizontal drag gestures for delete actions. The list can also be filtered by a [searchText].
- *
- * @param Tasks The list of [Task] objects to display.
- * @param searchText A string used to filter tasks by name. Matches are case-insensitive.
- * @param modifier A [Modifier] for customizing the layout or behavior of the list.
- * @param onDelete Callback invoked when a task is deleted.
- * @param onCompleteToggle Callback invoked when a task’s completion state is toggled.
- * @param onUpdateTask Callback invoked when a task is updated (e.g., after editing in a details dialog).
- * @param onDeleteRequest An additional callback for initiating delete actions (can be used for confirmations).
- */
 @Composable
 fun TaskList(
     Tasks: List<Task>,
@@ -55,7 +42,8 @@ fun TaskList(
     onDelete: (Task) -> Unit,
     onCompleteToggle: (Task) -> Unit,
     onUpdateTask: (Task) -> Unit,
-    onDeleteRequest: (Task) -> Unit  // Add this parameter to forward delete requests
+    onDeleteRequest: (Task) -> Unit,
+    taskListViewModel: TaskListViewModel
 ) {
     val filteredTasks = if (searchText.isNotEmpty()) {
         Tasks.filter { it.name.contains(searchText, ignoreCase = true) }
@@ -74,21 +62,13 @@ fun TaskList(
                 onDelete = onDelete,
                 onCompleteToggle = onCompleteToggle,
                 onUpdateTask = onUpdateTask,
-                onDeleteRequest = onDeleteRequest  // Forward the delete request to parent
+                onDeleteRequest = onDeleteRequest,
+                taskListViewModel = taskListViewModel
             )
         }
     }
 }
 
-
-/**
- * A composable that displays a small badge with a text label and an icon. Used for task metadata
- * such as dates or categories (tags).
- *
- * @param badgeText The text displayed within the badge.
- * @param badgeColor The background color of the badge.
- * @param badgeIcon A drawable resource ID for the badge icon.
- */
 @Composable
 private fun BadgeItem(
     badgeText: String,
@@ -111,7 +91,6 @@ private fun BadgeItem(
                 tint = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.size(16.dp)
             )
-
             Text(
                 text = badgeText,
                 style = MaterialTheme.typography.labelSmall,
@@ -123,18 +102,6 @@ private fun BadgeItem(
     }
 }
 
-
-/**
- * A composable representing a single [Task] item card. It displays task priority, name,
- * deadline, tag, and completion state. Tapping the card opens a dialog to edit or delete the task.
- *
- * @param task The [Task] to be displayed.
- * @param searchText A string used to highlight matching parts of the task name.
- * @param onDelete Callback invoked when the task is deleted (single occurrence).
- * @param onCompleteToggle Callback invoked when the user toggles the task’s completion state.
- * @param onUpdateTask Callback invoked when the user saves updates to the task from the details dialog.
- * @param modifier A [Modifier] for customizing the layout or behavior of the card.
- */
 @Composable
 fun TaskItem(
     task: Task,
@@ -142,11 +109,11 @@ fun TaskItem(
     onDelete: (Task) -> Unit,
     onCompleteToggle: (Task) -> Unit,
     onUpdateTask: (Task) -> Unit,
+    taskListViewModel: TaskListViewModel,
     modifier: Modifier = Modifier
 ) {
     var showDetails by remember { mutableStateOf(false) }
 
-    // Highlights part of the text matching the search query
     fun buildHighlightedText(text: String, query: String): AnnotatedString {
         val builder = AnnotatedString.Builder()
         val startIndex = text.indexOf(query, ignoreCase = true)
@@ -168,7 +135,7 @@ fun TaskItem(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
-            .clickable { showDetails = true }, // Show TaskDetails dialog
+            .clickable { showDetails = true },
         colors = CardDefaults.elevatedCardColors(
             containerColor = MaterialTheme.colorScheme.surface,
             contentColor = MaterialTheme.colorScheme.onSurface
@@ -181,15 +148,11 @@ fun TaskItem(
                 .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(
-                onClick = { onCompleteToggle(task) }
-            ) {
+            IconButton(onClick = { onCompleteToggle(task) }) {
                 Icon(
-                    imageVector = if (task.completed) Icons.Default.CheckCircle
-                    else Icons.Default.RadioButtonUnchecked,
+                    imageVector = if (task.completed) Icons.Default.CheckCircle else Icons.Default.RadioButtonUnchecked,
                     contentDescription = null,
-                    tint = if (task.completed) MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.outline
+                    tint = if (task.completed) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
                 )
             }
 
@@ -216,12 +179,9 @@ fun TaskItem(
                     Text(
                         text = highlightedName,
                         style = MaterialTheme.typography.titleMedium,
-                        color = if (task.completed)
-                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        color = if (task.completed) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         else MaterialTheme.colorScheme.onSurface,
-                        textDecoration = if (task.completed)
-                            TextDecoration.LineThrough
-                        else TextDecoration.None,
+                        textDecoration = if (task.completed) TextDecoration.LineThrough else TextDecoration.None,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -232,8 +192,6 @@ fun TaskItem(
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
-
-                    // Deadline badge
                 ) {
                     BadgeItem(
                         badgeText = SimpleDateFormat("dd-MM-yyyy", Locale.US).format(task.deadline),
@@ -246,7 +204,6 @@ fun TaskItem(
                         badgeIcon = R.drawable.calender_black
                     )
 
-                    // Tag badge
                     BadgeItem(
                         badgeText = task.tag.name,
                         badgeColor = getTaskColor(task.tag),
@@ -266,37 +223,16 @@ fun TaskItem(
         }
     }
 
-    // Displays a details dialog for editing or deleting the task
     if (showDetails) {
         TaskDetails(
             task = task,
             onDismiss = { showDetails = false },
             onUpdateTask = onUpdateTask,
-            onDeleteTask = { taskId ->
-                // For single task deletion
-                onDelete(task)
-            },
-            onDeleteRecurringGroup = { groupId ->
-                // For recurring group deletion - also use onDelete since it will be handled at a higher level
-                onDelete(task)
-            }
+            taskListViewModel = taskListViewModel
         )
     }
 }
 
-
-/**
- * A composable that wraps [TaskItem] in a horizontally swipeable container. When the drag
- * threshold is exceeded, [onDeleteRequest] is triggered, typically prompting a confirmation
- * or deletion action.
- *
- * @param task The [Task] to be displayed and swiped.
- * @param searchText The text used for highlighting within [TaskItem].
- * @param onDelete Callback invoked when the user confirms deletion of the task.
- * @param onCompleteToggle Callback invoked when the user toggles the task's completion state.
- * @param onUpdateTask Callback invoked when the user updates the task details via the [TaskDetails] dialog.
- * @param onDeleteRequest Callback invoked when a swipe action indicates a delete request (before confirmation).
- */
 @SuppressLint("UseOfNonLambdaOffsetOverload")
 @Composable
 fun SwipeableTaskItem(
@@ -305,7 +241,8 @@ fun SwipeableTaskItem(
     onDelete: (Task) -> Unit,
     onCompleteToggle: (Task) -> Unit,
     onUpdateTask: (Task) -> Unit,
-    onDeleteRequest: (Task) -> Unit = {}
+    onDeleteRequest: (Task) -> Unit = {},
+    taskListViewModel: TaskListViewModel
 ) {
     var offsetX by remember { mutableFloatStateOf(0f) }
     val swipeThreshold = 200f
@@ -331,60 +268,40 @@ fun SwipeableTaskItem(
         TaskItem(
             task = task,
             searchText = searchText,
-            onDelete = onDeleteRequest,  // Change this to use onDeleteRequest instead of onDelete
+            onDelete = onDeleteRequest,
             onCompleteToggle = onCompleteToggle,
             onUpdateTask = onUpdateTask,
+            taskListViewModel = taskListViewModel,
             modifier = Modifier.offset(x = offsetX.dp)
         )
     }
 }
 
-
-/**
- * Determines if the [Task]'s deadline falls on the current day.
- *
- * @param task The [Task] to check.
- * @return `true` if [task]'s deadline is today; `false` otherwise.
- */
 @Composable
-private fun isTaskToday(task: Task): Boolean {
+fun isTaskToday(task: Task): Boolean {
     val todayCalendar = Calendar.getInstance()
-    val taskCalendar = Calendar.getInstance()
-    taskCalendar.time = task.deadline
-
+    val taskCalendar = Calendar.getInstance().apply {
+        time = task.deadline
+    }
     return todayCalendar.get(Calendar.YEAR) == taskCalendar.get(Calendar.YEAR) &&
             todayCalendar.get(Calendar.DAY_OF_YEAR) == taskCalendar.get(Calendar.DAY_OF_YEAR)
 }
 
-
-/**
- * Determines if the [Task]'s deadline has passed, excluding tasks that are exactly today.
- *
- * @param task The [Task] to check.
- * @return `true` if [task]'s deadline is in the past; `false` otherwise.
- */
 @Composable
-private fun isTaskExpired(task: Task): Boolean {
+fun isTaskExpired(task: Task): Boolean {
     val todayCalendar = Calendar.getInstance()
-    val taskCalendar = Calendar.getInstance()
-    taskCalendar.time = task.deadline
-
+    val taskCalendar = Calendar.getInstance().apply {
+        time = task.deadline
+    }
     return taskCalendar.before(todayCalendar) && !isTaskToday(task)
 }
 
-
-/**
- * Determines if the [Task]'s deadline is tomorrow.
- *
- * @param task The [Task] to check.
- * @return `true` if [task]'s deadline is exactly one day after today; `false` otherwise.
- */
 @Composable
-private fun isTaskTomorrow(task: Task): Boolean {
+fun isTaskTomorrow(task: Task): Boolean {
     val todayCalendar = Calendar.getInstance()
-    val taskCalendar = Calendar.getInstance()
-    taskCalendar.time = task.deadline
-
+    val taskCalendar = Calendar.getInstance().apply {
+        time = task.deadline
+    }
     todayCalendar.add(Calendar.DAY_OF_YEAR, 1)
     return todayCalendar.get(Calendar.YEAR) == taskCalendar.get(Calendar.YEAR) &&
             todayCalendar.get(Calendar.DAY_OF_YEAR) == taskCalendar.get(Calendar.DAY_OF_YEAR)

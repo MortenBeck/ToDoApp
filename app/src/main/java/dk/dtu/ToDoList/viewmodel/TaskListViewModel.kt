@@ -8,12 +8,13 @@ import dk.dtu.ToDoList.model.repository.TaskCRUD
 import kotlinx.coroutines.launch
 import java.util.*
 
-class TaskListViewModel(private val taskCRUD: TaskCRUD) : ViewModel() {
+class TaskListViewModel(
+    private val taskCRUD: TaskCRUD,
+    private val deleteTaskManager: DeleteTaskManager = DeleteTaskManager()
+) : ViewModel() {
     private val _tasks = MutableStateFlow<List<Task>>(emptyList())
     val tasks: StateFlow<List<Task>> = _tasks
-
-    private val _taskToDelete = MutableStateFlow<Task?>(null)
-    val taskToDelete: StateFlow<Task?> = _taskToDelete
+    val taskToDelete = deleteTaskManager.taskToDelete
 
     val categorizedTasks: StateFlow<Map<String, List<Task>>> = tasks.map { tasks ->
         val todayStart = Calendar.getInstance().apply {
@@ -48,7 +49,11 @@ class TaskListViewModel(private val taskCRUD: TaskCRUD) : ViewModel() {
     }
 
     fun requestDelete(task: Task) {
-        _taskToDelete.value = task
+        deleteTaskManager.requestDelete(task)
+    }
+
+    fun cancelDelete() {
+        deleteTaskManager.cancelDelete()
     }
 
     fun confirmDelete(task: Task, deleteAll: Boolean) {
@@ -64,12 +69,8 @@ class TaskListViewModel(private val taskCRUD: TaskCRUD) : ViewModel() {
                     _tasks.value = tasks.value - task
                 }
             }
-            _taskToDelete.value = null
+            deleteTaskManager.clearTask()
         }
-    }
-
-    fun cancelDelete() {
-        _taskToDelete.value = null
     }
 
     private fun loadTasks() {
@@ -80,65 +81,27 @@ class TaskListViewModel(private val taskCRUD: TaskCRUD) : ViewModel() {
         }
     }
 
-    fun addTask(task: Task) {
-        viewModelScope.launch {
-            try {
-                if (taskCRUD.addTask(task)) {
-                    loadTasks() // Reload tasks to reflect the addition
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+    fun addTask(task: Task) = viewModelScope.launch {
+        try {
+            if (taskCRUD.addTask(task)) loadTasks()
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
-    fun updateTask(task: Task) {
-        viewModelScope.launch {
-            try {
-                if (taskCRUD.updateTask(task)) {
-                    loadTasks() // Reload tasks to reflect the update
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+    fun updateTask(task: Task) = viewModelScope.launch {
+        try {
+            if (taskCRUD.updateTask(task)) loadTasks()
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
-    fun deleteTask(taskId: String) {
-        viewModelScope.launch {
-            try {
-                if (taskCRUD.deleteTask(taskId)) {
-                    loadTasks() // Reload tasks to reflect the deletion
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+    fun addTaskWithRecurrence(task: Task) = viewModelScope.launch {
+        try {
+            if (taskCRUD.addTaskWithRecurrence(task)) loadTasks()
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
-
-    fun deleteRecurringGroup(groupId: String) {
-        viewModelScope.launch {
-            try {
-                if (taskCRUD.deleteRecurringGroup(groupId)) {
-                    loadTasks() // Reload tasks to reflect the deletion
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-    }
-
-    fun addTaskWithRecurrence(task: Task) {
-        viewModelScope.launch {
-            try {
-                val result = taskCRUD.addTaskWithRecurrence(task)
-                if (result) {
-                    loadTasks() // Reload tasks to reflect the addition
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-    }
-
 }

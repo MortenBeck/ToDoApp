@@ -1,46 +1,26 @@
 package dk.dtu.ToDoList.view.screens
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Box
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import dk.dtu.ToDoList.R
-import android.os.Build
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
+import dk.dtu.ToDoList.R
 import dk.dtu.ToDoList.model.data.Task
 import dk.dtu.ToDoList.view.components.*
+import dk.dtu.ToDoList.viewmodel.TaskListViewModel
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import androidx.lifecycle.lifecycleScope
-import dk.dtu.ToDoList.model.repository.TaskCRUD
-import dk.dtu.ToDoList.viewmodel.TaskListViewModel
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
-
-
-/**
- * A composable screen that displays a calendar for the user to browse through tasks by date.
- * It also provides a floating action button for adding new tasks, and supports deleting
- * or updating existing tasks.
- *
- * @param tasks The list of [Task] objects to be displayed in the calendar and the list below it.
- * @param navController A [NavController] used for navigation (e.g., returning to previous screens).
- * @param onAddTask A callback to add a new [Task] to the data source.
- * @param onUpdateTask A callback to update an existing [Task].
- * @param onDeleteTask A callback to delete a task by its ID.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarScreen(
@@ -51,18 +31,8 @@ fun CalendarScreen(
     val taskToDelete by taskListViewModel.taskToDelete.collectAsState()
     val coroutineScope = rememberCoroutineScope()
 
-    // UI state
-    var selectedDate by remember {
-        mutableStateOf(
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                LocalDate.now()
-            } else {
-                TODO("VERSION.SDK_INT < O")
-            }
-        )
-    }
+    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
-    var showDeleteDialog by remember { mutableStateOf(false) }
     var showAddDialog by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -80,11 +50,7 @@ fun CalendarScreen(
             }
         }
     ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            // Background image
+        Box(modifier = Modifier.fillMaxSize()) {
             Image(
                 painter = painterResource(id = R.drawable.background_gradient),
                 contentDescription = null,
@@ -92,14 +58,12 @@ fun CalendarScreen(
                 contentScale = ContentScale.FillBounds
             )
 
-            // Main content
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
                     .padding(horizontal = 16.dp)
             ) {
-                // Calendar Card
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -107,9 +71,7 @@ fun CalendarScreen(
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surface
                     ),
-                    elevation = CardDefaults.cardElevation(
-                        defaultElevation = 2.dp
-                    )
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Calendar(
                         selectedDate = selectedDate,
@@ -122,24 +84,20 @@ fun CalendarScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // List of tasks filtered for the selected date
                 TasksForSelectedDate(
                     tasks = tasks,
                     selectedDate = selectedDate,
-                    onDelete = { task ->
-                        taskListViewModel.requestDelete(task)
-                        showDeleteDialog = true
-                    },
+                    onDelete = { taskListViewModel.requestDelete(it) },
                     onCompleteToggle = { task ->
-                        taskListViewModel.addTask(task.copy(completed = !task.completed))
+                        taskListViewModel.updateTask(task.copy(completed = !task.completed))
                     },
-                    onUpdateTask = { taskListViewModel.addTask(it) }
+                    onUpdateTask = { taskListViewModel.updateTask(it) },
+                    taskListViewModel = taskListViewModel
                 )
             }
         }
     }
 
-    // Add Task Dialog
     if (showAddDialog) {
         AddTaskDialog(
             showDialog = showAddDialog,
@@ -147,65 +105,25 @@ fun CalendarScreen(
             onDismiss = { showAddDialog = false },
             onTaskAdded = { newTask, isRecurring ->
                 coroutineScope.launch {
-                    if (isRecurring) {
-                        taskListViewModel.addTaskWithRecurrence(newTask)
-                    } else {
-                        taskListViewModel.addTask(newTask)
-                    }
+                    if (isRecurring) taskListViewModel.addTaskWithRecurrence(newTask)
+                    else taskListViewModel.addTask(newTask)
                     showAddDialog = false
                 }
             }
         )
     }
 
-    // Delete Task Dialog
-    if (showDeleteDialog && taskToDelete != null) {
-        AlertDialog(
-            onDismissRequest = {
-                taskListViewModel.cancelDelete()
-                showDeleteDialog = false
-            },
-            title = { Text("Delete Task") },
-            text = { Text("Are you sure you want to delete this task?") },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        taskToDelete?.let {
-                            taskListViewModel.confirmDelete(it, deleteAll = false)
-                        }
-                        showDeleteDialog = false
-                    }
-                ) {
-                    Text("Delete")
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        taskListViewModel.cancelDelete()
-                        showDeleteDialog = false
-                    }
-                ) {
-                    Text("Cancel")
-                }
+    taskToDelete?.let { task ->
+        DeleteTaskDialog(
+            task = task,
+            onDismiss = { taskListViewModel.cancelDelete() },
+            onConfirmDelete = { deleteAll ->
+                taskListViewModel.confirmDelete(task, deleteAll)
             }
         )
     }
 }
 
-
-
-/**
- * A private composable that displays tasks scheduled for a given [selectedDate]. If there are no tasks
- * on that date, a message is displayed.
- *
- * @param tasks The original (unfiltered) list of tasks.
- * @param selectedDate The currently chosen [LocalDate] in the calendar.
- * @param onDelete Callback invoked when a task is targeted for deletion.
- * @param onCompleteToggle Callback invoked when a task’s completion status is toggled.
- * @param onUpdateTask Callback invoked when a task is updated.
- * @param searchText An optional search string, if filtering by name is desired (defaults to empty).
- */
 @Composable
 private fun TasksForSelectedDate(
     tasks: List<Task>,
@@ -213,28 +131,19 @@ private fun TasksForSelectedDate(
     onDelete: (Task) -> Unit,
     onCompleteToggle: (Task) -> Unit,
     onUpdateTask: (Task) -> Unit,
+    taskListViewModel: TaskListViewModel,
     searchText: String = ""
 ) {
-    // User rememeber to avoid recomputing filtering on each recomposition when date or task change.
     val tasksForDate = remember(selectedDate, tasks) {
         tasks.filter { task ->
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                task.deadline.toInstant().atZone(ZoneId.systemDefault()).toLocalDate() == selectedDate
-            } else {
-                TODO("VERSION.SDK_INT < O")
-            }
+            task.deadline.toInstant().atZone(ZoneId.systemDefault()).toLocalDate() == selectedDate
         }
     }
 
-    Column(
-        modifier = Modifier.fillMaxWidth()
-    ) {
+    Column(modifier = Modifier.fillMaxWidth()) {
         Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
-            colors = CardDefaults.cardColors( containerColor = MaterialTheme.colorScheme.primaryContainer
-            ),
+            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             Text(
@@ -253,7 +162,8 @@ private fun TasksForSelectedDate(
                 onCompleteToggle = onCompleteToggle,
                 onUpdateTask = onUpdateTask,
                 searchText = searchText,
-                onDeleteRequest = onDelete
+                onDeleteRequest = onDelete,
+                taskListViewModel = taskListViewModel
             )
         } else {
             Text(

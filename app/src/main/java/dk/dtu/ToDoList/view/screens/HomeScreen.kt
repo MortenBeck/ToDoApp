@@ -47,8 +47,8 @@ fun HomeScreen(
     navController: NavController,
     onAddTask: (Task) -> Unit,
     onUpdateTask: (Task) -> Unit,
-    onDeleteTask: (String) -> Unit,
-    onDeleteRecurringGroup: (String) -> Unit
+    onDeleteTask: (Task) -> Unit,  // Changed from String to Task
+    onDeleteRecurringGroup: (Task) -> Unit  // Changed from String to Task
 ) {
     // Observe UI-related states
     val searchText by homeScreenViewModel.searchText.collectAsState()

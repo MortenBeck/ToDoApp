@@ -231,30 +231,10 @@ fun ToDoApp() {
                         taskListViewModel = taskListViewModel,
                         homeScreenViewModel = homeScreenViewModel,
                         navController = navController,
-                        onAddTask = { task ->
-                            coroutineScope.launch {
-                                taskListViewModel.addTask(task)
-                                snackbarHostState.showSnackbar("Task added successfully")
-                            }
-                        },
-                        onUpdateTask = { task ->
-                            coroutineScope.launch {
-                                taskListViewModel.updateTask(task)
-                                snackbarHostState.showSnackbar("Task updated successfully")
-                            }
-                        },
-                        onDeleteTask = { taskId ->
-                            coroutineScope.launch {
-                                taskListViewModel.deleteTask(taskId)
-                                snackbarHostState.showSnackbar("Task deleted successfully")
-                            }
-                        },
-                        onDeleteRecurringGroup = { groupId ->
-                            coroutineScope.launch {
-                                taskListViewModel.deleteRecurringGroup(groupId)
-                                snackbarHostState.showSnackbar("Recurring task group deleted")
-                            }
-                        }
+                        onAddTask = taskListViewModel::addTask,
+                        onUpdateTask = taskListViewModel::updateTask,
+                        onDeleteTask = taskListViewModel::requestDelete,
+                        onDeleteRecurringGroup = { task -> taskListViewModel.confirmDelete(task, true) }
                     )
                 }
             }
