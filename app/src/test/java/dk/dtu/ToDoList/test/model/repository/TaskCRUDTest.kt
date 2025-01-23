@@ -1,9 +1,9 @@
-package dk.dtu.ToDoList.model.repository
+package dk.dtu.ToDoList.data.repository
 
 import android.content.Context
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.*
-import dk.dtu.ToDoList.model.data.task.Task
+import dk.dtu.ToDoList.domain.model.Task
 import io.mockk.*
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking

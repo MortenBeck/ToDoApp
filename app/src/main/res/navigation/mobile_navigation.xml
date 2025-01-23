@@ -7,19 +7,19 @@
 
     <fragment
         android:id="@+id/navigation_home"
-        android:name="dk.dtu.ToDoList.view.home.HomeFragment"
+        android:name="dk.dtu.ToDoList.domain.home.HomeFragment"
         android:label="@string/title_home"
         tools:layout="@layout/fragment_home" />
 
     <fragment
         android:id="@+id/navigation_dashboard"
-        android:name="dk.dtu.ToDoList.view.dashboard.DashboardFragment"
+        android:name="dk.dtu.ToDoList.domain.dashboard.DashboardFragment"
         android:label="@string/title_dashboard"
         tools:layout="@layout/fragment_dashboard" />
 
     <fragment
         android:id="@+id/navigation_notifications"
-        android:name="dk.dtu.ToDoList.view.notifications.NotificationsFragment"
+        android:name="dk.dtu.ToDoList.domain.notifications.NotificationsFragment"
         android:label="@string/title_notifications"
         tools:layout="@layout/fragment_notifications" />
 </navigation>

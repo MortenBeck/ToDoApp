@@ -1,10 +1,10 @@
-package dk.dtu.ToDoList.model.data
+package dk.dtu.ToDoList.data.mapper
 
-import dk.dtu.ToDoList.model.data.task.RecurrencePattern
-import dk.dtu.ToDoList.model.data.task.SubTask
-import dk.dtu.ToDoList.model.data.task.Task
-import dk.dtu.ToDoList.model.data.task.TaskPriority
-import dk.dtu.ToDoList.model.data.task.TaskTag
+import dk.dtu.ToDoList.domain.model.RecurrencePattern
+import dk.dtu.ToDoList.domain.model.SubTask
+import dk.dtu.ToDoList.domain.model.Task
+import dk.dtu.ToDoList.domain.model.TaskPriority
+import dk.dtu.ToDoList.domain.model.TaskTag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 import java.util.*

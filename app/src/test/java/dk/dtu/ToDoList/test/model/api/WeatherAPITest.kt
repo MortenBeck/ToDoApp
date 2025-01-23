@@ -1,4 +1,4 @@
-package dk.dtu.ToDoList.model.api
+package dk.dtu.ToDoList.data.api
 
 import io.mockk.coEvery
 import io.mockk.mockk
