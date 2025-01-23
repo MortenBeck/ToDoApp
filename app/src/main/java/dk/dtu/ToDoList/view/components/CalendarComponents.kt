@@ -19,7 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import dk.dtu.ToDoList.model.data.Task
+import dk.dtu.ToDoList.model.data.task.Task
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId

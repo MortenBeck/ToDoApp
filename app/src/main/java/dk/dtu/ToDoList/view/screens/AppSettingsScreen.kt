@@ -11,12 +11,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import dk.dtu.ToDoList.R
-
-
+import dk.dtu.ToDoList.data.events.SettingsEvent
+import dk.dtu.ToDoList.viewmodel.SettingsViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import dk.dtu.ToDoList.model.repository.TaskCRUD
+import dk.dtu.ToDoList.repository.AuthRepository
+import dk.dtu.ToDoList.repository.FirebaseAuthRepository
+import dk.dtu.ToDoList.viewmodel.SettingsViewModelFactory
 
 /**
  * A composable screen that displays application-level settings, such as Theme, Language, and Data Usage.
@@ -26,185 +32,200 @@ import dk.dtu.ToDoList.R
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppSettingsScreen(navController: NavController) {
-    var showDataUsageNotification by remember { mutableStateOf(false) }
-    var selectedLanguage by remember { mutableStateOf("English") }
-    var showThemeDialog by remember { mutableStateOf(false) }
-    var showLanguageDialog by remember { mutableStateOf(false) }
+fun AppSettingsScreen(
+    navController: NavController,
+    viewModel: SettingsViewModel = viewModel(
+        factory = SettingsViewModelFactory(
+            authRepository = FirebaseAuthRepository(),
+            taskRepository = TaskCRUD(LocalContext.current)
+        )
+    )
+) {
+    val appState by viewModel.appSettingsState.collectAsState()
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        "Account Settings",
-                        style = MaterialTheme.typography.titleLarge
-                    )
-                },
+                title = { Text("App Settings") },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
                     }
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors()
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                )
             )
         }
-    ) { paddingValues ->
-        Box {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .paint(
-                        painterResource(id = R.drawable.background_gradient),
-                        contentScale = ContentScale.FillBounds
-                    )
-                    .padding(paddingValues)
-            ) {
+    ) { padding ->
+        Box(
+            Modifier
+                .fillMaxSize()
+                .paint(
+                    painterResource(id = R.drawable.background_gradient),
+                    contentScale = ContentScale.FillBounds
+                )
+                .padding(padding)
+        ) {
+            Column {
                 ElevatedCard(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
-                    colors = CardDefaults.elevatedCardColors()
+                        .padding(16.dp)
                 ) {
-                    // Theme Item
                     ListItem(
                         headlineContent = { Text("Theme") },
-                        leadingContent = {
-                            Icon(
-                                Icons.Default.Palette,
-                                contentDescription = "Theme",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        },
                         trailingContent = {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.clickable { showThemeDialog = true }
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
                                 Text(
-                                    text = "Light",
-                                    style = MaterialTheme.typography.bodyLarge,
+                                    appState.theme.replaceFirstChar { it.uppercase() },
                                     color = MaterialTheme.colorScheme.primary
                                 )
                                 Icon(
-                                    imageVector = Icons.Default.KeyboardArrowDown,
-                                    contentDescription = "Select theme",
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.padding(start = 4.dp)
+                                    Icons.Default.KeyboardArrowRight,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary
                                 )
                             }
                         },
-                        modifier = Modifier.clickable { showThemeDialog = true }
+                        leadingContent = {
+                            Icon(
+                                Icons.Default.DarkMode,
+                                "Theme",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        },
+                        modifier = Modifier.clickable {
+                            viewModel.onEvent(SettingsEvent.App.ToggleThemeDialog(true))
+                        }
                     )
                     HorizontalDivider()
 
-                    // Language Item
                     ListItem(
                         headlineContent = { Text("Language") },
+                        trailingContent = {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Text(
+                                    appState.language.replaceFirstChar { it.uppercase() },
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                Icon(
+                                    Icons.Default.KeyboardArrowRight,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        },
                         leadingContent = {
                             Icon(
                                 Icons.Default.Language,
-                                contentDescription = "Language",
+                                "Language",
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         },
-                        trailingContent = {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.clickable { showLanguageDialog = true }
-                            ) {
-                                Text(
-                                    text = selectedLanguage,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                                Icon(
-                                    imageVector = Icons.Default.KeyboardArrowDown,
-                                    contentDescription = "Select language",
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.padding(start = 4.dp)
-                                )
-                            }
-                        },
-                        modifier = Modifier.clickable { showLanguageDialog = true }
+                        modifier = Modifier.clickable {
+                            viewModel.onEvent(SettingsEvent.App.ToggleLanguageDialog(true))
+                        }
                     )
                     HorizontalDivider()
 
-                    // Data Usage Item
                     ListItem(
                         headlineContent = { Text("Data Usage") },
                         leadingContent = {
                             Icon(
                                 Icons.Default.DataUsage,
-                                contentDescription = "Data Usage",
+                                "Data Usage",
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         },
-                        modifier = Modifier.clickable { showDataUsageNotification = true }
+                        modifier = Modifier.clickable {
+                            viewModel.onEvent(SettingsEvent.App.ToggleDataUsageDialog(true))
+                        }
                     )
                 }
             }
 
-            // Data Usage Notification
-            if (showDataUsageNotification) {
+            if (appState.showDataUsageDialog) {
                 AlertDialog(
-                    onDismissRequest = { showDataUsageNotification = false },
-                    icon = { Icon(Icons.Default.Info, contentDescription = null) },
+                    onDismissRequest = {
+                        viewModel.onEvent(SettingsEvent.App.ToggleDataUsageDialog(false))
+                    },
                     title = { Text("Feature Not Available") },
                     text = { Text("Data usage feature is not implemented yet.") },
                     confirmButton = {
-                        TextButton(onClick = { showDataUsageNotification = false }) {
+                        TextButton(onClick = {
+                            viewModel.onEvent(SettingsEvent.App.ToggleDataUsageDialog(false))
+                        }) {
                             Text("OK")
                         }
                     }
                 )
             }
 
-            // Theme Dialog
-            if (showThemeDialog) {
+            if (appState.showThemeDialog) {
                 AlertDialog(
-                    onDismissRequest = { showThemeDialog = false },
+                    onDismissRequest = {
+                        viewModel.onEvent(SettingsEvent.App.ToggleThemeDialog(false))
+                    },
                     title = { Text("Select Theme") },
                     text = {
                         Column {
                             ListItem(
                                 headlineContent = { Text("Light") },
-                                modifier = Modifier.clickable {
-                                    // Handle theme selection
-                                    showThemeDialog = false
+                                leadingContent = {
+                                    RadioButton(
+                                        selected = appState.theme == "light",
+                                        onClick = {
+                                            viewModel.onEvent(SettingsEvent.App.SetTheme("light"))
+                                            viewModel.onEvent(SettingsEvent.App.ToggleThemeDialog(false))
+                                        }
+                                    )
                                 }
                             )
                         }
                     },
                     confirmButton = {
-                        TextButton(onClick = { showThemeDialog = false }) {
+                        TextButton(onClick = {
+                            viewModel.onEvent(SettingsEvent.App.ToggleThemeDialog(false))
+                        }) {
                             Text("Cancel")
                         }
                     }
                 )
             }
 
-            // Language Dialog
-            if (showLanguageDialog) {
+            if (appState.showLanguageDialog) {
                 AlertDialog(
-                    onDismissRequest = { showLanguageDialog = false },
+                    onDismissRequest = {
+                        viewModel.onEvent(SettingsEvent.App.ToggleLanguageDialog(false))
+                    },
                     title = { Text("Select Language") },
                     text = {
                         Column {
                             ListItem(
                                 headlineContent = { Text("English") },
-                                modifier = Modifier.clickable {
-                                    selectedLanguage = "English"
-                                    showLanguageDialog = false
+                                leadingContent = {
+                                    RadioButton(
+                                        selected = appState.language == "english",
+                                        onClick = {
+                                            viewModel.onEvent(SettingsEvent.App.SetLanguage("english"))
+                                            viewModel.onEvent(SettingsEvent.App.ToggleLanguageDialog(false))
+                                        }
+                                    )
                                 }
                             )
                         }
                     },
                     confirmButton = {
-                        TextButton(onClick = { showLanguageDialog = false }) {
+                        TextButton(onClick = {
+                            viewModel.onEvent(SettingsEvent.App.ToggleLanguageDialog(false))
+                        }) {
                             Text("Cancel")
                         }
                     }

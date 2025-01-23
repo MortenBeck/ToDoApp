@@ -6,10 +6,10 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
-import dk.dtu.ToDoList.model.data.RecurrencePattern
-import dk.dtu.ToDoList.model.data.Task
-import dk.dtu.ToDoList.model.data.TaskPriority
-import dk.dtu.ToDoList.model.data.TaskTag
+import dk.dtu.ToDoList.model.data.task.RecurrencePattern
+import dk.dtu.ToDoList.model.data.task.Task
+import dk.dtu.ToDoList.model.data.task.TaskPriority
+import dk.dtu.ToDoList.model.data.task.TaskTag
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow

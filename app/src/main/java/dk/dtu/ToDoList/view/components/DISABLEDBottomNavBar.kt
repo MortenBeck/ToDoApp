@@ -1,10 +1,5 @@
 package dk.dtu.ToDoList.view.components
 
-import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
-
 //@Composable
 //fun BottomNavBar(
 //    items: List<BottomNavItem>,

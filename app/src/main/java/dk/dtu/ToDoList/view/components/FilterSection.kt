@@ -21,9 +21,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import dk.dtu.ToDoList.model.data.Task
-import dk.dtu.ToDoList.model.data.TaskPriority
-import dk.dtu.ToDoList.model.data.TaskTag
+import dk.dtu.ToDoList.model.data.task.Task
+import dk.dtu.ToDoList.model.data.task.TaskPriority
+import dk.dtu.ToDoList.model.data.task.TaskTag
 import dk.dtu.ToDoList.view.theme.getPrioColor
 import dk.dtu.ToDoList.view.theme.getTaskColor
 import java.time.LocalDate

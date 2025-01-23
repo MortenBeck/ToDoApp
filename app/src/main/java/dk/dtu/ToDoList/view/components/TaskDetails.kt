@@ -6,8 +6,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import dk.dtu.ToDoList.model.data.Task
-import dk.dtu.ToDoList.model.data.TaskPriority
+import dk.dtu.ToDoList.model.data.task.Task
+import dk.dtu.ToDoList.model.data.task.TaskPriority
 import dk.dtu.ToDoList.viewmodel.TaskListViewModel
 import java.time.YearMonth
 import java.time.ZoneId

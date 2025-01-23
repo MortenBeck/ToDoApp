@@ -3,7 +3,7 @@ package dk.dtu.ToDoList.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.*
-import dk.dtu.ToDoList.model.data.Task
+import dk.dtu.ToDoList.model.data.task.Task
 import dk.dtu.ToDoList.model.repository.TaskCRUD
 import kotlinx.coroutines.launch
 import java.util.*

@@ -8,8 +8,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
-import dk.dtu.ToDoList.model.data.TaskPriority
-import dk.dtu.ToDoList.model.data.TaskTag
+import dk.dtu.ToDoList.model.data.task.TaskPriority
+import dk.dtu.ToDoList.model.data.task.TaskTag
 
 private val LightColorScheme = lightColorScheme(
     primary = Color(0xFF4A89DC),

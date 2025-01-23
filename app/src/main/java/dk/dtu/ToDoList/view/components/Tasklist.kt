@@ -25,9 +25,9 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import dk.dtu.ToDoList.R
-import dk.dtu.ToDoList.model.data.Task
-import dk.dtu.ToDoList.model.data.TaskPriority
-import dk.dtu.ToDoList.model.data.TaskTag
+import dk.dtu.ToDoList.model.data.task.Task
+import dk.dtu.ToDoList.model.data.task.TaskPriority
+import dk.dtu.ToDoList.model.data.task.TaskTag
 import dk.dtu.ToDoList.view.theme.getPrioColor
 import dk.dtu.ToDoList.view.theme.getTaskColor
 import dk.dtu.ToDoList.viewmodel.TaskListViewModel

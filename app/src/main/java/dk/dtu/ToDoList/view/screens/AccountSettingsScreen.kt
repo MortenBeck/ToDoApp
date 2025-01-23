@@ -16,9 +16,19 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import dk.dtu.ToDoList.R
 import com.google.firebase.auth.FirebaseAuth
+import dk.dtu.ToDoList.data.events.SettingsEvent
+import dk.dtu.ToDoList.viewmodel.SettingsViewModel
 import kotlinx.coroutines.launch
-
-
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.collectAsState
+import kotlinx.coroutines.flow.StateFlow
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.platform.LocalContext
+import dk.dtu.ToDoList.model.data.state.UserProfileState
+import dk.dtu.ToDoList.model.repository.TaskCRUD
+import dk.dtu.ToDoList.repository.AuthRepository
+import dk.dtu.ToDoList.repository.FirebaseAuthRepository
+import dk.dtu.ToDoList.viewmodel.SettingsViewModelFactory
 
 /**
  * A screen that displays various account settings for the current user. This includes
@@ -29,266 +39,245 @@ import kotlinx.coroutines.launch
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AccountSettingsScreen(navController: NavController) {
-    var showLogoutDialog by remember { mutableStateOf(false) }
-    var showDeleteAccountDialog by remember { mutableStateOf(false) }
-    var showNotImplementedDialog by remember { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
-    val auth = FirebaseAuth.getInstance()
-
-    // Handle user information
-    val isAnonymous = remember { auth.currentUser?.isAnonymous ?: true }
-    val userEmail = remember {
-        if (isAnonymous) {
-            "anonymous@email.com"
-        } else {
-            auth.currentUser?.email ?: "anonymous@email.com"
-        }
-    }
-    val username = remember {
-        if (isAnonymous) {
-            "Anonymous"
-        } else {
-            auth.currentUser?.email?.substringBefore('@') ?: "Anonymous"
-        }
-    }
+fun AccountSettingsScreen(
+    navController: NavController,
+    viewModel: SettingsViewModel = viewModel(
+        factory = SettingsViewModelFactory(
+            authRepository = FirebaseAuthRepository(),
+            taskRepository = TaskCRUD(LocalContext.current)
+        )
+    )
+) {
+    val profileState by viewModel.profileState.collectAsState()
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        "Account Settings",
-                        style = MaterialTheme.typography.titleLarge
-                    )
-                },
+                title = { Text("Account Settings") },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
                     }
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors()
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                )
             )
         }
-    ) { paddingValues ->
-        Box {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .paint(
-                        painterResource(id = R.drawable.background_gradient),
-                        contentScale = ContentScale.FillBounds
-                    )
-                    .padding(paddingValues)
-            ) {
-                // Displays basic user profile info (username/email)
-                ElevatedCard(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    colors = CardDefaults.elevatedCardColors()
-                ) {
-                    ListItem(
-                        headlineContent = {
-                            Column {
-                                Text(
-                                    username,
-                                    style = MaterialTheme.typography.titleMedium
-                                )
-                                Text(
-                                    userEmail,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        },
-                        leadingContent = {
-                            Icon(
-                                Icons.Default.AccountCircle,
-                                contentDescription = "Profile",
-                                modifier = Modifier.size(40.dp),
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        },
-                        modifier = Modifier.clickable { showNotImplementedDialog = true }
-                    )
-                }
-
-                // Card containing various account settings
-                ElevatedCard(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    colors = CardDefaults.elevatedCardColors()
-                ) {
-                    ListItem(
-                        headlineContent = { Text("Change Password") },
-                        leadingContent = {
-                            Icon(
-                                Icons.Default.Lock,
-                                contentDescription = "Change Password",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        },
-                        modifier = Modifier.clickable { showNotImplementedDialog = true }
-                    )
-                    HorizontalDivider()
-
-                    ListItem(
-                        headlineContent = { Text("Privacy Settings") },
-                        leadingContent = {
-                            Icon(
-                                Icons.Default.Security,
-                                contentDescription = "Privacy",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        },
-                        modifier = Modifier.clickable { showNotImplementedDialog = true }
-                    )
-                    HorizontalDivider()
-
-                    ListItem(
-                        headlineContent = { Text("Notification Preferences") },
-                        leadingContent = {
-                            Icon(
-                                Icons.Default.Notifications,
-                                contentDescription = "Notifications",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        },
-                        modifier = Modifier.clickable { showNotImplementedDialog = true }
-                    )
-                }
-
-                // "Danger Zone" Card: Logout and delete account
-                ElevatedCard(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    colors = CardDefaults.elevatedCardColors()
-                ) {
-                    ListItem(
-                        headlineContent = { Text("Logout") },
-                        leadingContent = {
-                            Icon(
-                                Icons.AutoMirrored.Filled.Logout,
-                                contentDescription = "Logout",
-                                tint = MaterialTheme.colorScheme.error
-                            )
-                        },
-                        modifier = Modifier.clickable { showLogoutDialog = true }
-                    )
-                    HorizontalDivider()
-
-                    ListItem(
-                        headlineContent = {
-                            Text(
-                                "Delete Account",
-                                color = MaterialTheme.colorScheme.error
-                            )
-                        },
-                        leadingContent = {
-                            Icon(
-                                Icons.Default.DeleteForever,
-                                contentDescription = "Delete Account",
-                                tint = MaterialTheme.colorScheme.error
-                            )
-                        },
-                        modifier = Modifier.clickable { showDeleteAccountDialog = true }
-                    )
-                }
-            }
-
-            // Not Implemented Dialog
-            if (showNotImplementedDialog) {
-                AlertDialog(
-                    onDismissRequest = { showNotImplementedDialog = false },
-                    icon = { Icon(Icons.Default.Info, contentDescription = null) },
-                    title = { Text("Feature Not Available") },
-                    text = { Text("This feature is not implemented yet.") },
-                    confirmButton = {
-                        TextButton(onClick = { showNotImplementedDialog = false }) {
-                            Text("OK")
-                        }
-                    }
+    ) { padding ->
+        Box(
+            Modifier
+                .fillMaxSize()
+                .paint(
+                    painterResource(id = R.drawable.background_gradient),
+                    contentScale = ContentScale.FillBounds
                 )
-            }
-
-            // Logout Dialog
-            if (showLogoutDialog) {
-                AlertDialog(
-                    onDismissRequest = { showLogoutDialog = false },
-                    icon = { Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null) },
-                    title = { Text("Confirm Logout") },
-                    text = { Text("Are you sure you want to log out?") },
-                    confirmButton = {
-                        TextButton(
-                            onClick = {
-                                scope.launch {
-                                    auth.signOut()
-                                    // Navigate to login or main screen
-                                    navController.navigate("login") {
-                                        popUpTo(0) { inclusive = true }
-                                    }
-                                }
-                                showLogoutDialog = false
-                            }
-                        ) {
-                            Text("Logout")
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = { showLogoutDialog = false }) {
-                            Text("Cancel")
-                        }
+                .padding(padding)
+        ) {
+            AccountSettingsContent(
+                username = profileState.username,
+                email = profileState.userEmail,
+                profileState = profileState,
+                onEvent = viewModel::onEvent,
+                onNavigateToLogin = {
+                    navController.navigate("login") {
+                        popUpTo(0) { inclusive = true }
                     }
-                )
-            }
+                }
+            )
+        }
+    }
+}
 
-            // Delete Account Dialog
-            if (showDeleteAccountDialog) {
-                AlertDialog(
-                    onDismissRequest = { showDeleteAccountDialog = false },
-                    icon = {
-                        Icon(
-                            Icons.Default.DeleteForever,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.error
+@Composable
+private fun AccountSettingsContent(
+    username: String,
+    email: String,
+    profileState: UserProfileState,
+    onEvent: (SettingsEvent) -> Unit,
+    onNavigateToLogin: () -> Unit
+) {
+    Column(Modifier.fillMaxSize()) {
+        ElevatedCard(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            ListItem(
+                headlineContent = {
+                    Column {
+                        Text(username)
+                        Text(email, style = MaterialTheme.typography.bodyMedium)
+                    }
+                },
+                leadingContent = {
+                    Icon(
+                        Icons.Default.AccountCircle,
+                        "Profile",
+                        Modifier.size(40.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            )
+        }
+
+        ElevatedCard(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+        ) {
+            ListItem(
+                headlineContent = { Text("Change Password") },
+                leadingContent = {
+                    Icon(
+                        Icons.Default.Lock,
+                        "Password",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                },
+                modifier = Modifier.clickable {
+                    onEvent(SettingsEvent.Profile.ToggleNotImplementedDialog(true))
+                }
+            )
+            HorizontalDivider()
+
+            ListItem(
+                headlineContent = { Text("Privacy Settings") },
+                leadingContent = {
+                    Icon(
+                        Icons.Default.Security,
+                        "Privacy",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                },
+                modifier = Modifier.clickable {
+                    onEvent(SettingsEvent.Profile.ToggleNotImplementedDialog(true))
+                }
+            )
+            HorizontalDivider()
+
+            ListItem(
+                headlineContent = { Text("Notification Preferences") },
+                leadingContent = {
+                    Icon(
+                        Icons.Default.Notifications,
+                        "Notifications",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                },
+                modifier = Modifier.clickable {
+                    onEvent(SettingsEvent.Profile.ToggleNotImplementedDialog(true))
+                }
+            )
+        }
+
+        ElevatedCard(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            ListItem(
+                headlineContent = { Text("Logout") },
+                leadingContent = {
+                    Icon(
+                        Icons.AutoMirrored.Filled.Logout,
+                        "Logout",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                },
+                modifier = Modifier.clickable {
+                    onEvent(SettingsEvent.Account.ToggleLogoutDialog(true))
+                }
+            )
+            HorizontalDivider()
+
+            ListItem(
+                headlineContent = {
+                    Text(
+                        "Delete Account",
+                        color = MaterialTheme.colorScheme.error
+                    )
+                },
+                leadingContent = {
+                    Icon(
+                        Icons.Default.DeleteForever,
+                        "Delete",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                },
+                modifier = Modifier.clickable {
+                    onEvent(SettingsEvent.Account.ToggleDeleteDialog(true))
+                }
+            )
+        }
+
+        // Dialogs
+        if (profileState.showNotImplementedDialog) {
+            AlertDialog(
+                onDismissRequest = { onEvent(SettingsEvent.Profile.ToggleNotImplementedDialog(false)) },
+                title = { Text("Feature Not Available") },
+                text = { Text("This feature is not implemented yet.") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        onEvent(SettingsEvent.Profile.ToggleNotImplementedDialog(false))
+                    }) {
+                        Text("OK")
+                    }
+                }
+            )
+        }
+
+        if (profileState.showLogoutDialog) {
+            AlertDialog(
+                onDismissRequest = { onEvent(SettingsEvent.Account.ToggleLogoutDialog(false)) },
+                icon = { Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null) },
+                title = { Text("Confirm Logout") },
+                text = { Text("Are you sure you want to log out?") },
+                confirmButton = {
+                    TextButton(onClick = { onEvent(SettingsEvent.Account.Logout) }) {
+                        Text("Logout")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = {
+                        onEvent(SettingsEvent.Account.ToggleLogoutDialog(false))
+                    }) {
+                        Text("Cancel")
+                    }
+                }
+            )
+        }
+
+        if (profileState.showDeleteDialog) {
+            AlertDialog(
+                onDismissRequest = { onEvent(SettingsEvent.Account.ToggleDeleteDialog(false)) },
+                icon = {
+                    Icon(
+                        Icons.Default.DeleteForever,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                },
+                title = { Text("Delete Account") },
+                text = { Text("Are you sure you want to delete your account? This action cannot be undone.") },
+                confirmButton = {
+                    TextButton(
+                        onClick = { onEvent(SettingsEvent.Account.DeleteAccount) },
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = MaterialTheme.colorScheme.error
                         )
-                    },
-                    title = { Text("Delete Account") },
-                    text = {
-                        Text("Are you sure you want to delete your account? This action cannot be undone.")
-                    },
-                    confirmButton = {
-                        TextButton(
-                            onClick = {
-                                scope.launch {
-                                    auth.currentUser?.delete()
-                                    // Navigate to login screen
-                                    navController.navigate("login") {
-                                        popUpTo(0) { inclusive = true }
-                                    }
-                                }
-                                showDeleteAccountDialog = false
-                            },
-                            colors = ButtonDefaults.textButtonColors(
-                                contentColor = MaterialTheme.colorScheme.error
-                            )
-                        ) {
-                            Text("Delete")
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = { showDeleteAccountDialog = false }) {
-                            Text("Cancel")
-                        }
+                    ) {
+                        Text("Delete")
                     }
-                )
-            }
+                },
+                dismissButton = {
+                    TextButton(onClick = {
+                        onEvent(SettingsEvent.Account.ToggleDeleteDialog(false))
+                    }) {
+                        Text("Cancel")
+                    }
+                }
+            )
         }
     }
 }

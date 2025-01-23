@@ -13,7 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import dk.dtu.ToDoList.model.data.Task
+import dk.dtu.ToDoList.model.data.task.Task
 import dk.dtu.ToDoList.view.components.*
 import dk.dtu.ToDoList.viewmodel.TaskListViewModel
 

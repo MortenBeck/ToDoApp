@@ -1,6 +1,6 @@
 package dk.dtu.ToDoList.viewmodel
 
-import dk.dtu.ToDoList.model.data.Task
+import dk.dtu.ToDoList.model.data.task.Task
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 

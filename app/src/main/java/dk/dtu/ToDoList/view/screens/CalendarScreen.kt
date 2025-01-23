@@ -12,7 +12,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import dk.dtu.ToDoList.R
-import dk.dtu.ToDoList.model.data.Task
+import dk.dtu.ToDoList.model.data.task.Task
 import dk.dtu.ToDoList.view.components.*
 import dk.dtu.ToDoList.viewmodel.TaskListViewModel
 import java.time.LocalDate

@@ -15,6 +15,10 @@ import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.navigation.NavController
 import dk.dtu.ToDoList.model.data.*
+import dk.dtu.ToDoList.model.data.task.RecurrencePattern
+import dk.dtu.ToDoList.model.data.task.Task
+import dk.dtu.ToDoList.model.data.task.TaskPriority
+import dk.dtu.ToDoList.model.data.task.TaskTag
 import dk.dtu.ToDoList.model.repository.TaskCRUD
 import dk.dtu.ToDoList.view.theme.getPrioColor
 import java.time.LocalDate
