@@ -20,6 +20,7 @@ import dk.dtu.ToDoList.viewmodel.TaskListViewModel
 @Composable
 fun TaskListScreen(
     viewModel: TaskListViewModel,
+    searchText: String, // Add searchText parameter
     onCompleteToggle: (Task) -> Unit,
     onUpdateTask: (Task) -> Unit
 ) {
@@ -34,36 +35,34 @@ fun TaskListScreen(
         )
     }
 
-    if (categorizedTasks.isEmpty()) {
-        EmptyTasksMessage()
-    } else {
-        LazyColumn(
-            modifier = Modifier.fillMaxWidth(),
-            contentPadding = PaddingValues(bottom = 80.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            categorizedTasks.forEach { (title, taskList) ->
-                if (taskList.isNotEmpty()) {
-                    item {
-                        SectionHeader(
-                            title = title,
-                            count = taskList.size,
-                            isExpanded = sectionStates[title] ?: false,
-                            onToggle = { sectionStates[title] = !(sectionStates[title] ?: true) }
+    LazyColumn(
+        modifier = Modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(bottom = 80.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        categorizedTasks.forEach { (title, taskList) ->
+            // Filter tasks based on searchText
+            val filteredTaskList = taskList.filter { it.name.contains(searchText, ignoreCase = true) }
+            if (filteredTaskList.isNotEmpty()) {
+                item {
+                    SectionHeader(
+                        title = title,
+                        count = filteredTaskList.size,
+                        isExpanded = sectionStates[title] ?: false,
+                        onToggle = { sectionStates[title] = !(sectionStates[title] ?: true) }
+                    )
+                }
+                if (sectionStates[title] == true) {
+                    items(filteredTaskList, key = { it.id }) { task ->
+                        SwipeableTaskItem(
+                            task = task,
+                            searchText = searchText, // Pass searchText to highlight matches
+                            onDelete = { viewModel.requestDelete(task) },
+                            onCompleteToggle = onCompleteToggle,
+                            onUpdateTask = onUpdateTask,
+                            onDeleteRequest = { viewModel.requestDelete(task) },
+                            taskListViewModel = viewModel
                         )
-                    }
-                    if (sectionStates[title] == true) {
-                        items(taskList, key = { it.id }) { task ->
-                            SwipeableTaskItem(
-                                task = task,
-                                searchText = "",
-                                onDelete = { viewModel.requestDelete(task) },
-                                onCompleteToggle = onCompleteToggle,
-                                onUpdateTask = onUpdateTask,
-                                onDeleteRequest = { viewModel.requestDelete(task) },
-                                taskListViewModel = viewModel
-                            )
-                        }
                     }
                 }
             }
@@ -80,6 +79,7 @@ fun TaskListScreen(
         )
     }
 }
+
 
 @Composable
 fun EmptyTasksMessage() {
