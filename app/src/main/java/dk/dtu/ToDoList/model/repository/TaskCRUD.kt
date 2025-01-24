@@ -20,20 +20,24 @@ import java.util.UUID
 
 
 /**
- * A repository class that provides CRUD (Create, Read, Update, Delete) operations
- * for [Task] objects stored in Firebase Firestore.
+ * A repository class for managing [Task] objects stored in Firebase Firestore.
  *
- * @property context The Android [Context] needed for certain operations (notably authentication checks).
+ * This class provides methods for:
+ * - Basic CRUD operations (Create, Read, Update, Delete).
+ * - Handling tasks with recurrence patterns.
+ * - Real-time task observation using [Flow].
+ * - Filtering tasks with optional parameters.
  *
+ * @property context The Android [Context] required for certain operations involving authentication.
  * @author Help from ChatGPT
  */
 
 class TaskCRUD(private val context: Context) {
 
-    /** A reference to the [FirebaseFirestore] instance. */
+    /** A reference to the [FirebaseFirestore] instance for database operations. */
     private val firestore = FirebaseFirestore.getInstance()
 
-    /** A reference to the [FirebaseAuth] instance. */
+    /** A reference to the [FirebaseAuth] instance for authentication. */
     private val auth = FirebaseAuth.getInstance()
 
     /** A reference to the "tasks" collection in Firestore. */
@@ -43,7 +47,7 @@ class TaskCRUD(private val context: Context) {
     /**
      * Retrieves the user ID of the currently authenticated user.
      *
-     * @throws IllegalStateException if no user is currently authenticated.
+     * @throws IllegalStateException If no user is authenticated.
      */
     private val userId: String
         get() = auth.currentUser?.uid ?: throw IllegalStateException("User not authenticated")
@@ -67,9 +71,9 @@ class TaskCRUD(private val context: Context) {
 
 
     /**
-     * Generates a new document ID from the Firestore "tasks" collection.
+     * Generates a new unique task ID.
      *
-     * @return A [String] representing a unique document ID.
+     * @return A unique [String] ID generated from the "tasks" collection.
      */
     fun generateTaskId(): String {
         return tasksCollection.document().id
@@ -77,14 +81,13 @@ class TaskCRUD(private val context: Context) {
 
 
     /**
-     * Returns a [Flow] that emits a list of [Task] objects in real-time as changes occur
-     * in the Firestore "tasks" collection.
+     * Observes tasks in real-time, returning updates as a [Flow] of [Task] lists.
      *
-     * Tasks are filtered by the authenticated user and sorted by deadline (ascending),
-     * then by createdAt (descending).
+     * Tasks are filtered by the authenticated user and sorted by deadline (ascending)
+     * and creation date (descending).
      *
-     * @throws IllegalStateException if the user is not authenticated.
-     * @return A [Flow] emitting lists of [Task] objects whenever the data changes.
+     * @return A [Flow] emitting lists of [Task] objects whenever data changes.
+     * @throws IllegalStateException If the user is not authenticated.
      */
     fun getTasksFlow(): Flow<List<Task>> = callbackFlow {
         // Check authentication
@@ -120,10 +123,10 @@ class TaskCRUD(private val context: Context) {
 
 
     /**
-     * Adds a new [Task] to the Firestore "tasks" collection for the currently authenticated user.
+     * Adds a new [Task] to Firestore. Generates a new ID if none is provided.
      *
-     * @param task The [Task] object to add. If `id` is empty, a new one is generated.
-     * @return `true` if the operation is successful, `false` otherwise.
+     * @param task The [Task] object to add.
+     * @return `true` if the task was successfully added; otherwise, `false`.
      */
     suspend fun addTask(task: Task): Boolean {
         return try {
@@ -153,9 +156,9 @@ class TaskCRUD(private val context: Context) {
 
 
     /**
-     * Generates a unique ID using [UUID] plus the current timestamp.
+     * Generates a unique task ID by combining a random UUID and the current system time in milliseconds.
      *
-     * @return A [String] combining a random UUID and the system time in milliseconds.
+     * @return A unique [String] representing a task ID.
      */
     private fun generateUniqueTaskId(): String {
         return "${UUID.randomUUID()}_${System.currentTimeMillis()}"
@@ -163,11 +166,10 @@ class TaskCRUD(private val context: Context) {
 
 
     /**
-     * Adds a [Task] with a given [RecurrencePattern]. Creates a "parent" task
-     * and a specified number of recurring child tasks, depending on the recurrence type.
+     * Adds a [Task] along with its recurring instances based on its [RecurrencePattern].
      *
-     * @param task The base [Task] to add. Its [recurrence] property determines how tasks are repeated.
-     * @return `true` if all tasks (parent and child) are added successfully, `false` otherwise.
+     * @param task The base [Task] object.
+     * @return `true` if all tasks were successfully added; otherwise, `false`.
      */
     suspend fun addTaskWithRecurrence(task: Task): Boolean {
         return try {
@@ -242,11 +244,10 @@ class TaskCRUD(private val context: Context) {
 
 
     /**
-     * Updates an existing [Task] in the Firestore "tasks" collection, ensuring it belongs to
-     * the currently authenticated user.
+     * Updates an existing [Task] in Firestore. Ensures the task belongs to the authenticated user.
      *
-     * @param task A [Task] containing the updated fields. The existing task is matched by its [Task.id].
-     * @return `true` if the update is successful, `false` otherwise.
+     * @param task The updated [Task] object.
+     * @return `true` if the task was successfully updated; otherwise, `false`.
      */
     suspend fun updateTask(task: Task): Boolean {
         return try {
@@ -271,10 +272,10 @@ class TaskCRUD(private val context: Context) {
 
 
     /**
-     * Deletes a [Task] by its document ID if it belongs to the currently authenticated user.
+     * Deletes a [Task] from Firestore by its ID, ensuring it belongs to the authenticated user.
      *
-     * @param taskId The Firestore document ID of the [Task].
-     * @return `true` if the deletion is successful, `false` otherwise.
+     * @param taskId The Firestore document ID of the task to delete.
+     * @return `true` if the task was successfully deleted; otherwise, `false`.
      */
     suspend fun deleteTask(taskId: String): Boolean {
         return try {
@@ -298,7 +299,7 @@ class TaskCRUD(private val context: Context) {
      * if they belong to the currently authenticated user.
      *
      * @param recurringGroupId The ID shared by all tasks in the recurring group.
-     * @return `true` if the deletion is successful, `false` otherwise.
+     * @return `true` if all tasks in the group are successfully deleted; otherwise, `false`.
      */
     suspend fun deleteRecurringGroup(recurringGroupId: String): Boolean {
         return try {
@@ -325,12 +326,14 @@ class TaskCRUD(private val context: Context) {
 
 
     /**
-     * Updates all tasks in a recurring group with values from the provided [task]. If [updateFutureOnly] is `true`,
-     * only tasks whose [Task.recurringIndex] is greater than or equal to the [task]'s index will be updated.
+     * Updates all tasks in a recurring group with values from the provided [task].
      *
-     * @param task The [Task] whose values will be used to update matching tasks in the group.
-     * @param updateFutureOnly If `true`, only future tasks in the sequence are updated.
-     * @return `true` if the update is successful, `false` otherwise.
+     * If [updateFutureOnly] is `true`, only tasks with a [Task.recurringIndex] greater than or equal
+     * to the [task]'s index will be updated.
+     *
+     * @param task The [Task] containing updated fields. Its values are used to update matching tasks.
+     * @param updateFutureOnly If `true`, only future tasks in the sequence are updated; otherwise, all are updated.
+     * @return `true` if all tasks in the group are successfully updated; otherwise, `false`.
      */
     suspend fun updateRecurringGroup(task: Task, updateFutureOnly: Boolean = true): Boolean {
         return try {
@@ -378,10 +381,10 @@ class TaskCRUD(private val context: Context) {
 
 
     /**
-     * Retrieves all tasks in a recurring group, ordered by [Task.recurringIndex].
+     * Retrieves all tasks in a recurring group, ordered by their [Task.recurringIndex].
      *
      * @param recurringGroupId The ID shared by all tasks in the recurring group.
-     * @return A list of [Task] objects, or an empty list if none are found or an error occurs.
+     * @return A list of [Task] objects ordered by their recurring index, or an empty list if none are found.
      */
     suspend fun getRecurringGroupTasks(recurringGroupId: String): List<Task> {
         return try {
@@ -401,16 +404,16 @@ class TaskCRUD(private val context: Context) {
 
 
     /**
-     * Observes tasks in real-time as a [Flow] based on optional filter parameters:
-     * [tag], [priority], [completed], and [favorite]. Only tasks belonging to the
-     * current user are returned. Results are sorted by deadline (ascending) and by
-     * creation date (descending).
+     * Observes tasks in real-time as a [Flow] with optional filtering criteria.
      *
-     * @param tag An optional [TaskTag] filter (e.g., WORK, SCHOOL).
-     * @param priority An optional [TaskPriority] filter (HIGH, MEDIUM, LOW).
-     * @param completed An optional boolean indicating whether to filter by completion status.
-     * @param favorite An optional boolean indicating whether to filter by "favorite" status.
-     * @return A [Flow] that emits lists of [Task] objects whenever the Firestore query snapshot changes.
+     * Tasks are filtered by [tag], [priority], [completed], and [favorite] values, and are sorted by
+     * deadline (ascending) and creation date (descending). Only tasks belonging to the current user are returned.
+     *
+     * @param tag Optional [TaskTag] filter (e.g., WORK, SCHOOL).
+     * @param priority Optional [TaskPriority] filter (e.g., HIGH, MEDIUM, LOW).
+     * @param completed Optional Boolean filter indicating whether to filter by completion status.
+     * @param favorite Optional Boolean filter indicating whether to filter by favorite status.
+     * @return A [Flow] that emits lists of [Task] objects whenever Firestore data changes.
      */
     fun observeTasks(
         tag: TaskTag? = null,
@@ -447,13 +450,13 @@ class TaskCRUD(private val context: Context) {
 
 
     /**
-     * Updates specific fields of a [Task] in Firestore. Only proceeds if the
-     * task belongs to the currently authenticated user. Also adds a `modifiedAt`
-     * timestamp automatically.
+     * Updates specific fields of a [Task] in Firestore. This method ensures the task belongs to
+     * the currently authenticated user before applying updates. Automatically adds a `modifiedAt`
+     * timestamp to the updated fields.
      *
-     * @param taskId The Firestore document ID of the [Task] to update.
-     * @param updates A map of fields and their new values.
-     * @return `true` if the update is successful, `false` otherwise.
+     * @param taskId The ID of the [Task] to update.
+     * @param updates A map of field names and their corresponding updated values.
+     * @return `true` if the task fields are successfully updated; otherwise, `false`.
      */
     suspend fun updateTaskField(taskId: String, updates: Map<String, Any>): Boolean {
         return try {
@@ -476,12 +479,11 @@ class TaskCRUD(private val context: Context) {
 
 
     /**
-     * Retrieves all tasks with a [Task.deadline] between the given [startDate] and [endDate],
-     * inclusive, belonging to the currently authenticated user.
+     * Retrieves tasks within a specified deadline range for the authenticated user.
      *
-     * @param startDate The inclusive lower bound of the date range.
-     * @param endDate The inclusive upper bound of the date range.
-     * @return A list of [Task] objects matching the criteria, or an empty list if none are found.
+     * @param startDate The start date of the range (inclusive).
+     * @param endDate The end date of the range (inclusive).
+     * @return A list of [Task] objects matching the criteria; an empty list if none found.
      */
     suspend fun getTasksByDeadlineRange(
         startDate: Date,
