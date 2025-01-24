@@ -334,7 +334,42 @@ fun FilterSection(
                                                 Text("Clear")
                                             }
                                             TextButton(
-                                                onClick = { showCalendarPicker = false }
+                                                onClick = {
+                                                    if (selectedStartDate != null && selectedEndDate == null) {
+                                                        // If only start date is selected, use it as both start and end
+                                                        selectedEndDate = selectedStartDate
+                                                    } else if (selectedStartDate == null && selectedEndDate != null) {
+                                                        // If only end date is selected, use it as both start and end
+                                                        selectedStartDate = selectedEndDate
+                                                    }
+
+                                                    if (selectedStartDate != null && selectedEndDate != null) {
+                                                        // Ensure the end date is not earlier than the start date
+                                                        if (selectedEndDate!!.isBefore(selectedStartDate)) {
+                                                            selectedEndDate = selectedStartDate
+                                                        }
+
+                                                        // Set the date range
+                                                        val startDate = Date.from(
+                                                            selectedStartDate!!.atStartOfDay(ZoneId.systemDefault()).toInstant()
+                                                        )
+                                                        val endDate = Date.from(
+                                                            selectedEndDate!!.atStartOfDay(ZoneId.systemDefault()).toInstant()
+                                                        )
+                                                        dateRange = startDate to endDate
+
+                                                        // Apply filters with the updated date range
+                                                        taskListViewModel.applyFilters(
+                                                            dateRange = dateRange,
+                                                            selectedTag = selectedTag,
+                                                            selectedPriority = selectedPriority,
+                                                            hideCompletedTasks = hideCompletedTasks
+                                                        )
+                                                    }
+
+                                                    // Reset the calendar picker dialog
+                                                    showCalendarPicker = false
+                                                }
                                             ) {
                                                 Text("Confirm")
                                             }
