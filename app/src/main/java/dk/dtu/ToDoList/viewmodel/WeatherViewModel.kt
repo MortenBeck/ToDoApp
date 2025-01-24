@@ -88,9 +88,6 @@ class WeatherViewModel(
             _weatherState.value = WeatherUiState.Loading
             val response = weatherService.getWeatherForCity()
 
-            // Debug log
-            println("weather: $response") //testing by looking in log lmao
-
             if (response.weather.isNotEmpty()) {
                 val roundedTemp = round(response.main.temp).toInt()
                 val weatherCondition = response.weather.first()
