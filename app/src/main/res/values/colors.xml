@@ -1,10 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <!-- Material Design 3 color system -->
+    <color name="md_theme_light_primary">#0055D3</color>
+    <color name="md_theme_light_onPrimary">#FFFFFF</color>
+    <color name="md_theme_light_primaryContainer">#D6E2FF</color>
+    <color name="md_theme_light_onPrimaryContainer">#001947</color>
+
+    <color name="md_theme_light_secondary">#575E71</color>
+    <color name="md_theme_light_onSecondary">#FFFFFF</color>
+    <color name="md_theme_light_secondaryContainer">#DBE2F9</color>
+    <color name="md_theme_light_onSecondaryContainer">#141B2C</color>
+
+    <color name="md_theme_light_tertiary">#715573</color>
+    <color name="md_theme_light_onTertiary">#FFFFFF</color>
+    <color name="md_theme_light_tertiaryContainer">#FBD7FC</color>
+    <color name="md_theme_light_onTertiaryContainer">#29132D</color>
+
+    <color name="md_theme_light_error">#BA1A1A</color>
+    <color name="md_theme_light_onError">#FFFFFF</color>
+    <color name="md_theme_light_errorContainer">#FFDAD6</color>
+    <color name="md_theme_light_onErrorContainer">#410002</color>
+
+    <color name="md_theme_light_background">#FEFBFF</color>
+    <color name="md_theme_light_onBackground">#1B1B1F</color>
+
+    <color name="md_theme_light_surface">#FEFBFF</color>
+    <color name="md_theme_light_onSurface">#1B1B1F</color>
+    <color name="md_theme_light_surfaceVariant">#E1E2EC</color>
+    <color name="md_theme_light_onSurfaceVariant">#44474F</color>
+
+    <color name="md_theme_light_outline">#74777F</color>
+    <color name="md_theme_light_outlineVariant">#C4C6D0</color>
+
+    <color name="md_theme_light_surfaceContainerHighest">#E3E2E6</color>
+    <color name="md_theme_light_surfaceContainerHigh">#E9E8EC</color>
+    <color name="md_theme_light_surfaceContainer">#EFEDF1</color>
+    <color name="md_theme_light_surfaceContainerLow">#F5F3F7</color>
+    <color name="md_theme_light_surfaceContainerLowest">#FFFFFF</color>
+
+    <!-- Status bar and system bars -->
+    <color name="md_theme_light_statusBarColor">@color/md_theme_light_surface</color>
+    <color name="md_theme_light_navigationBarColor">@color/md_theme_light_surfaceContainer</color>
 </resources>
