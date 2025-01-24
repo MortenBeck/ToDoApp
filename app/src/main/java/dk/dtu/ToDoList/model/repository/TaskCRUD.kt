@@ -205,9 +205,9 @@ class TaskCRUD(private val context: Context) {
 
             // Determine how many child tasks to create based on the recurrence pattern
             val numberOfInstances = when (task.recurrence) {
-                RecurrencePattern.DAILY -> 7
-                RecurrencePattern.WEEKLY -> 4
-                RecurrencePattern.MONTHLY -> 3
+                RecurrencePattern.DAILY -> 6
+                RecurrencePattern.WEEKLY -> 3
+                RecurrencePattern.MONTHLY -> 2
                 RecurrencePattern.YEARLY -> 1
             }
 
