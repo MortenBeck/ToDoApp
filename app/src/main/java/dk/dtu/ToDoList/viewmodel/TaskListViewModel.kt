@@ -4,8 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.*
 import dk.dtu.ToDoList.model.data.task.Task
+import dk.dtu.ToDoList.model.data.task.TaskPriority
+import dk.dtu.ToDoList.model.data.task.TaskTag
 import dk.dtu.ToDoList.model.repository.TaskCRUD
 import kotlinx.coroutines.launch
+import java.time.ZoneId
 import java.util.*
 
 class TaskListViewModel(
@@ -110,4 +113,44 @@ class TaskListViewModel(
             e.printStackTrace()
         }
     }
+    fun filterTasks(
+        filteredTasks: List<Task>
+    ) {
+        _tasks.value = if (filteredTasks.isEmpty()) {
+            emptyList() // When no tasks match the filters, set tasks to empty
+        } else {
+            filteredTasks // Update with the filtered list
+        }
+    }
+    fun applyFilters(
+        dateRange: Pair<Date?, Date?>? = null,
+        selectedTag: TaskTag? = null,
+        selectedPriority: TaskPriority? = null,
+        hideCompletedTasks: Boolean = false
+    ) {
+        val filteredList = _originalTasks.value.filter { task ->
+            val dateMatches = if (dateRange?.first != null && dateRange.second != null) {
+                val taskDate = task.deadline.toInstant()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate()
+                val startDate = dateRange.first!!.toInstant()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate()
+                val endDate = dateRange.second!!.toInstant()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate()
+                !taskDate.isBefore(startDate) && !taskDate.isAfter(endDate)
+            } else true
+
+            val tagMatches = selectedTag == null || task.tag == selectedTag
+            val priorityMatches = selectedPriority == null || task.priority == selectedPriority
+            val completionMatches = !hideCompletedTasks || !task.completed
+
+            dateMatches && tagMatches && priorityMatches && completionMatches
+        }
+
+        _tasks.value = filteredList
+    }
+
+
 }

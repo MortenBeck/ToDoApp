@@ -38,7 +38,6 @@ import java.util.Date
  * @param navController A [NavController] instance for navigation (currently unused).
  * @param onDismiss A callback triggered when the user dismisses the dialog (e.g., pressing "Cancel" or clicking outside).
  * @param onTaskAdded A callback triggered with the newly created [Task] when the user confirms.
- * @param lifecycleScope A [LifecycleCoroutineScope] used for any required coroutines within this composable (currently unused.
  */
 @Composable
 fun AddTaskDialog(
@@ -51,7 +50,6 @@ fun AddTaskDialog(
     val taskCRUD = remember { TaskCRUD(context) }
 
     if (showDialog) {
-        // State variables to manage input fields
         var taskName by remember { mutableStateOf("") }
         var priorityLevel by remember { mutableStateOf("Low") }
         var selectedTag by remember { mutableStateOf(TaskTag.WORK) }
@@ -150,7 +148,7 @@ fun AddTaskDialog(
                                     .padding(16.dp),
                                 shape = RoundedCornerShape(16.dp)
                             ) {
-                                // Replace "Calendar" with your actual composable or date-picker logic
+                                // Calendar
                                 Calendar(
                                     selectedDate = selectedDate,
                                     currentMonth = currentMonth,
@@ -223,7 +221,7 @@ fun AddTaskDialog(
                                         completed = false,
                                         recurrence = selectedRecurrence
                                     )
-                                    onTaskAdded(newTask, selectedRecurrence != null) // true if recurring, false otherwise
+                                    onTaskAdded(newTask, selectedRecurrence != null)
                                     onDismiss()
                                 }
                             },
@@ -314,7 +312,6 @@ fun ModernDropdownTagSelector(
             onDismissRequest = { expanded = false },
             modifier = Modifier.fillMaxWidth(0.9f)
         ) {
-            // 'entries' is a Kotlin 1.8+ feature for enum classes
             TaskTag.entries.forEach { tag ->
                 DropdownMenuItem(
                     text = { Text(tag.name) },
