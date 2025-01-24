@@ -442,20 +442,6 @@ fun FilterSection(
                                 }
                             }
                         }
-
-                        // Hide Completed Tasks Switch
-                        ListItem(
-                            headlineContent = { Text("Hide Completed Tasks") },
-                            trailingContent = {
-                                Switch(
-                                    checked = hideCompletedTasks,
-                                    onCheckedChange = {
-                                        hideCompletedTasks = it
-                                        applyFilters()
-                                    }
-                                )
-                            }
-                        )
                     }
                 }
             }
