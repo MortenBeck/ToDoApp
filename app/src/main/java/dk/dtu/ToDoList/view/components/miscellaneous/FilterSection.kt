@@ -7,12 +7,8 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
-import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -34,22 +30,8 @@ import java.time.format.DateTimeFormatter
 import java.util.Date
 import dk.dtu.ToDoList.viewmodel.TaskListViewModel
 
-/**
- * A composable function that displays a collapsible filter panel for filtering a list of [Task] objects.
- * It supports filtering by:
- * - Date range (with a calendar picker and quick-select options)
- * - Tags ([TaskTag])
- * - Priorities ([TaskPriority])
- * - Completion status (hide completed tasks)
- *
- * When any filter is changed, the filtered list is emitted via [onFilterChange].
- *
- * @param onFilterChange A callback that returns the filtered list of [Task] objects.
- * @param tasks The original (unfiltered) list of [Task] objects to be filtered.
- * @param modifier An optional [Modifier] for styling the container of this composable.
- */
+@OptIn(ExperimentalLayoutApi::class)
 @RequiresApi(Build.VERSION_CODES.O)
-@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun FilterSection(
     tasks: List<Task>,
@@ -59,8 +41,8 @@ fun FilterSection(
 ) {
     var isExpanded by remember { mutableStateOf(false) }
     var dateRange by remember { mutableStateOf<Pair<Date?, Date?>>(null to null) }
-    var selectedTags by remember { mutableStateOf<Set<TaskTag>>(emptySet()) }
-    var selectedPriorities by remember { mutableStateOf<Set<TaskPriority>>(emptySet()) }
+    var selectedTag by remember { mutableStateOf<TaskTag?>(null) } // Single tag
+    var selectedPriority by remember { mutableStateOf<TaskPriority?>(null) } // Single priority
     var hideCompletedTasks by remember { mutableStateOf(false) }
     var showCalendarPicker by remember { mutableStateOf(false) }
 
@@ -69,9 +51,6 @@ fun FilterSection(
     var selectedEndDate by remember { mutableStateOf<LocalDate?>(null) }
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
     var isSelectingStartDate by remember { mutableStateOf(true) }
-
-    // Store original task list
-    val originalTasks = remember(tasks) { tasks }
 
     val rotationState by animateFloatAsState(
         targetValue = if (isExpanded) 180f else 0f,
@@ -84,98 +63,43 @@ fun FilterSection(
         dateRange = null to null
         selectedStartDate = null
         selectedEndDate = null
-        selectedTags = emptySet()
-        selectedPriorities = emptySet()
+        selectedTag = null
+        selectedPriority = null
         hideCompletedTasks = false
-        onFilterChange(originalTasks)
+        onFilterChange(tasks)
+        taskListViewModel.loadTasks()
     }
 
-    fun selectQuickDate(daysOffset: Int) {
-        val date = LocalDate.now().plusDays(daysOffset.toLong())
-        selectedStartDate = date
-        selectedEndDate = date
-        val selectedDate = Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant())
-        dateRange = selectedDate to selectedDate
-        applyFilters(originalTasks, dateRange, selectedTags, selectedPriorities, hideCompletedTasks, onFilterChange)
+    fun applyFilters() {
+        val filteredList = tasks.filter { task ->
+            val dateMatches = if (dateRange.first != null && dateRange.second != null) {
+                val taskDate = task.deadline.toInstant()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate()
+                val startDate = dateRange.first!!.toInstant()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate()
+                val endDate = dateRange.second!!.toInstant()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate()
+                !taskDate.isBefore(startDate) && !taskDate.isAfter(endDate)
+            } else true
 
-    }
+            val tagMatches = selectedTag == null || task.tag == selectedTag
+            val priorityMatches = selectedPriority == null || task.priority == selectedPriority
+            val completionMatches = !hideCompletedTasks || !task.completed
 
-    // Calendar date range picker dialog
-    if (showCalendarPicker) {
-        Dialog(onDismissRequest = { showCalendarPicker = false }) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                ) {
-                    Text(
-                        text = if (isSelectingStartDate) "Select Start Date" else "Select End Date",
-                        style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
+            dateMatches && tagMatches && priorityMatches && completionMatches
+        }
 
-                    Calendar(
-                        selectedDate = selectedStartDate ?: LocalDate.now(),
-                        currentMonth = currentMonth,
-                        onDateSelected = { date ->
-                            if (isSelectingStartDate) {
-                                selectedStartDate = date
-                                isSelectingStartDate = false
-                            } else {
-                                if (date >= selectedStartDate) {
-                                    selectedEndDate = date
-                                    // Convert LocalDate to Date and update dateRange
-                                    val startDate = Date.from(
-                                        selectedStartDate!!.atStartOfDay(ZoneId.systemDefault()).toInstant()
-                                    )
-                                    val endDate = Date.from(
-                                        date.atStartOfDay(ZoneId.systemDefault()).toInstant()
-                                    )
-                                    dateRange = startDate to endDate
-                                    showCalendarPicker = false
-                                    // Apply filters with the new date range
-                                    applyFilters(originalTasks, dateRange, selectedTags, selectedPriorities, hideCompletedTasks, onFilterChange)
-                                }
-                            }
-                        },
-                        onMonthChanged = { month ->
-                            currentMonth = month
-                        },
-                        tasks = tasks
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Action buttons
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        TextButton(
-                            onClick = {
-                                selectedStartDate = null
-                                selectedEndDate = null
-                                dateRange = null to null
-                                showCalendarPicker = false
-                            }
-                        ) {
-                            Text("Clear")
-                        }
-                        TextButton(
-                            onClick = { showCalendarPicker = false }
-                        ) {
-                            Text("Confirm")
-                        }
-                    }
-                }
-            }
+        if (filteredList.isEmpty() && (selectedTag != null || selectedPriority != null)) {
+            // If the filtered list is empty, emit an empty list to reflect no results
+            onFilterChange(emptyList())
+        } else {
+            onFilterChange(filteredList)
         }
     }
+
 
     Column(
         modifier = modifier
@@ -195,7 +119,7 @@ fun FilterSection(
                     .fillMaxWidth()
                     .animateContentSize()
             ) {
-                // Header (Filters row with expand/collapse icon)
+                // Header
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -203,22 +127,11 @@ fun FilterSection(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.FilterList,
-                            contentDescription = "Filters",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(end = 12.dp)
-                        )
-                        Text(
-                            "Filters",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
+                    Text(
+                        "Filters",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Medium
+                    )
 
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowDown,
@@ -227,9 +140,8 @@ fun FilterSection(
                     )
                 }
 
-                // Expanded content: various filtering sections
                 if (isExpanded) {
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                    HorizontalDivider()
 
                     Column(
                         modifier = Modifier
@@ -239,61 +151,20 @@ fun FilterSection(
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
                         // Date Range Section
-                        Column(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    "Date Range",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-
-                                FilledTonalButton(
-                                    onClick = {
-                                        resetFilters()
-                                        taskListViewModel.resetToOriginal()
-                                    },
-                                    colors = ButtonDefaults.filledTonalButtonColors(
-                                        containerColor = MaterialTheme.colorScheme.errorContainer
-                                    )
-                                ) {
-                                    Icon(
-                                        Icons.Default.Clear,
-                                        contentDescription = "Reset Filters",
-                                        tint = MaterialTheme.colorScheme.error,
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(
-                                        "Reset",
-                                        color = MaterialTheme.colorScheme.error
-                                    )
-                                }
-                            }
-
-                            // Date Selection Button
+                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Text("Date Range", style = MaterialTheme.typography.titleMedium)
                             FilledTonalButton(
                                 onClick = {
                                     isSelectingStartDate = true
                                     showCalendarPicker = true
                                 },
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = ButtonDefaults.filledTonalButtonColors(
-                                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                                )
+                                modifier = Modifier.fillMaxWidth()
                             ) {
                                 Icon(
                                     Icons.Default.CalendarToday,
-                                    contentDescription = "Select date",
-                                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                                    contentDescription = "Select date"
                                 )
-                                Spacer(modifier = Modifier.width(8.dp))
+                                Spacer(Modifier.width(8.dp))
                                 Text(
                                     text = when {
                                         selectedStartDate != null && selectedEndDate != null ->
@@ -303,108 +174,32 @@ fun FilterSection(
                                         selectedEndDate != null ->
                                             "Until ${selectedEndDate!!.format(dateFormatter)}"
                                         else -> "Select dates"
-                                    },
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    }
                                 )
-                            }
-
-                            // Quick Date Selection (Yesterday, Today, Tomorrow)
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
-                            ) {
-                                listOf(
-                                    Triple(
-                                        "Yesterday",
-                                        Icons.AutoMirrored.Outlined.KeyboardArrowLeft,
-                                        -1
-                                    ),
-                                    Triple("Today", Icons.Default.CalendarToday, 0),
-                                    Triple(
-                                        "Tomorrow",
-                                        Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-                                        1
-                                    )
-                                ).forEach { (label, icon, offset) ->
-                                    val isSelected = when (offset) {
-                                        -1 -> selectedStartDate?.equals(LocalDate.now().minusDays(1)) == true
-                                        0 -> selectedStartDate?.equals(LocalDate.now()) == true
-                                        1 -> selectedStartDate?.equals(LocalDate.now().plusDays(1)) == true
-                                        else -> false
-                                    }
-
-                                    FilledTonalButton(
-                                        onClick = { selectQuickDate(offset) },
-                                        modifier = Modifier.weight(1f),
-                                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp),
-                                        colors = ButtonDefaults.filledTonalButtonColors(
-                                            containerColor = if (isSelected)
-                                                MaterialTheme.colorScheme.primaryContainer
-                                            else
-                                                MaterialTheme.colorScheme.surfaceVariant
-                                        )
-                                    ) {
-                                        Icon(
-                                            imageVector = icon,
-                                            contentDescription = null,
-                                            tint = if (isSelected)
-                                                MaterialTheme.colorScheme.onPrimaryContainer
-                                            else
-                                                MaterialTheme.colorScheme.onSurfaceVariant,
-                                            modifier = Modifier.size(16.dp)
-                                        )
-                                        Spacer(modifier = Modifier.width(2.dp))
-                                        Text(
-                                            text = label,
-                                            color = if (isSelected)
-                                                MaterialTheme.colorScheme.onPrimaryContainer
-                                            else
-                                                MaterialTheme.colorScheme.onSurfaceVariant,
-                                            style = MaterialTheme.typography.labelSmall,
-                                            maxLines = 1,
-                                            softWrap = false
-                                        )
-                                    }
-                                }
                             }
                         }
 
                         // Tags Section
-                        Column(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            Text(
-                                "Tags",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-
-                            FlowRow(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalArrangement = Arrangement.spacedBy(4.dp),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
+                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Text("Tags", style = MaterialTheme.typography.titleMedium)
+                            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 TaskTag.entries.forEach { tag ->
-                                    val isSelected = selectedTags.contains(tag)
                                     val tagColor = getTaskColor(tag)
-
                                     FilterChip(
-                                        selected = isSelected,
+                                        selected = selectedTag == tag,
                                         onClick = {
-                                            if (!isSelected) {
-                                                selectedTags = selectedTags + tag
-                                                applyFilters(originalTasks, dateRange, selectedTags, selectedPriorities, hideCompletedTasks, onFilterChange)
-                                            } else {
-                                                selectedTags = selectedTags - tag
-                                                taskListViewModel.loadTasks()
-                                                applyFilters(originalTasks, dateRange, selectedTags, selectedPriorities, hideCompletedTasks, onFilterChange)
-                                            }
+                                            selectedTag = if (selectedTag == tag) null else tag
+                                            taskListViewModel.applyFilters(
+                                                dateRange = dateRange,
+                                                selectedTag = selectedTag,
+                                                selectedPriority = selectedPriority,
+                                                hideCompletedTasks = hideCompletedTasks
+                                            )
                                         },
                                         label = {
                                             Text(
                                                 tag.name,
-                                                color = if (isSelected) Color.White else tagColor
+                                                color = if (selectedTag == tag) Color.White else tagColor
                                             )
                                         },
                                         colors = FilterChipDefaults.filterChipColors(
@@ -417,62 +212,32 @@ fun FilterSection(
                         }
 
                         // Priority Section
-                        Column(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            Text(
-                                "Priority",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
+                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Text("Priority", style = MaterialTheme.typography.titleMedium)
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 TaskPriority.entries.forEach { priority ->
-                                    val isSelected = selectedPriorities.contains(priority)
                                     val priorityColor = getPrioColor(priority)
-
                                     FilterChip(
-                                        selected = isSelected,
+                                        selected = selectedPriority == priority,
                                         onClick = {
-                                            if (!isSelected) {
-                                                selectedPriorities = selectedPriorities + priority
-                                                applyFilters(originalTasks, dateRange, selectedTags, selectedPriorities, hideCompletedTasks, onFilterChange)
-                                            } else {
-                                                selectedPriorities = selectedPriorities - priority
-                                                taskListViewModel.loadTasks()
-                                                applyFilters(originalTasks, dateRange, selectedTags, selectedPriorities, hideCompletedTasks, onFilterChange)
-                                            }
+                                            selectedPriority = if (selectedPriority == priority) null else priority
+                                            taskListViewModel.applyFilters(
+                                                dateRange = dateRange,
+                                                selectedTag = selectedTag,
+                                                selectedPriority = selectedPriority,
+                                                hideCompletedTasks = hideCompletedTasks
+                                            )
                                         },
                                         label = {
                                             Text(
                                                 text = priority.name,
-                                                color = if (isSelected) Color.White else priorityColor,
-                                                style = MaterialTheme.typography.labelSmall,
-                                                maxLines = 1,
-                                                softWrap = false
-                                            )
-                                        },
-                                        leadingIcon = {
-                                            Icon(
-                                                imageVector = when (priority) {
-                                                    TaskPriority.HIGH -> Icons.Outlined.KeyboardDoubleArrowUp
-                                                    TaskPriority.MEDIUM -> Icons.Outlined.DragHandle
-                                                    TaskPriority.LOW -> Icons.Outlined.KeyboardDoubleArrowDown
-                                                },
-                                                contentDescription = null,
-                                                tint = if (isSelected) Color.White else priorityColor,
-                                                modifier = Modifier.size(16.dp)
+                                                color = if (selectedPriority == priority) Color.White else priorityColor
                                             )
                                         },
                                         colors = FilterChipDefaults.filterChipColors(
                                             selectedContainerColor = priorityColor,
                                             containerColor = priorityColor.copy(alpha = 0.08f)
-                                        ),
-                                        modifier = Modifier.weight(1f)
+                                        )
                                     )
                                 }
                             }
@@ -480,84 +245,37 @@ fun FilterSection(
 
                         // Hide Completed Tasks Switch
                         ListItem(
-                            headlineContent = {
-                                Text(
-                                    "Hide Completed Tasks",
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                            },
+                            headlineContent = { Text("Hide Completed Tasks") },
                             trailingContent = {
                                 Switch(
                                     checked = hideCompletedTasks,
-                                    onCheckedChange = { checked ->
-                                        hideCompletedTasks = checked
-                                        applyFilters(
-                                            tasks,
-                                            dateRange,
-                                            selectedTags,
-                                            selectedPriorities,
-                                            hideCompletedTasks,
-                                            onFilterChange
-                                        )
+                                    onCheckedChange = {
+                                        hideCompletedTasks = it
+                                        applyFilters()
                                     }
                                 )
                             }
                         )
+
+                        // Reset Filters Button
+                        FilledTonalButton(
+                            onClick = { resetFilters() },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.filledTonalButtonColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer
+                            )
+                        ) {
+                            Icon(
+                                Icons.Default.Clear,
+                                contentDescription = "Reset Filters",
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Reset", color = MaterialTheme.colorScheme.error)
+                        }
                     }
                 }
             }
         }
     }
-}
-
-/**
- * Filters a list of [Task] objects based on various criteria, then invokes [onFilterChange] with the filtered list.
- *
- * @param tasks The original list of [Task] objects.
- * @param dateRange A [Pair] containing optional start and end [Date] values (both can be `null`).
- * @param selectedTags A set of [TaskTag] values to filter by. If empty, no tag-based filtering is applied.
- * @param selectedPriorities A set of [TaskPriority] values to filter by. If empty, no priority-based filtering is applied.
- * @param hideCompletedTasks If `true`, completed tasks are excluded from the results.
- * @param onFilterChange A callback returning the filtered list of tasks.
- */
-@RequiresApi(Build.VERSION_CODES.O)
-private fun applyFilters(
-    tasks: List<Task>,
-    dateRange: Pair<Date?, Date?>,
-    selectedTags: Set<TaskTag>,
-    selectedPriorities: Set<TaskPriority>,
-    hideCompletedTasks: Boolean,
-    onFilterChange: (List<Task>) -> Unit
-) {
-    val areFiltersActive = dateRange.first != null || dateRange.second != null ||
-            selectedTags.isNotEmpty() || selectedPriorities.isNotEmpty() ||
-            hideCompletedTasks
-
-    if (!areFiltersActive) {
-        onFilterChange(tasks)
-        return
-    }
-
-    val filteredList = tasks.filter { task ->
-        val dateMatches = if (dateRange.first != null && dateRange.second != null) {
-            val taskDate = task.deadline.toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate()
-            val startDate = dateRange.first!!.toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate()
-            val endDate = dateRange.second!!.toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate()
-            !taskDate.isBefore(startDate) && !taskDate.isAfter(endDate)
-        } else true
-
-        val tagMatches = selectedTags.isEmpty() || task.tag in selectedTags
-        val priorityMatches = selectedPriorities.isEmpty() || task.priority in selectedPriorities
-        val completionMatches = !hideCompletedTasks || !task.completed
-
-        dateMatches && tagMatches && priorityMatches && completionMatches
-    }
-
-    onFilterChange(filteredList)
 }
