@@ -114,6 +114,7 @@ fun TaskItem(
 ) {
     var showDetails by remember { mutableStateOf(false) }
 
+    // Highlight text helped by chatGPT
     fun buildHighlightedText(text: String, query: String): AnnotatedString {
         val builder = AnnotatedString.Builder()
         val startIndex = text.indexOf(query, ignoreCase = true)

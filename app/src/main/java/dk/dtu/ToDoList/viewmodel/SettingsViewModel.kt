@@ -14,6 +14,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
+/**
+ * @author helped with chatGPT
+ */
 class SettingsViewModel(
     private val authRepository: AuthRepository,
     private val taskRepository: TaskCRUD
@@ -37,7 +40,7 @@ class SettingsViewModel(
             is SettingsEvent.Profile.ToggleNotImplementedDialog ->
                 updateProfileDialogState("notImplemented", event.show)
 
-                // Exchange Account.Logout with these for logout feature. (Dialog in AccountSettingsScreen.kt is also needed)
+            // Exchange Account.Logout with these for logout feature. (Dialog in AccountSettingsScreen.kt is also needed)
             // is SettingsEvent.Account.Logout -> handleLogout()
             // is SettingsEvent.Account.DeleteAccount -> handleDeleteAccount()
             // is SettingsEvent.Account.ToggleLogoutDialog ->

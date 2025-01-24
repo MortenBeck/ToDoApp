@@ -19,7 +19,7 @@ import dk.dtu.ToDoList.viewmodel.TaskListViewModel
 @Composable
 fun TaskListScreen(
     viewModel: TaskListViewModel,
-    searchText: String, // Add searchText parameter
+    searchText: String,
     onCompleteToggle: (Task) -> Unit,
     onUpdateTask: (Task) -> Unit
 ) {
@@ -40,7 +40,6 @@ fun TaskListScreen(
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         categorizedTasks.forEach { (title, taskList) ->
-            // Filter tasks based on searchText
             val filteredTaskList = taskList.filter { it.name.contains(searchText, ignoreCase = true) }
             if (filteredTaskList.isNotEmpty()) {
                 item {
@@ -55,7 +54,7 @@ fun TaskListScreen(
                     items(filteredTaskList, key = { it.id }) { task ->
                         SwipeableTaskItem(
                             task = task,
-                            searchText = searchText, // Pass searchText to highlight matches
+                            searchText = searchText,
                             onDelete = { viewModel.requestDelete(task) },
                             onCompleteToggle = onCompleteToggle,
                             onUpdateTask = onUpdateTask,
@@ -76,32 +75,6 @@ fun TaskListScreen(
                 viewModel.confirmDelete(task, deleteAll)
             }
         )
-    }
-}
-
-
-@Composable
-fun EmptyTasksMessage() {
-    Box(
-        modifier = Modifier.fillMaxSize().padding(30.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(horizontal = 24.dp)
-        ) {
-            Text(
-                text = "It seems you haven't added any tasks yet!",
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Click the \"+\"-button in the bottom-right to get started!",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
     }
 }
 

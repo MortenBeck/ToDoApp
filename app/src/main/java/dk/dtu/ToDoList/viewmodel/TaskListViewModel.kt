@@ -11,6 +11,10 @@ import kotlinx.coroutines.launch
 import java.time.ZoneId
 import java.util.*
 
+/**
+ * @author refactored by chatGPT
+ */
+
 class TaskListViewModel(
     private val taskCRUD: TaskCRUD,
     private val deleteTaskManager: DeleteTaskManager = DeleteTaskManager()
@@ -117,9 +121,9 @@ class TaskListViewModel(
         filteredTasks: List<Task>
     ) {
         _tasks.value = if (filteredTasks.isEmpty()) {
-            emptyList() // When no tasks match the filters, set tasks to empty
+            emptyList()
         } else {
-            filteredTasks // Update with the filtered list
+            filteredTasks
         }
     }
     fun applyFilters(

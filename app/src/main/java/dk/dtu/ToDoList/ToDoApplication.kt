@@ -20,6 +20,8 @@ import kotlinx.coroutines.launch
  * A custom [Application] class for the ToDoList app. It handles the initialization
  * of Firebase, Google Play Services checks, and sets up an application-scoped
  * [CoroutineScope] for background work.
+ *
+ * @author helped with chatGPT
  */
 class ToDoApplication : Application() {
 

@@ -365,7 +365,7 @@ fun DropdownRecurrenceSelector(
                     expanded = false
                 }
             )
-            // Enum entries for recurrence patterns
+            // Recurrence patterns
             RecurrencePattern.entries.forEach { pattern ->
                 DropdownMenuItem(
                     text = { Text(pattern.name) },

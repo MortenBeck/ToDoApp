@@ -54,10 +54,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         FirebaseApp.initializeApp(this)
 
-        // Enable edge-to-edge
         enableEdgeToEdge()
 
-        // Check Google Play Services
         checkGooglePlayServices()
     }
 
@@ -139,11 +137,12 @@ class MainActivity : ComponentActivity() {
  * - A bottom navigation bar ([NavigationBar]) for switching between routes.
  * - Observes tasks from [TaskCRUD] as a [State], passing updated lists to relevant screens.
  * - A [SnackbarHostState] for displaying temporary messages (e.g., onAddTask success).
+ *
+ * @author helped by chatGPT
  */
 @Composable
 fun ToDoApp() {
     val navController = rememberNavController()
-    val snackbarHostState = remember { SnackbarHostState() }
 
     // Get context and instantiate TaskCRUD
     val context = LocalContext.current
@@ -160,10 +159,6 @@ fun ToDoApp() {
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = currentBackStackEntry?.destination?.route ?: "Tasks"
 
-    // Collect tasks as a flow
-    val tasks by taskListViewModel.tasks.collectAsState(emptyList())
-
-    // Start Scaffold
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,

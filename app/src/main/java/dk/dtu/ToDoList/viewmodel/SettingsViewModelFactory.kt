@@ -5,6 +5,9 @@ import androidx.lifecycle.ViewModelProvider
 import dk.dtu.ToDoList.model.repository.TaskCRUD
 import dk.dtu.ToDoList.repository.AuthRepository
 
+/**
+ * @author helped with chatGPT
+ */
 class SettingsViewModelFactory(
     private val authRepository: AuthRepository,
     private val taskRepository: TaskCRUD
