@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -151,20 +153,61 @@ fun FilterSection(
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
                         // Date Range Section
-                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Text("Date Range", style = MaterialTheme.typography.titleMedium)
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    "Date Range",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+
+                                FilledTonalButton(
+                                    onClick = {
+                                        resetFilters()
+                                        taskListViewModel.resetToOriginal()
+                                    },
+                                    colors = ButtonDefaults.filledTonalButtonColors(
+                                        containerColor = MaterialTheme.colorScheme.errorContainer
+                                    )
+                                ) {
+                                    Icon(
+                                        Icons.Default.Clear,
+                                        contentDescription = "Reset Filters",
+                                        tint = MaterialTheme.colorScheme.error,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        "Reset",
+                                        color = MaterialTheme.colorScheme.error
+                                    )
+                                }
+                            }
+
+                            // Date Selection Button
                             FilledTonalButton(
                                 onClick = {
                                     isSelectingStartDate = true
                                     showCalendarPicker = true
                                 },
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.filledTonalButtonColors(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                                )
                             ) {
                                 Icon(
                                     Icons.Default.CalendarToday,
-                                    contentDescription = "Select date"
+                                    contentDescription = "Select date",
+                                    tint = MaterialTheme.colorScheme.onPrimaryContainer
                                 )
-                                Spacer(Modifier.width(8.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     text = when {
                                         selectedStartDate != null && selectedEndDate != null ->
@@ -174,10 +217,164 @@ fun FilterSection(
                                         selectedEndDate != null ->
                                             "Until ${selectedEndDate!!.format(dateFormatter)}"
                                         else -> "Select dates"
-                                    }
+                                    },
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
                                 )
                             }
+
+                            // Quick Date Selection (Yesterday, Today, Tomorrow)
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                listOf(
+                                    Triple(
+                                        "Yesterday",
+                                        Icons.AutoMirrored.Outlined.KeyboardArrowLeft,
+                                        -1
+                                    ),
+                                    Triple("Today", Icons.Default.CalendarToday, 0),
+                                    Triple(
+                                        "Tomorrow",
+                                        Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                                        1
+                                    )
+                                ).forEach { (label, icon, offset) ->
+                                    val isSelected = when (offset) {
+                                        -1 -> selectedStartDate?.equals(LocalDate.now().minusDays(1)) == true
+                                        0 -> selectedStartDate?.equals(LocalDate.now()) == true
+                                        1 -> selectedStartDate?.equals(LocalDate.now().plusDays(1)) == true
+                                        else -> false
+                                    }
+
+                                    FilledTonalButton(
+                                        onClick = {
+                                            // Quick date selection
+                                            val quickDate = LocalDate.now().plusDays(offset.toLong())
+                                            selectedStartDate = quickDate
+                                            selectedEndDate = quickDate
+                                            val quickStartDate = Date.from(quickDate.atStartOfDay(ZoneId.systemDefault()).toInstant())
+                                            dateRange = quickStartDate to quickStartDate
+                                            taskListViewModel.applyFilters(
+                                                dateRange = dateRange,
+                                                selectedTag = selectedTag,
+                                                selectedPriority = selectedPriority,
+                                                hideCompletedTasks = hideCompletedTasks
+                                            )
+                                        },
+                                        modifier = Modifier.weight(1f),
+                                        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp),
+                                        colors = ButtonDefaults.filledTonalButtonColors(
+                                            containerColor = if (isSelected)
+                                                MaterialTheme.colorScheme.primaryContainer
+                                            else
+                                                MaterialTheme.colorScheme.surfaceVariant
+                                        )
+                                    ) {
+                                        Icon(
+                                            imageVector = icon,
+                                            contentDescription = null,
+                                            tint = if (isSelected)
+                                                MaterialTheme.colorScheme.onPrimaryContainer
+                                            else
+                                                MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(2.dp))
+                                        Text(
+                                            text = label,
+                                            color = if (isSelected)
+                                                MaterialTheme.colorScheme.onPrimaryContainer
+                                            else
+                                                MaterialTheme.colorScheme.onSurfaceVariant,
+                                            style = MaterialTheme.typography.labelSmall,
+                                            maxLines = 1,
+                                            softWrap = false
+                                        )
+                                    }
+                                }
+                            }
                         }
+                        if (showCalendarPicker) {
+                            Dialog(onDismissRequest = { showCalendarPicker = false }) {
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp)
+                                ) {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(16.dp)
+                                    ) {
+                                        Text(
+                                            text = if (isSelectingStartDate) "Select Start Date" else "Select End Date",
+                                            style = MaterialTheme.typography.titleLarge,
+                                            modifier = Modifier.padding(bottom = 16.dp)
+                                        )
+
+                                        Calendar(
+                                            selectedDate = selectedStartDate ?: LocalDate.now(),
+                                            currentMonth = currentMonth,
+                                            onDateSelected = { date ->
+                                                if (isSelectingStartDate) {
+                                                    selectedStartDate = date
+                                                    isSelectingStartDate = false
+                                                } else {
+                                                    if (date >= selectedStartDate) {
+                                                        selectedEndDate = date
+                                                        val startDate = Date.from(
+                                                            selectedStartDate!!.atStartOfDay(ZoneId.systemDefault()).toInstant()
+                                                        )
+                                                        val endDate = Date.from(
+                                                            date.atStartOfDay(ZoneId.systemDefault()).toInstant()
+                                                        )
+                                                        dateRange = startDate to endDate
+                                                        showCalendarPicker = false
+                                                        taskListViewModel.applyFilters(
+                                                            dateRange = dateRange,
+                                                            selectedTag = selectedTag,
+                                                            selectedPriority = selectedPriority,
+                                                            hideCompletedTasks = hideCompletedTasks
+                                                        )
+                                                    }
+                                                }
+                                            },
+                                            onMonthChanged = { month ->
+                                                currentMonth = month
+                                            },
+                                            tasks = tasks // Pass tasks to highlight task dates if needed
+                                        )
+
+                                        Spacer(modifier = Modifier.height(16.dp))
+
+                                        // Action Buttons
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.End
+                                        ) {
+                                            TextButton(
+                                                onClick = {
+                                                    selectedStartDate = null
+                                                    selectedEndDate = null
+                                                    dateRange = null to null
+                                                    showCalendarPicker = false
+                                                }
+                                            ) {
+                                                Text("Clear")
+                                            }
+                                            TextButton(
+                                                onClick = { showCalendarPicker = false }
+                                            ) {
+                                                Text("Confirm")
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+
 
                         // Tags Section
                         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -256,23 +453,6 @@ fun FilterSection(
                                 )
                             }
                         )
-
-                        // Reset Filters Button
-                        FilledTonalButton(
-                            onClick = { resetFilters() },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.filledTonalButtonColors(
-                                containerColor = MaterialTheme.colorScheme.errorContainer
-                            )
-                        ) {
-                            Icon(
-                                Icons.Default.Clear,
-                                contentDescription = "Reset Filters",
-                                tint = MaterialTheme.colorScheme.error
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("Reset", color = MaterialTheme.colorScheme.error)
-                        }
                     }
                 }
             }
