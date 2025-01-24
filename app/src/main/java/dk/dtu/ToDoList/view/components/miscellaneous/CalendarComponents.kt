@@ -172,7 +172,11 @@ fun DayCell(
     hasTask: Boolean,
     onDateSelected: (LocalDate) -> Unit
 ) {
-    val isToday = date == LocalDate.now()
+    val isToday = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        date == LocalDate.now()
+    } else {
+        TODO("VERSION.SDK_INT < O")
+    }
 
     // Determine background and text colors based on state
     val cellColor = when {
@@ -239,7 +243,11 @@ fun DayCell(
  */
 private fun calculateDaysInMonth(currentMonth: YearMonth): List<LocalDate> {
     val days = mutableListOf<LocalDate>()
-    val firstOfMonth = currentMonth.atDay(1)
+    val firstOfMonth = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        currentMonth.atDay(1)
+    } else {
+        TODO("VERSION.SDK_INT < O")
+    }
     val lastOfMonth = currentMonth.atEndOfMonth()
 
     val firstDayOfWeek = WeekFields.of(Locale.getDefault()).firstDayOfWeek
