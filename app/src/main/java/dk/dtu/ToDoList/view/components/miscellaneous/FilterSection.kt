@@ -114,7 +114,7 @@ fun FilterSection(
             onClick = { isExpanded = !isExpanded },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+                .padding(horizontal = 12.dp, vertical = 6.dp),
             colors = CardDefaults.elevatedCardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
             )
@@ -152,12 +152,12 @@ fun FilterSection(
                             .fillMaxWidth()
                             .verticalScroll(rememberScrollState())
                             .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(24.dp)
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         // Date Range Section
                         Column(
                             modifier = Modifier.fillMaxWidth(),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -380,7 +380,7 @@ fun FilterSection(
 
 
                         // Tags Section
-                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Text("Tags", style = MaterialTheme.typography.titleMedium)
                             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 TaskTag.entries.forEach { tag ->
@@ -412,7 +412,7 @@ fun FilterSection(
                         }
 
                         // Priority Section
-                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Text("Priority", style = MaterialTheme.typography.titleMedium)
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 TaskPriority.entries.forEach { priority ->
