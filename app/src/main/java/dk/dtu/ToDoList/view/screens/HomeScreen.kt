@@ -41,7 +41,7 @@ fun HomeScreen(
     val coroutineScope = rememberCoroutineScope()
 
     val visibleTasks = tasks.filter {
-        it.name.contains(searchText, ignoreCase = true) // Apply search filter
+        it.name.contains(searchText, ignoreCase = true)
     }
 
     Scaffold(
@@ -90,7 +90,7 @@ fun HomeScreen(
                         tasks = tasks,
                         taskListViewModel = taskListViewModel,
                         onFilterChange = { filtered ->
-                            taskListViewModel.filterTasks(filtered) // Update tasks in the ViewModel
+                            taskListViewModel.filterTasks(filtered)
                         }
                     )
                 }
