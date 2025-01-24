@@ -4,6 +4,7 @@
 
 This Android application is our take on the classic To Do application. It includes a tasking system with tags, filtering, favoriting, and much more. 
 Our design was first created using Figma. Figma prototype link: 
+https://www.figma.com/proto/z0VsDKdC7xm7G1l1C6Z1FU/TODO-APP?node-id=1-4&starting-point-node-id=1%3A4&t=va948SAowfCulYww-1
 
 Group members: 
 
