@@ -395,6 +395,10 @@ fun FilterSection(
                                             if (!isSelected) {
                                                 selectedTags = selectedTags + tag
                                                 applyFilters(originalTasks, dateRange, selectedTags, selectedPriorities, hideCompletedTasks, onFilterChange)
+                                            } else {
+                                                selectedTags = selectedTags - tag
+                                                taskListViewModel.loadTasks()
+                                                applyFilters(originalTasks, dateRange, selectedTags, selectedPriorities, hideCompletedTasks, onFilterChange)
                                             }
                                         },
                                         label = {
@@ -436,6 +440,10 @@ fun FilterSection(
                                         onClick = {
                                             if (!isSelected) {
                                                 selectedPriorities = selectedPriorities + priority
+                                                applyFilters(originalTasks, dateRange, selectedTags, selectedPriorities, hideCompletedTasks, onFilterChange)
+                                            } else {
+                                                selectedPriorities = selectedPriorities - priority
+                                                taskListViewModel.loadTasks()
                                                 applyFilters(originalTasks, dateRange, selectedTags, selectedPriorities, hideCompletedTasks, onFilterChange)
                                             }
                                         },

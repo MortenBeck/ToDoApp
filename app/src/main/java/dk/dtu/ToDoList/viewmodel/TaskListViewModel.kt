@@ -110,4 +110,14 @@ class TaskListViewModel(
             e.printStackTrace()
         }
     }
+    fun filterTasks(
+        filteredTasks: List<Task>
+    ) {
+        _tasks.value = if (filteredTasks.isEmpty()) {
+            emptyList() // When no tasks match the filters, set tasks to empty
+        } else {
+            filteredTasks // Update with the filtered list
+        }
+    }
+
 }

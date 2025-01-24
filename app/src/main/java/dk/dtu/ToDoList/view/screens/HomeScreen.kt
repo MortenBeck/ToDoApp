@@ -40,8 +40,8 @@ fun HomeScreen(
     val tasks by taskListViewModel.tasks.collectAsState()
     val coroutineScope = rememberCoroutineScope()
 
-    val searchFilteredTasks = tasks.filter {
-        it.name.contains(searchText, ignoreCase = true)
+    val visibleTasks = tasks.filter {
+        it.name.contains(searchText, ignoreCase = true) // Apply search filter
     }
 
     Scaffold(
@@ -90,22 +90,22 @@ fun HomeScreen(
                         tasks = tasks,
                         taskListViewModel = taskListViewModel,
                         onFilterChange = { filtered ->
-                            if (filtered.isEmpty()) {
-                                taskListViewModel.resetToOriginal()
-                            } else {
-                                taskListViewModel.setTasks(filtered)
-                            }
+                            taskListViewModel.filterTasks(filtered) // Update tasks in the ViewModel
                         }
                     )
                 }
 
-                if (searchFilteredTasks.isEmpty()) {
+                if (visibleTasks.isEmpty()) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "No tasks available. Please add a task by clicking the '+' button to get started.",
+                            text = if (tasks.isEmpty()) {
+                                "No tasks match the selected filter criteria."
+                            } else {
+                                "No tasks available. Please add a task by clicking the '+' button to get started."
+                            },
                             color = MaterialTheme.colorScheme.onBackground,
                             modifier = Modifier.padding(horizontal = 16.dp)
                         )
