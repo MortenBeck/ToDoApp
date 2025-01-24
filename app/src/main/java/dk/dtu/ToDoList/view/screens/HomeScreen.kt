@@ -101,7 +101,7 @@ fun HomeScreen(
                     ) {
                         Text(
                             text = if (tasks.isEmpty()) {
-                                "No tasks match the selected filter criteria."
+                                "No tasks available. Please add a task by clicking the '+' button to get started."
                             } else {
                                 "No tasks available. Please add a task by clicking the '+' button to get started."
                             },
