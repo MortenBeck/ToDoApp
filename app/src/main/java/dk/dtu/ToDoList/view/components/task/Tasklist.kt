@@ -116,6 +116,7 @@ fun TaskItem(
     modifier: Modifier = Modifier
 ) {
     var showDetails by remember { mutableStateOf(false) }
+    // Vibration functionality based on StackOverFlow
     val context = LocalContext.current
     val vibrator = context.getSystemService(Vibrator::class.java)
 
@@ -156,8 +157,8 @@ fun TaskItem(
         ) {
             IconButton(onClick = {  if (vibrator.hasVibrator()) {
                 val effect = VibrationEffect.createOneShot(
-                    250, // Duration in milliseconds
-                    VibrationEffect.DEFAULT_AMPLITUDE // Default vibration amplitude
+                    250,
+                    VibrationEffect.DEFAULT_AMPLITUDE
                 )
                 vibrator.vibrate(effect)}
             onCompleteToggle(task) }) {
