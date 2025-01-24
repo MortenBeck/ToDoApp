@@ -108,7 +108,7 @@ fun Calendar(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Day-of-Week Headers
+            // Day-of-Week Headers (This part made with help from ChatGPT)
             Row(modifier = Modifier.fillMaxWidth()) {
                 val daysOfWeek = WeekFields.of(Locale.getDefault()).firstDayOfWeek.let { firstDay ->
                     (0..6).map { firstDay.plus(it.toLong()) }
@@ -127,7 +127,6 @@ fun Calendar(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Calculate the dates to display in the grid
             val days = calculateDaysInMonth(currentMonth)
 
             // Days in a 7-column grid
@@ -173,8 +172,6 @@ fun DayCell(
     onDateSelected: (LocalDate) -> Unit
 ) {
     val isToday = date == LocalDate.now()
-
-    // Determine background and text colors based on state
     val cellColor = when {
         isSelected -> MaterialTheme.colorScheme.outline
         isToday -> MaterialTheme.colorScheme.outlineVariant
@@ -205,7 +202,6 @@ fun DayCell(
                 color = textColor
             )
 
-            // Small indicator circle if there's a task on this date
             if (hasTask) {
                 Spacer(modifier = Modifier.height(2.dp))
                 Box(
@@ -236,6 +232,8 @@ fun DayCell(
  *
  * @param currentMonth The [YearMonth] for which days should be generated.
  * @return A list of [LocalDate] values containing up to 42 days for display in a 6-row grid.
+ *
+ * @author help from ChatGPT
  */
 private fun calculateDaysInMonth(currentMonth: YearMonth): List<LocalDate> {
     val days = mutableListOf<LocalDate>()

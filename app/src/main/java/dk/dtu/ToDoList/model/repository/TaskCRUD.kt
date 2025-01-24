@@ -24,7 +24,10 @@ import java.util.UUID
  * for [Task] objects stored in Firebase Firestore.
  *
  * @property context The Android [Context] needed for certain operations (notably authentication checks).
+ *
+ * @author Help from ChatGPT
  */
+
 class TaskCRUD(private val context: Context) {
 
     /** A reference to the [FirebaseFirestore] instance. */

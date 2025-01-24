@@ -61,18 +61,16 @@ fun AddToCalendarPage(
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
-        // A calender composable allowing the user to pick a date for the task's deadline.
         Calendar(
             selectedDate = selectedDate,
             currentMonth = currentMonth,
             onDateSelected = { selectedDate = it },
             onMonthChanged = { currentMonth = it },
-            tasks = emptyList() // No tasks to display here; purely selecting a date
+            tasks = emptyList()
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // A button that creates a new task with the selected date and navigates back.
         Button(
             onClick = {
                 val newTask = Task(

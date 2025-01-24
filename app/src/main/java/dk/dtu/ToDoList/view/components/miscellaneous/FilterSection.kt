@@ -43,17 +43,17 @@ fun FilterSection(
 ) {
     var isExpanded by remember { mutableStateOf(false) }
     var dateRange by remember { mutableStateOf<Pair<Date?, Date?>>(null to null) }
-    var selectedTag by remember { mutableStateOf<TaskTag?>(null) } // Single tag
-    var selectedPriority by remember { mutableStateOf<TaskPriority?>(null) } // Single priority
+    var selectedTag by remember { mutableStateOf<TaskTag?>(null) }
+    var selectedPriority by remember { mutableStateOf<TaskPriority?>(null) }
     var hideCompletedTasks by remember { mutableStateOf(false) }
     var showCalendarPicker by remember { mutableStateOf(false) }
 
-    // Calendar states
     var selectedStartDate by remember { mutableStateOf<LocalDate?>(null) }
     var selectedEndDate by remember { mutableStateOf<LocalDate?>(null) }
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
     var isSelectingStartDate by remember { mutableStateOf(true) }
 
+    //This function by ChatGPT
     val rotationState by animateFloatAsState(
         targetValue = if (isExpanded) 180f else 0f,
         label = "rotation"
@@ -78,13 +78,17 @@ fun FilterSection(
                 val taskDate = task.deadline.toInstant()
                     .atZone(ZoneId.systemDefault())
                     .toLocalDate()
+
                 val startDate = dateRange.first!!.toInstant()
                     .atZone(ZoneId.systemDefault())
                     .toLocalDate()
+
                 val endDate = dateRange.second!!.toInstant()
                     .atZone(ZoneId.systemDefault())
                     .toLocalDate()
+
                 !taskDate.isBefore(startDate) && !taskDate.isAfter(endDate)
+
             } else true
 
             val tagMatches = selectedTag == null || task.tag == selectedTag
@@ -95,7 +99,6 @@ fun FilterSection(
         }
 
         if (filteredList.isEmpty() && (selectedTag != null || selectedPriority != null)) {
-            // If the filtered list is empty, emit an empty list to reflect no results
             onFilterChange(emptyList())
         } else {
             onFilterChange(filteredList)
@@ -121,7 +124,6 @@ fun FilterSection(
                     .fillMaxWidth()
                     .animateContentSize()
             ) {
-                // Header
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -213,8 +215,10 @@ fun FilterSection(
                                         selectedStartDate != null && selectedEndDate != null ->
                                             "${selectedStartDate!!.format(dateFormatter)} - ${selectedEndDate!!.format(dateFormatter)}"
                                         selectedStartDate != null ->
+
                                             "From ${selectedStartDate!!.format(dateFormatter)}"
                                         selectedEndDate != null ->
+
                                             "Until ${selectedEndDate!!.format(dateFormatter)}"
                                         else -> "Select dates"
                                     },
@@ -249,7 +253,6 @@ fun FilterSection(
 
                                     FilledTonalButton(
                                         onClick = {
-                                            // Quick date selection
                                             val quickDate = LocalDate.now().plusDays(offset.toLong())
                                             selectedStartDate = quickDate
                                             selectedEndDate = quickDate
@@ -343,7 +346,7 @@ fun FilterSection(
                                             onMonthChanged = { month ->
                                                 currentMonth = month
                                             },
-                                            tasks = tasks // Pass tasks to highlight task dates if needed
+                                            tasks = tasks
                                         )
 
                                         Spacer(modifier = Modifier.height(16.dp))
