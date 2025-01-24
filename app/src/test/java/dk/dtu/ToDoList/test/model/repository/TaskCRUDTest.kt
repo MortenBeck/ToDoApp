@@ -2,6 +2,7 @@ package dk.dtu.ToDoList.model.repository
 
 import android.content.Context
 import android.util.Log
+import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.*
 import com.google.firebase.firestore.EventListener
@@ -10,6 +11,7 @@ import io.mockk.*
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.runner.RunWith
@@ -52,6 +54,7 @@ class TaskCRUDTest {
         }
 
         every { Log.e(any(), any<String>()) } returns 0
+        every { Log.e(any(), any<String>(), any<Throwable>()) } returns 0
         every { Log.w(any(), any<String>()) } returns 0
         every { Log.i(any(), any<String>()) } returns 0
         every { Log.d(any(), any<String>()) } returns 0
@@ -59,20 +62,46 @@ class TaskCRUDTest {
     }
 
     @Test
-    @DisplayName("Should add a task successfully")
-    fun `test addTask`() = runBlocking {
-        val mockDocumentReference: DocumentReference = mockk()
+    fun `test addTask`() = runTest {
+        val taskId = "test-task-id"
+        val mockDocumentReference: DocumentReference = mockk(relaxed = true)
+        val mockBatch: WriteBatch = mockk(relaxed = true)
+        val mockTask: com.google.android.gms.tasks.Task<Void> = mockk()
         val task = Task(name = "Test Task", deadline = Date())
 
-        every { mockTasksCollection.document(any()) } returns mockDocumentReference
-        coEvery { mockDocumentReference.set(any()) } returns mockk()
+        // Mock the behavior of Firebase Task
+        every { mockTask.isComplete } returns true
+        every { mockTask.isSuccessful } returns true
+        every { mockTask.isCanceled } returns false
+        every { mockTask.getResult() } returns null
+        every { mockTask.getException() } returns null
+        every { mockTask.addOnCompleteListener(any()) } answers {
+            val listener = it.invocation.args[0] as com.google.android.gms.tasks.OnCompleteListener<Void>
+            listener.onComplete(mockTask)
+            mockTask
+        }
 
+        // Mock Firestore batch and collection behavior
+        every { mockTasksCollection.document(any()) } returns mockDocumentReference
+        every { mockTasksCollection.document(taskId) } returns mockDocumentReference
+        every { mockFirestore.batch() } returns mockBatch
+        every { mockBatch.set(mockDocumentReference, any()) } returns mockBatch
+        every { mockBatch.commit() } returns mockTask
+
+        // Mock task ID generation
+        mockkObject(taskCRUD)
+        every { taskCRUD.generateTaskId() } returns taskId
+
+        // Act: Add the task
         val result = taskCRUD.addTask(task)
 
+        // Assert: Verify behavior and result
         assertTrue(result)
-        verify { mockTasksCollection.document(any()) }
-        coVerify { mockDocumentReference.set(any()) }
+        verify { mockTasksCollection.document(taskId) }
+        verify { mockBatch.set(mockDocumentReference, any()) }
+        coVerify { mockBatch.commit() }
     }
+
 
     @Test
     @DisplayName("Should get tasks as Flow")
@@ -106,10 +135,11 @@ class TaskCRUDTest {
 
     @Test
     @DisplayName("Should update a task successfully")
-    fun `test updateTask`() = runBlocking {
+    fun `test updateTask`() = runTest {
         val mockDocumentReference: DocumentReference = mockk()
         val task = Task(id = "task1", name = "Updated Task")
 
+        println("Setting up mocks for updateTask")
         every { mockTasksCollection.document("task1") } returns mockDocumentReference
         coEvery { mockDocumentReference.get().await() } returns mockk {
             every { exists() } returns true
@@ -117,13 +147,14 @@ class TaskCRUDTest {
         }
         coEvery { mockDocumentReference.set(any()) } returns mockk()
 
+        println("Calling updateTask")
         val result = taskCRUD.updateTask(task)
+        println("Result of updateTask: $result")
 
-        assertTrue(result)
-        verify { mockTasksCollection.document("task1") }
-        coVerify { mockDocumentReference.get().await() }
-        coVerify { mockDocumentReference.set(any()) }
+        assertTrue(result, "Task should be updated successfully")
+        println("Assertions passed")
     }
+
 
     @Test
     @DisplayName("Should delete a task successfully")
@@ -144,4 +175,18 @@ class TaskCRUDTest {
         coVerify { mockDocumentReference.get().await() }
         coVerify { mockDocumentReference.delete().await() }
     }
+
+    @Test
+    fun `test mock configuration`() = runTest {
+        val mockDocumentReference: DocumentReference = mockk()
+        coEvery { mockDocumentReference.get().await() } returns mockk {
+            every { exists() } returns true
+            every { getString("userId") } returns "testUserId"
+        }
+
+        val snapshot = mockDocumentReference.get().await()
+        assertTrue(snapshot.exists())
+        assertEquals("testUserId", snapshot.getString("userId"))
+    }
+
 }

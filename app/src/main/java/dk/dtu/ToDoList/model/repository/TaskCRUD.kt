@@ -71,7 +71,7 @@ class TaskCRUD(private val context: Context) {
      *
      * @return A [String] representing a unique document ID.
      */
-    private fun generateTaskId(): String {
+    fun generateTaskId(): String {
         return tasksCollection.document().id
     }
 
