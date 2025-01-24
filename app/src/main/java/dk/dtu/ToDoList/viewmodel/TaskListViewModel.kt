@@ -15,6 +15,7 @@ class TaskListViewModel(
     private val _tasks = MutableStateFlow<List<Task>>(emptyList())
     val tasks: StateFlow<List<Task>> = _tasks
     val taskToDelete = deleteTaskManager.taskToDelete
+    private val _originalTasks = MutableStateFlow<List<Task>>(emptyList())
 
     val categorizedTasks: StateFlow<Map<String, List<Task>>> = tasks.map { tasks ->
         val todayStart = Calendar.getInstance().apply {
@@ -73,9 +74,14 @@ class TaskListViewModel(
         }
     }
 
-    private fun loadTasks() {
+    fun resetToOriginal() {
+        _tasks.value = _originalTasks.value
+    }
+
+    fun loadTasks() {
         viewModelScope.launch {
             taskCRUD.getTasksFlow().collect { taskList ->
+                _originalTasks.value = taskList
                 _tasks.value = taskList
             }
         }

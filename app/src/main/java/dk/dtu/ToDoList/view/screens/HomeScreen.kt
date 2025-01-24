@@ -35,20 +35,14 @@ fun HomeScreen(
     onDeleteTask: (Task) -> Unit,
     onDeleteRecurringGroup: (Task) -> Unit
 ) {
-    // Observe UI-related states
     val searchText by homeScreenViewModel.searchText.collectAsState()
     val showAddDialog by homeScreenViewModel.showAddDialog.collectAsState()
+    val tasks by taskListViewModel.tasks.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
 
-    // Observe tasks from TaskListViewModel
-    val categorizedTasks by taskListViewModel.categorizedTasks.collectAsState()
-
-    // Filter tasks based on searchText
-    val filteredTasks = categorizedTasks.values.flatten().filter {
+    val searchFilteredTasks = tasks.filter {
         it.name.contains(searchText, ignoreCase = true)
     }
-
-    // Remember coroutine scope for launching suspend functions
-    val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -75,33 +69,37 @@ fun HomeScreen(
         Box(
             modifier = Modifier.fillMaxSize()
         ) {
-            // Background image
             Image(
                 painter = painterResource(id = R.drawable.background_gradient),
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.FillBounds
             )
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(top = paddingValues.calculateTopPadding(), bottom = 22.dp)
             ) {
-                // Filter section card
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 4.dp)
                 ) {
                     FilterSection(
-                        tasks = filteredTasks,
-                        onFilterChange = { filtered -> taskListViewModel.setTasks(filtered) }
+                        tasks = tasks,
+                        taskListViewModel = taskListViewModel,
+                        onFilterChange = { filtered ->
+                            if (filtered.isEmpty()) {
+                                taskListViewModel.resetToOriginal()
+                            } else {
+                                taskListViewModel.setTasks(filtered)
+                            }
+                        }
                     )
                 }
 
-                // Displays the filtered and/or searched tasks
-                if (filteredTasks.isEmpty()) {
-                    // Show message if no tasks are available
+                if (searchFilteredTasks.isEmpty()) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
@@ -118,9 +116,7 @@ fun HomeScreen(
                         onCompleteToggle = { task ->
                             val updatedTask = task.copy(completed = !task.completed)
                             onUpdateTask(updatedTask)
-                            taskListViewModel.setTasks(taskListViewModel.tasks.value.map {
-                                if (it.id == task.id) updatedTask else it
-                            })
+                            taskListViewModel.updateTask(updatedTask)
                         },
                         onUpdateTask = onUpdateTask,
                         searchText = searchText
@@ -130,7 +126,6 @@ fun HomeScreen(
         }
     }
 
-    // Dialog for adding a new task
     if (showAddDialog) {
         AddTaskDialog(
             showDialog = showAddDialog,

@@ -7,6 +7,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
@@ -31,6 +32,7 @@ import java.time.YearMonth
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Date
+import dk.dtu.ToDoList.viewmodel.TaskListViewModel
 
 /**
  * A composable function that displays a collapsible filter panel for filtering a list of [Task] objects.
@@ -50,8 +52,9 @@ import java.util.Date
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun FilterSection(
-    onFilterChange: (List<Task>) -> Unit,
     tasks: List<Task>,
+    onFilterChange: (List<Task>) -> Unit,
+    taskListViewModel: TaskListViewModel,
     modifier: Modifier = Modifier
 ) {
     var isExpanded by remember { mutableStateOf(false) }
@@ -67,6 +70,9 @@ fun FilterSection(
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
     var isSelectingStartDate by remember { mutableStateOf(true) }
 
+    // Store original task list
+    val originalTasks = remember(tasks) { tasks }
+
     val rotationState by animateFloatAsState(
         targetValue = if (isExpanded) 180f else 0f,
         label = "rotation"
@@ -74,10 +80,6 @@ fun FilterSection(
 
     val dateFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy")
 
-    /**
-     * Resets all filters to their default values and applies the filter,
-     * returning the unfiltered [tasks] list via [onFilterChange].
-     */
     fun resetFilters() {
         dateRange = null to null
         selectedStartDate = null
@@ -85,21 +87,17 @@ fun FilterSection(
         selectedTags = emptySet()
         selectedPriorities = emptySet()
         hideCompletedTasks = false
-        applyFilters(tasks, dateRange, selectedTags, selectedPriorities, false, onFilterChange)
+        onFilterChange(originalTasks)
     }
 
-    /**
-     * Helper function that selects a "quick date" (e.g., today, yesterday, tomorrow).
-     *
-     * @param daysOffset The number of days from today (negative for past days, zero for today, positive for future days).
-     */
     fun selectQuickDate(daysOffset: Int) {
         val date = LocalDate.now().plusDays(daysOffset.toLong())
         selectedStartDate = date
         selectedEndDate = date
         val selectedDate = Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant())
         dateRange = selectedDate to selectedDate
-        applyFilters(tasks, dateRange, selectedTags, selectedPriorities, hideCompletedTasks, onFilterChange)
+        applyFilters(originalTasks, dateRange, selectedTags, selectedPriorities, hideCompletedTasks, onFilterChange)
+
     }
 
     // Calendar date range picker dialog
@@ -141,14 +139,7 @@ fun FilterSection(
                                     dateRange = startDate to endDate
                                     showCalendarPicker = false
                                     // Apply filters with the new date range
-                                    applyFilters(
-                                        tasks,
-                                        dateRange,
-                                        selectedTags,
-                                        selectedPriorities,
-                                        hideCompletedTasks,
-                                        onFilterChange
-                                    )
+                                    applyFilters(originalTasks, dateRange, selectedTags, selectedPriorities, hideCompletedTasks, onFilterChange)
                                 }
                             }
                         },
@@ -264,7 +255,10 @@ fun FilterSection(
                                 )
 
                                 FilledTonalButton(
-                                    onClick = { resetFilters() },
+                                    onClick = {
+                                        resetFilters()
+                                        taskListViewModel.resetToOriginal()
+                                    },
                                     colors = ButtonDefaults.filledTonalButtonColors(
                                         containerColor = MaterialTheme.colorScheme.errorContainer
                                     )
@@ -388,7 +382,7 @@ fun FilterSection(
 
                             FlowRow(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(4.dp),
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 TaskTag.entries.forEach { tag ->
@@ -398,19 +392,10 @@ fun FilterSection(
                                     FilterChip(
                                         selected = isSelected,
                                         onClick = {
-                                            selectedTags = if (isSelected) {
-                                                selectedTags - tag
-                                            } else {
-                                                selectedTags + tag
+                                            if (!isSelected) {
+                                                selectedTags = selectedTags + tag
+                                                applyFilters(originalTasks, dateRange, selectedTags, selectedPriorities, hideCompletedTasks, onFilterChange)
                                             }
-                                            applyFilters(
-                                                tasks,
-                                                dateRange,
-                                                selectedTags,
-                                                selectedPriorities,
-                                                hideCompletedTasks,
-                                                onFilterChange
-                                            )
                                         },
                                         label = {
                                             Text(
@@ -449,19 +434,10 @@ fun FilterSection(
                                     FilterChip(
                                         selected = isSelected,
                                         onClick = {
-                                            selectedPriorities = if (isSelected) {
-                                                selectedPriorities - priority
-                                            } else {
-                                                selectedPriorities + priority
+                                            if (!isSelected) {
+                                                selectedPriorities = selectedPriorities + priority
+                                                applyFilters(originalTasks, dateRange, selectedTags, selectedPriorities, hideCompletedTasks, onFilterChange)
                                             }
-                                            applyFilters(
-                                                tasks,
-                                                dateRange,
-                                                selectedTags,
-                                                selectedPriorities,
-                                                hideCompletedTasks,
-                                                onFilterChange
-                                            )
                                         },
                                         label = {
                                             Text(
@@ -545,8 +521,16 @@ private fun applyFilters(
     hideCompletedTasks: Boolean,
     onFilterChange: (List<Task>) -> Unit
 ) {
+    val areFiltersActive = dateRange.first != null || dateRange.second != null ||
+            selectedTags.isNotEmpty() || selectedPriorities.isNotEmpty() ||
+            hideCompletedTasks
+
+    if (!areFiltersActive) {
+        onFilterChange(tasks)
+        return
+    }
+
     val filteredList = tasks.filter { task ->
-        // 1. Date range filter (if both start/end are non-null)
         val dateMatches = if (dateRange.first != null && dateRange.second != null) {
             val taskDate = task.deadline.toInstant()
                 .atZone(ZoneId.systemDefault())
@@ -557,18 +541,11 @@ private fun applyFilters(
             val endDate = dateRange.second!!.toInstant()
                 .atZone(ZoneId.systemDefault())
                 .toLocalDate()
-
-            // Inclusive date range check
             !taskDate.isBefore(startDate) && !taskDate.isAfter(endDate)
         } else true
 
-        // 2. Tag filter
         val tagMatches = selectedTags.isEmpty() || task.tag in selectedTags
-
-        // 3. Priority filter
         val priorityMatches = selectedPriorities.isEmpty() || task.priority in selectedPriorities
-
-        // 4. Completion status filter
         val completionMatches = !hideCompletedTasks || !task.completed
 
         dateMatches && tagMatches && priorityMatches && completionMatches
