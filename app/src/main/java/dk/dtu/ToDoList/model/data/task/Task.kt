@@ -12,7 +12,7 @@ import java.util.Date
  * - [LOW]
  */
 enum class TaskPriority {
-    HIGH, MEDIUM, LOW
+    LOW, MEDIUM, HIGH
 }
 
 
