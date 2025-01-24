@@ -29,7 +29,6 @@ import com.google.firebase.auth.FirebaseAuth
 import dk.dtu.ToDoList.R
 import dk.dtu.ToDoList.model.repository.TaskCRUD
 import dk.dtu.ToDoList.util.UserIdManager
-import dk.dtu.ToDoList.view.components.miscellaneous.AddToCalendarPage
 import dk.dtu.ToDoList.view.screens.*
 import dk.dtu.ToDoList.view.screens.profile.AccountSettingsScreen
 import dk.dtu.ToDoList.view.screens.profile.AppSettingsScreen
@@ -262,18 +261,6 @@ fun ToDoApp() {
                 AppSettingsScreen(navController = navController)
             }
 
-            composable("addToCalendar?taskName={taskName}") { backStackEntry ->
-                val taskName = backStackEntry.arguments?.getString("taskName") ?: "New Task"
-                AddToCalendarPage(
-                    navController = navController,
-                    taskName = taskName,
-                    onTaskAdded = { newTask ->
-                        coroutineScope.launch {
-                            taskListViewModel.addTask(newTask)
-                        }
-                    }
-                )
-            }
         }
     }
 }
