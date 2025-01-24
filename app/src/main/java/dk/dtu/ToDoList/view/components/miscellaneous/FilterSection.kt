@@ -72,39 +72,6 @@ fun FilterSection(
         taskListViewModel.loadTasks()
     }
 
-    fun applyFilters() {
-        val filteredList = tasks.filter { task ->
-            val dateMatches = if (dateRange.first != null && dateRange.second != null) {
-                val taskDate = task.deadline.toInstant()
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDate()
-
-                val startDate = dateRange.first!!.toInstant()
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDate()
-
-                val endDate = dateRange.second!!.toInstant()
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDate()
-
-                !taskDate.isBefore(startDate) && !taskDate.isAfter(endDate)
-
-            } else true
-
-            val tagMatches = selectedTag == null || task.tag == selectedTag
-            val priorityMatches = selectedPriority == null || task.priority == selectedPriority
-            val completionMatches = !hideCompletedTasks || !task.completed
-
-            dateMatches && tagMatches && priorityMatches && completionMatches
-        }
-
-        if (filteredList.isEmpty() && (selectedTag != null || selectedPriority != null)) {
-            onFilterChange(emptyList())
-        } else {
-            onFilterChange(filteredList)
-        }
-    }
-
 
     Column(
         modifier = modifier
