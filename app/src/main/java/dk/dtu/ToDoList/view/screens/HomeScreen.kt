@@ -101,9 +101,9 @@ fun HomeScreen(
                     ) {
                         Text(
                             text = if (tasks.isEmpty()) {
-                                "No tasks available. Please add a task by clicking the '+' button to get started."
+                                "No tasks available. Please add a task by clicking the '+' button."
                             } else {
-                                "No tasks available. Please add a task by clicking the '+' button to get started."
+                                "No tasks available. Please add a task by clicking the '+' button."
                             },
                             color = MaterialTheme.colorScheme.onBackground,
                             modifier = Modifier.padding(horizontal = 16.dp)
