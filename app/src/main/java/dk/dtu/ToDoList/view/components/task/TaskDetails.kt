@@ -64,7 +64,7 @@ fun TaskDetails(
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(text = "Category", style = MaterialTheme.typography.titleMedium)
+                Text(text = "Tag", style = MaterialTheme.typography.titleMedium)
                 Spacer(modifier = Modifier.height(8.dp))
                 DropdownTagSelector(selectedTag = selectedTag) { selectedTag = it }
 
