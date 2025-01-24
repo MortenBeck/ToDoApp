@@ -48,8 +48,7 @@ fun HomeScreen(
         topBar = {
             TopBar(
                 searchText = searchText,
-                onSearchTextChange = { homeScreenViewModel.updateSearchText(it) },
-                navController = navController
+                onSearchTextChange = { homeScreenViewModel.updateSearchText(it) }
             )
         },
         floatingActionButton = {

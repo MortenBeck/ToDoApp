@@ -9,17 +9,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.navigation.NavController
-import dk.dtu.ToDoList.model.data.*
 import dk.dtu.ToDoList.model.data.task.RecurrencePattern
 import dk.dtu.ToDoList.model.data.task.Task
 import dk.dtu.ToDoList.model.data.task.TaskPriority
 import dk.dtu.ToDoList.model.data.task.TaskTag
-import dk.dtu.ToDoList.model.repository.TaskCRUD
 import dk.dtu.ToDoList.view.components.miscellaneous.Calendar
 import dk.dtu.ToDoList.view.core.theme.getPrioColor
 import java.time.LocalDate
@@ -46,8 +42,6 @@ fun AddTaskDialog(
     onDismiss: () -> Unit,
     onTaskAdded: (Task, Boolean) -> Unit,
 ) {
-    val context = LocalContext.current
-    val taskCRUD = remember { TaskCRUD(context) }
 
     if (showDialog) {
         var taskName by remember { mutableStateOf("") }
@@ -167,15 +161,15 @@ fun AddTaskDialog(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // Category (Tag) Section
+                    // Tag Section
                     Text(
-                        text = "Category",
+                        text = "Tag",
                         style = MaterialTheme.typography.titleMedium
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    ModernDropdownTagSelector(
+                    DropdownTagSelector(
                         selectedTag = selectedTag,
                         onTagSelected = { selectedTag = it }
                     )
@@ -190,7 +184,7 @@ fun AddTaskDialog(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    ModernDropdownRecurrenceSelector(
+                    DropdownRecurrenceSelector(
                         selectedRecurrence = selectedRecurrence,
                         onRecurrenceSelected = { selectedRecurrence = it }
                     )
@@ -283,7 +277,7 @@ fun PriorityChip(
  * @param onTagSelected A callback invoked with the newly selected [TaskTag].
  */
 @Composable
-fun ModernDropdownTagSelector(
+fun DropdownTagSelector(
     selectedTag: TaskTag,
     onTagSelected: (TaskTag) -> Unit
 ) {
@@ -334,7 +328,7 @@ fun ModernDropdownTagSelector(
  * @param onRecurrenceSelected A callback invoked with the newly selected [RecurrencePattern] or `null`.
  */
 @Composable
-fun ModernDropdownRecurrenceSelector(
+fun DropdownRecurrenceSelector(
     selectedRecurrence: RecurrencePattern?,
     onRecurrenceSelected: (RecurrencePattern?) -> Unit
 ) {

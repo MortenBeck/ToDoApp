@@ -35,8 +35,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 @Composable
 fun TopBar(
     searchText: String,
-    onSearchTextChange: (String) -> Unit,
-    navController: NavController
+    onSearchTextChange: (String) -> Unit
 ) {
     var isSearchActive by remember { mutableStateOf(false) }
 
