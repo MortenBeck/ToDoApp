@@ -1,6 +1,8 @@
 package dk.dtu.ToDoList.view.components.task
 
 import android.annotation.SuppressLint
+import android.os.VibrationEffect
+import android.os.Vibrator
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
@@ -18,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -113,6 +116,8 @@ fun TaskItem(
     modifier: Modifier = Modifier
 ) {
     var showDetails by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val vibrator = context.getSystemService(Vibrator::class.java)
 
     // Highlight text helped by chatGPT
     fun buildHighlightedText(text: String, query: String): AnnotatedString {
@@ -149,7 +154,14 @@ fun TaskItem(
                 .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = { onCompleteToggle(task) }) {
+            IconButton(onClick = {  if (vibrator.hasVibrator()) {
+                val effect = VibrationEffect.createOneShot(
+                    250, // Duration in milliseconds
+                    VibrationEffect.DEFAULT_AMPLITUDE // Default vibration amplitude
+                )
+                vibrator.vibrate(effect)}
+            onCompleteToggle(task) }) {
+
                 Icon(
                     imageVector = if (task.completed) Icons.Default.CheckCircle else Icons.Default.RadioButtonUnchecked,
                     contentDescription = null,
